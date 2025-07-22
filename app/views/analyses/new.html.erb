@@ -1,7 +1,7 @@
 <div style="max-width: 800px; margin: auto; padding: 2rem; font-family: sans-serif;">
   <h1 style="font-size: 2rem; margin-bottom: 1rem;">Nouvelle analyse de code</h1>
 
-  <%= form_with model: @analysis, local: true do |form| %>
+  <%= form_with model: @analysis, local: true, multipart: true do |form| %>
     <div style="margin-bottom: 1rem;">
       <%= form.label :title, "Titre", style: "display: block; font-weight: bold;" %>
       <%= form.text_field :title, style: "width: 100%; padding: 0.5rem; margin-top: 0.25rem;" %>
@@ -12,38 +12,224 @@
       <%= form.select :language, ["Ruby", "Python", "JavaScript", "TypeScript", "HTML", "CSS", "SQL", "Java", "C++", "PHP", "Rust", "Go", "Bash"], {}, style: "width: 100%; padding: 0.5rem; margin-top: 0.25rem;" %>
     </div>
 
+    <!-- NOUVEAU : Onglets pour choisir entre texte et fichier -->
     <div style="margin-bottom: 1rem;">
-      <%= form.label :code, "Code à analyser", style: "display: block; font-weight: bold;" %>
-      <%= form.text_area :code, rows: 10, style: "width: 100%; padding: 0.5rem; font-family: monospace; margin-top: 0.25rem;" %>
-      <p id="code-warning" style="color: #e74c3c; font-size: 0.9rem; display: none; margin-top: 0.5rem;">
-        Merci d’entrer un extrait de code valide (au moins 10 caractères).
-      </p>
+      <div style="border-bottom: 2px solid #ecf0f1; margin-bottom: 1rem;">
+        <button type="button" id="text-tab" style="background: none; border: none; padding: 0.5rem 1rem; margin-right: 0.5rem; font-weight: bold; color: #2c3e50; border-bottom: 2px solid #3498db; cursor: pointer;">
+          📝 Coller du code
+        </button>
+        <button type="button" id="file-tab" style="background: none; border: none; padding: 0.5rem 1rem; font-weight: bold; color: #7f8c8d; border-bottom: 2px solid transparent; cursor: pointer;">
+          📁 Uploader un fichier
+        </button>
+      </div>
+
+      <!-- Mode texte (par défaut) -->
+      <div id="text-mode">
+        <%= form.label :code, "Code à analyser", style: "display: block; font-weight: bold;" %>
+        <%= form.text_area :code, rows: 10, style: "width: 100%; padding: 0.5rem; font-family: monospace; margin-top: 0.25rem; border: 2px solid #ecf0f1; border-radius: 4px;" %>
+        <p id="code-warning" style="color: #e74c3c; font-size: 0.9rem; display: none; margin-top: 0.5rem;">
+          Merci d'entrer un extrait de code valide (au moins 10 caractères).
+        </p>
+      </div>
+
+      <!-- Mode fichier -->
+      <div id="file-mode" style="display: none;">
+        <label style="display: block; font-weight: bold; margin-bottom: 0.5rem;">Fichier à analyser</label>
+
+        <!-- Zone de drop -->
+        <div id="drop-zone" style="border: 2px dashed #3498db; border-radius: 8px; padding: 2rem; text-align: center; background: #f8f9fa; cursor: pointer; transition: all 0.3s;">
+          <div style="margin-bottom: 1rem;">
+            <span style="font-size: 3rem;">📄</span>
+          </div>
+          <p style="margin: 0; color: #2c3e50; font-weight: bold;">Glissez votre fichier ici</p>
+          <p style="margin: 0.5rem 0 0 0; color: #7f8c8d; font-size: 0.9rem;">ou cliquez pour sélectionner</p>
+          <p style="margin: 0.25rem 0 0 0; color: #95a5a6; font-size: 0.8rem;">(.rb, .py, .js, .cpp, .java, .php, .go, .rs, .sql, .html, .css)</p>
+        </div>
+
+        <%= form.file_field :uploaded_file,
+            accept: ".rb,.py,.js,.ts,.cpp,.c,.java,.php,.go,.rs,.sql,.html,.css,.sh,.bash",
+            style: "display: none;",
+            id: "file-input" %>
+
+        <!-- Aperçu du fichier sélectionné -->
+        <div id="file-preview" style="display: none; margin-top: 1rem; padding: 1rem; background: #e8f5e8; border-radius: 4px; border-left: 4px solid #27ae60;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <p style="margin: 0; font-weight: bold; color: #27ae60;">✅ Fichier sélectionné</p>
+              <p id="file-info" style="margin: 0.25rem 0 0 0; font-size: 0.9rem; color: #2c3e50;"></p>
+            </div>
+            <button type="button" id="remove-file" style="background: #e74c3c; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 3px; cursor: pointer; font-size: 0.8rem;">
+              ✕ Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div>
-      <%= form.submit "Lancer l’analyse", style: "background: #2ecc71; color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer;" %>
+      <%= form.submit "Lancer l'analyse", style: "background: #2ecc71; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: bold;" %>
     </div>
   <% end %>
 </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const form = document.querySelector("form");
-    const codeField = document.querySelector("textarea#analysis_code");
-    const submitBtn = document.querySelector("input[type='submit']");
-    const warning = document.querySelector("#code-warning");
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.querySelector("form");
+  const codeField = document.querySelector("textarea#analysis_code");
+  const fileInput = document.querySelector("#file-input");
+  const submitBtn = document.querySelector("input[type='submit']");
+  const warning = document.querySelector("#code-warning");
+  const languageSelect = document.querySelector("select#analysis_language");
 
-    const toggleButton = () => {
-      const code = codeField.value.trim();
-      const tooShort = code.length < 10;
+  // Éléments des onglets
+  const textTab = document.querySelector("#text-tab");
+  const fileTab = document.querySelector("#file-tab");
+  const textMode = document.querySelector("#text-mode");
+  const fileMode = document.querySelector("#file-mode");
 
-      submitBtn.disabled = tooShort;
-      submitBtn.style.opacity = tooShort ? 0.6 : 1;
-      submitBtn.style.cursor = tooShort ? "not-allowed" : "pointer";
-      warning.style.display = tooShort ? "block" : "none";
+  // Éléments drag & drop
+  const dropZone = document.querySelector("#drop-zone");
+  const filePreview = document.querySelector("#file-preview");
+  const fileInfo = document.querySelector("#file-info");
+  const removeFileBtn = document.querySelector("#remove-file");
+
+  // Gestion des onglets
+  textTab.addEventListener("click", () => {
+    activateTab("text");
+  });
+
+  fileTab.addEventListener("click", () => {
+    activateTab("file");
+  });
+
+  function activateTab(tab) {
+    if (tab === "text") {
+      textTab.style.color = "#2c3e50";
+      textTab.style.borderBottom = "2px solid #3498db";
+      fileTab.style.color = "#7f8c8d";
+      fileTab.style.borderBottom = "2px solid transparent";
+      textMode.style.display = "block";
+      fileMode.style.display = "none";
+      fileInput.value = ""; // Reset file input
+      hideFilePreview();
+    } else {
+      fileTab.style.color = "#2c3e50";
+      fileTab.style.borderBottom = "2px solid #3498db";
+      textTab.style.color = "#7f8c8d";
+      textTab.style.borderBottom = "2px solid transparent";
+      textMode.style.display = "none";
+      fileMode.style.display = "block";
+      codeField.value = ""; // Reset text area
+    }
+    toggleSubmitButton();
+  }
+
+  // Drag & Drop
+  dropZone.addEventListener("click", () => {
+    fileInput.click();
+  });
+
+  dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = "#2ecc71";
+    dropZone.style.backgroundColor = "#d5f4e6";
+  });
+
+  dropZone.addEventListener("dragleave", (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = "#3498db";
+    dropZone.style.backgroundColor = "#f8f9fa";
+  });
+
+  dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = "#3498db";
+    dropZone.style.backgroundColor = "#f8f9fa";
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFileSelection(files[0]);
+    }
+  });
+
+  fileInput.addEventListener("change", (e) => {
+    if (e.target.files.length > 0) {
+      handleFileSelection(e.target.files[0]);
+    }
+  });
+
+  removeFileBtn.addEventListener("click", () => {
+    fileInput.value = "";
+    hideFilePreview();
+    toggleSubmitButton();
+  });
+
+  function handleFileSelection(file) {
+    // Vérifier la taille (max 1MB)
+    if (file.size > 1024 * 1024) {
+      alert("Le fichier est trop volumineux (max 1MB)");
+      return;
+    }
+
+    // Détection automatique du langage
+    const extension = file.name.split('.').pop().toLowerCase();
+    const languageMap = {
+      'rb': 'Ruby',
+      'py': 'Python',
+      'js': 'JavaScript',
+      'ts': 'TypeScript',
+      'cpp': 'C++',
+      'c': 'C++',
+      'java': 'Java',
+      'php': 'PHP',
+      'go': 'Go',
+      'rs': 'Rust',
+      'sql': 'SQL',
+      'html': 'HTML',
+      'css': 'CSS',
+      'sh': 'Bash',
+      'bash': 'Bash'
     };
 
-    codeField.addEventListener("input", toggleButton);
-    toggleButton(); // Initial check
-  });
+    if (languageMap[extension]) {
+      languageSelect.value = languageMap[extension];
+    }
+
+    // Afficher les infos du fichier
+    const fileSize = (file.size / 1024).toFixed(1) + ' KB';
+    fileInfo.textContent = `${file.name} (${fileSize})`;
+    showFilePreview();
+    toggleSubmitButton();
+  }
+
+  function showFilePreview() {
+    filePreview.style.display = "block";
+  }
+
+  function hideFilePreview() {
+    filePreview.style.display = "none";
+  }
+
+  // Validation du formulaire
+  function toggleSubmitButton() {
+    const textModeActive = textMode.style.display !== "none";
+    const hasContent = textModeActive ?
+      codeField.value.trim().length >= 10 :
+      fileInput.files.length > 0;
+
+    submitBtn.disabled = !hasContent;
+    submitBtn.style.opacity = hasContent ? 1 : 0.6;
+    submitBtn.style.cursor = hasContent ? "pointer" : "not-allowed";
+
+    if (textModeActive) {
+      warning.style.display = hasContent ? "none" : "block";
+    }
+  }
+
+  // Event listeners pour la validation
+  codeField.addEventListener("input", toggleSubmitButton);
+
+  // Validation initiale
+  toggleSubmitButton();
+});
 </script>
