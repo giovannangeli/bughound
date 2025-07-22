@@ -1,0 +1,49 @@
+<div style="max-width: 800px; margin: auto; padding: 2rem; font-family: sans-serif;">
+  <h1 style="font-size: 2rem; margin-bottom: 1rem;">Nouvelle analyse de code</h1>
+
+  <%= form_with model: @analysis, local: true do |form| %>
+    <div style="margin-bottom: 1rem;">
+      <%= form.label :title, "Titre", style: "display: block; font-weight: bold;" %>
+      <%= form.text_field :title, style: "width: 100%; padding: 0.5rem; margin-top: 0.25rem;" %>
+    </div>
+
+    <div style="margin-bottom: 1rem;">
+      <%= form.label :language, "Langage", style: "display: block; font-weight: bold;" %>
+      <%= form.select :language, ["Ruby", "Python", "JavaScript", "TypeScript", "HTML", "CSS", "SQL", "Java", "C++", "PHP", "Rust", "Go", "Bash"], {}, style: "width: 100%; padding: 0.5rem; margin-top: 0.25rem;" %>
+    </div>
+
+    <div style="margin-bottom: 1rem;">
+      <%= form.label :code, "Code à analyser", style: "display: block; font-weight: bold;" %>
+      <%= form.text_area :code, rows: 10, style: "width: 100%; padding: 0.5rem; font-family: monospace; margin-top: 0.25rem;" %>
+      <p id="code-warning" style="color: #e74c3c; font-size: 0.9rem; display: none; margin-top: 0.5rem;">
+        Merci d’entrer un extrait de code valide (au moins 10 caractères).
+      </p>
+    </div>
+
+    <div>
+      <%= form.submit "Lancer l’analyse", style: "background: #2ecc71; color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer;" %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const codeField = document.querySelector("textarea#analysis_code");
+    const submitBtn = document.querySelector("input[type='submit']");
+    const warning = document.querySelector("#code-warning");
+
+    const toggleButton = () => {
+      const code = codeField.value.trim();
+      const tooShort = code.length < 10;
+
+      submitBtn.disabled = tooShort;
+      submitBtn.style.opacity = tooShort ? 0.6 : 1;
+      submitBtn.style.cursor = tooShort ? "not-allowed" : "pointer";
+      warning.style.display = tooShort ? "block" : "none";
+    };
+
+    codeField.addEventListener("input", toggleButton);
+    toggleButton(); // Initial check
+  });
+</script>

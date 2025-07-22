@@ -1,0 +1,44 @@
+<div style="max-width: 900px; margin: auto; padding: 2rem; font-family: sans-serif;">
+  <h1 style="font-size: 2.2rem; margin-bottom: 1.5rem;">📂 Historique des analyses</h1>
+
+  <% if @languages.present? %>
+    <div style="margin-bottom: 2rem;">
+      <strong>Filtrer par langage :</strong>
+      <% @languages.each do |lang| %>
+        <%= link_to lang, analyses_path(language: lang), style: "margin-right: 0.5rem; padding: 0.3rem 0.6rem; background-color: #ecf0f1; border-radius: 4px; text-decoration: none; color: #2c3e50;" %>
+      <% end %>
+      <%= link_to "Tous", analyses_path, style: "margin-left: 1rem; padding: 0.3rem 0.6rem; background-color: #bdc3c7; border-radius: 4px; text-decoration: none; color: white;" %>
+    </div>
+  <% end %>
+
+  <% if @analyses.empty? %>
+    <p>Aucune analyse pour l’instant.</p>
+  <% else %>
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+      <thead>
+        <tr style="background-color: #f2f2f2;">
+          <th style="padding: 0.75rem; text-align: left;">Titre</th>
+          <th style="padding: 0.75rem; text-align: left;">Langage</th>
+          <th style="padding: 0.75rem; text-align: left;">Date</th>
+          <th style="padding: 0.75rem; text-align: center;">Voir</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @analyses.each do |analysis| %>
+          <tr style="border-top: 1px solid #ddd;">
+            <td style="padding: 0.75rem;"><%= analysis.title %></td>
+            <td style="padding: 0.75rem;"><%= analysis.language %></td>
+            <td style="padding: 0.75rem;"><%= l(analysis.created_at, format: :short) %></td>
+            <td style="padding: 0.75rem; text-align: center;">
+              <%= link_to "👁️", analysis_path(analysis), style: "text-decoration: none; padding: 0.3rem 0.6rem; background: #3498db; color: white; border-radius: 4px;" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+
+  <div style="margin-top: 2rem;">
+    <%= link_to "➕ Nouvelle analyse", new_analysis_path, style: "text-decoration: none; background: #2ecc71; color: white; padding: 0.6rem 1rem; border-radius: 5px;" %>
+  </div>
+</div>

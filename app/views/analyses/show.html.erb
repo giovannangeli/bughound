@@ -1,0 +1,93 @@
+<div style="max-width: 800px; margin: auto; padding: 2rem; font-family: sans-serif;">
+  <h1 style="font-size: 2rem; margin-bottom: 1rem;"><%= @analysis.title %></h1>
+  <p><strong>Langage :</strong> <%= @analysis.language %></p>
+
+  <!-- ✅ SCORE GLOBAL -->
+  <% if @score %>
+    <div style="background-color: <%= @score >= 8 ? '#d5f4e6' : @score >= 6 ? '#fff3cd' : '#f8d7da' %>; padding: 1.5rem; border-radius: 8px; margin: 2rem 0; text-align: center;">
+      <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem; color: <%= @score >= 8 ? '#27ae60' : @score >= 6 ? '#f39c12' : '#e74c3c' %>;">
+        📊 Score global : <%= @score %>/10
+      </h2>
+      <p style="margin: 0; font-size: 1rem; opacity: 0.8;">
+        <%= case @score
+            when 8..10 then "Excellent travail ! 🎉"
+            when 6..7 then "Bon code, quelques améliorations possibles 👍"
+            when 4..5 then "Code correct mais perfectible 🔧"
+            else "Attention, des améliorations importantes sont nécessaires ⚠️"
+            end %>
+      </p>
+    </div>
+  <% else %>
+    <!-- Score indisponible - on affiche la réponse brute pour débugger -->
+    <div style="background-color: #fef9e7; padding: 1.5rem; border-left: 5px solid #f1c40f; border-radius: 6px; margin-top: 2rem;">
+      <p style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.6rem;">
+        📊 Score non détecté - DEBUG :
+      </p>
+      <div style="background: #f0f0f0; padding: 1rem; margin: 1rem 0; font-family: monospace; white-space: pre-wrap; font-size: 0.8rem; border: 1px solid #ccc; max-height: 400px; overflow-y: auto;">
+        <%= @analysis.ai_feedback %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- ✅ DÉTAILS CATÉGORIES -->
+  <% if @scores.present? %>
+    <h2 style="margin-top: 2rem;">🧪 Détail par catégorie :</h2>
+    <ul style="list-style: none; padding: 0;">
+      <% @scores.each do |key, score| %>
+        <% label = {
+          security: "🛡️ Sécurité",
+          performance: "⚙️ Performance",
+          readability: "📐 Lisibilité",
+          testing: "🧪 Tests"
+        }[key] %>
+        <% color =
+          if score <= 4
+            "#e74c3c"
+          elsif score <= 7
+            "#f39c12"
+          else
+            "#27ae60"
+          end
+        %>
+        <li style="margin-bottom: 0.8rem; display: flex; align-items: center;">
+          <div style="width: 1rem; height: 1rem; border-radius: 50%; background-color: <%= color %>; margin-right: 0.5rem;"></div>
+          <strong><%= label %> :</strong>&nbsp; <%= score %>/10
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <!-- ✅ CODE ANALYSÉ -->
+  <h2 style="margin-top: 2rem;">Code analysé :</h2>
+  <pre style="background-color: #f8f9fa; padding: 1rem; border-radius: 5px; overflow-x: auto; white-space: pre-wrap; font-size: 0.9rem;">
+<%= @analysis.code %>
+  </pre>
+
+  <!-- ✅ RETOUR DE L'AGENT COMPLET (sans les scores qu'on affiche déjà) -->
+  <h2 style="margin-top: 2rem;">Retour de l'agent QA :</h2>
+  <div style="background-color: #e9f7ef; padding: 1rem; border-left: 4px solid #2ecc71; border-radius: 5px;">
+    <%
+      # On garde tout sauf le score global (déjà affiché) et la correction (affichée séparément)
+      clean_feedback = @analysis.ai_feedback
+        .gsub(/📊.*?Score.*?\d{1,2}\/10.*?\n/mi, "") # Enlève juste la ligne du score global
+        .gsub(/🔧.*$/m, "")                          # Enlève la section correction
+        .strip
+    %>
+    <%= markdown(clean_feedback) %>
+  </div>
+
+  <!-- ✅ PROPOSITION DE CORRECTION -->
+  <% if @analysis.ai_feedback.include?("🔧") %>
+    <h2 style="margin-top: 2rem;">🔧 Proposition de correction :</h2>
+    <div style="background-color: #f4f6f6; padding: 1rem; border-left: 4px solid #5dade2; border-radius: 5px;">
+      <% correction_section = @analysis.ai_feedback.match(/🔧.*$/m) %>
+      <%= markdown(correction_section.to_s.strip) if correction_section %>
+    </div>
+  <% end %>
+
+  <!-- ✅ BOUTONS -->
+  <div style="margin-top: 2rem;">
+    <%= link_to "Nouvelle analyse", new_analysis_path, style: "margin-right: 1rem; text-decoration: none; background: #3498db; color: white; padding: 0.5rem 1rem; border-radius: 4px;" %>
+    <%= link_to "Voir toutes les analyses", analyses_path, style: "text-decoration: none; background: #95a5a6; color: white; padding: 0.5rem 1rem; border-radius: 4px;" %>
+  </div>
+</div>
