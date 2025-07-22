@@ -15,17 +15,36 @@ class AnalysesController < ApplicationController
     @analysis = Analysis.new
   end
 
-  def create
-    @analysis = Analysis.new(analysis_params)
+def create
+  @analysis = Analysis.new(analysis_params)
 
-    if @analysis.save
-      response = send_to_openai(@analysis.language, @analysis.code)
-      @analysis.update(ai_feedback: response)
-      redirect_to @analysis
-    else
-      render :new
-    end
+  if @analysis.save
+    # Récupère le provider choisi
+    ai_provider = params[:ai_provider] || "openai"
+
+    # AJOUT DEBUG
+    Rails.logger.debug "=== AI PROVIDER CHOISI ==="
+    Rails.logger.debug "ai_provider: #{ai_provider}"
+    Rails.logger.debug "params[:ai_provider]: #{params[:ai_provider]}"
+
+    # Appelle la bonne API
+    response = case ai_provider
+when "claude"
+  send_to_claude(@analysis.language, @analysis.code)
+when "tests"
+  generate_tests(@analysis.language, @analysis.code)
+when "improve"
+  improve_code(@analysis.language, @analysis.code)
+else
+  send_to_openai(@analysis.language, @analysis.code)
+end
+
+    @analysis.update(ai_feedback: response, ai_provider: ai_provider)
+    redirect_to @analysis
+  else
+    render :new
   end
+end
 
   def show
     @analysis = Analysis.find(params[:id])
@@ -71,9 +90,9 @@ class AnalysesController < ApplicationController
 
   private
 
-  def analysis_params
-    params.require(:analysis).permit(:title, :language, :code, :uploaded_file)
-  end
+ def analysis_params
+  params.require(:analysis).permit(:title, :language, :code, :uploaded_file, :ai_provider)
+end
 
   def send_to_openai(language, code)
     client = OpenAI::Client.new(
@@ -160,6 +179,81 @@ class AnalysesController < ApplicationController
     PROMPT
   end
 
+def send_to_claude(language, code)
+  client = Anthropic::Client.new
+
+  prompt = build_ultimate_prompt(language, code)
+
+  Rails.logger.debug "=== CLAUDE PROMPT ==="
+  Rails.logger.debug prompt
+  Rails.logger.debug "=== FIN CLAUDE ==="
+
+  response = client.messages.create(
+    model: "claude-3-5-sonnet-20241022",
+    max_tokens: 2000,
+    messages: [
+      {
+        role: "user",
+        content: prompt
+      }
+    ]
+  )
+
+  response.content[0].text
+rescue => e
+  "Erreur lors de l'appel à Claude : #{e.message}"
+end
+
+def generate_tests(language, code)
+  client = Anthropic::Client.new
+
+  prompt = build_tests_prompt(language, code)
+
+  Rails.logger.debug "=== TESTS PROMPT ==="
+  Rails.logger.debug prompt
+  Rails.logger.debug "=== FIN TESTS ==="
+
+  response = client.messages.create(
+    model: "claude-3-5-sonnet-20241022",
+    max_tokens: 2000,
+    messages: [
+      {
+        role: "user",
+        content: prompt
+      }
+    ]
+  )
+
+  response.content[0].text
+rescue => e
+  "Erreur lors de la génération de tests : #{e.message}"
+end
+
+def improve_code(language, code)
+  client = Anthropic::Client.new
+
+  prompt = build_improve_prompt(language, code)
+
+  Rails.logger.debug "=== IMPROVE PROMPT ==="
+  Rails.logger.debug prompt
+  Rails.logger.debug "=== FIN IMPROVE ==="
+
+  response = client.messages.create(
+    model: "claude-3-5-sonnet-20241022",
+    max_tokens: 2000,
+    messages: [
+      {
+        role: "user",
+        content: prompt
+      }
+    ]
+  )
+
+  response.content[0].text
+rescue => e
+  "Erreur lors de l'amélioration : #{e.message}"
+end
+
   def get_compact_language_rules(language)
     case language.downcase.strip
     when "ruby"
@@ -176,4 +270,131 @@ class AnalysesController < ApplicationController
       "Standards génériques du langage. Sécurité, performance, lisibilité."
     end
   end
+
+  def build_tests_prompt(language, code)
+  test_framework = get_test_framework(language)
+
+  <<~PROMPT
+    Tu es un expert en tests automatisés. Génère des tests unitaires complets et prêts à l'emploi.
+
+    FRAMEWORK REQUIS : #{test_framework}
+
+    TESTS À GÉNÉRER :
+    • Test de fonctionnement normal (happy path)
+    • Tests des cas limites (edge cases)
+    • Tests de validation des entrées
+    • Tests de gestion d'erreurs
+    • Tests de sécurité si pertinent
+
+    FORMAT OBLIGATOIRE :
+
+    📋 Tests générés automatiquement
+
+    🧪 Framework : #{test_framework}
+
+    🎯 Scénarios testés :
+    [Liste des 4-5 scénarios couverts]
+
+    💻 Code des tests :
+    ```#{language.downcase}
+    [Code complet des tests, prêt à copier-coller]
+    ```
+
+    📚 Instructions d'exécution :
+    [Commandes pour lancer les tests]
+
+    CODE À TESTER :
+    ```#{language.downcase}
+    #{code}
+    ```
+
+    IMPORTANT :
+    - Tests 100% fonctionnels et exécutables
+    - Couverture complète des cas d'usage
+    - Noms de tests explicites
+    - Commentaires pour chaque test
+  PROMPT
+end
+
+def get_test_framework(language)
+  case language.downcase.strip
+  when "ruby"
+    "RSpec"
+  when "python"
+    "pytest"
+  when "javascript", "js"
+    "Jest"
+  when "java"
+    "JUnit 5"
+  when "c++"
+    "Google Test"
+  when "php"
+    "PHPUnit"
+  else
+    "Framework de test standard pour #{language}"
+  end
+end
+
+def build_improve_prompt(language, code)
+  best_practices = get_improvement_rules(language)
+
+  <<~PROMPT
+    Tu es un expert senior en refactoring et amélioration de code. Améliore ce code selon les meilleures pratiques.
+
+    AMÉLIORATIONS À APPLIQUER :
+    #{best_practices}
+
+    OBJECTIFS PRIORITAIRES :
+    • Sécurité : Corriger toutes les failles détectées
+    • Performance : Optimiser les algorithmes et structures
+    • Lisibilité : Noms explicites, structure claire
+    • Maintenabilité : Documentation, gestion d'erreurs
+    • Best practices : Standards du langage #{language}
+
+    FORMAT OBLIGATOIRE :
+
+    ✨ Code amélioré automatiquement
+
+    🎯 Améliorations apportées :
+    [Liste des 4-6 améliorations principales]
+
+    💻 Code refactorisé :
+    ```#{language.downcase}
+    [Code complet amélioré, prêt à utiliser]
+    ```
+
+    📝 Explications détaillées :
+    [Justification de chaque amélioration majeure]
+
+    🚀 Bénéfices obtenus :
+    [Impact concret des améliorations]
+
+    CODE ORIGINAL :
+    ```#{language.downcase}
+    #{code}
+    ```
+
+    CONTRAINTES :
+    - Code 100% fonctionnel et compatible
+    - Respect des conventions #{language}
+    - Amélioration significative de la qualité
+    - Documentation complète ajoutée
+    - Gestion d'erreurs robuste
+  PROMPT
+end
+
+def get_improvement_rules(language)
+  case language.downcase.strip
+  when "ruby"
+    "• Sécurité : Paramètres SQL, validation entrées, mass assignment\n• Performance : Éviter N+1, optimiser boucles\n• Style : Snake_case, méthodes < 30 lignes\n• Documentation : Commentaires explicites"
+  when "python"
+    "• Sécurité : Éviter eval(), valider entrées\n• Performance : List comprehensions, générateurs\n• Style : PEP8, type hints, docstrings\n• Documentation : Docstrings complètes"
+  when "javascript", "js"
+    "• Sécurité : Validation XSS, sanitization\n• Performance : Async/await, éviter DOM loops\n• Style : const/let, arrow functions\n• Documentation : JSDoc complète"
+  when "java"
+    "• Sécurité : Validation, exceptions\n• Performance : Streams, collections efficaces\n• Style : CamelCase, méthodes courtes\n• Documentation : Javadoc"
+  else
+    "• Sécurité : Validation entrées, gestion erreurs\n• Performance : Optimisation algorithmes\n• Style : Conventions du langage\n• Documentation : Commentaires explicites"
+  end
+end
 end

@@ -1,6 +1,17 @@
 <div style="max-width: 800px; margin: auto; padding: 2rem; font-family: sans-serif;">
   <h1 style="font-size: 2rem; margin-bottom: 1rem;"><%= @analysis.title %></h1>
   <p><strong>Langage :</strong> <%= @analysis.language %></p>
+<p><strong>Analysé par :</strong>
+  <% if @analysis.ai_provider == "claude" %>
+    ⚡ Claude (Expert)
+  <% elsif @analysis.ai_provider == "tests" %>
+    📋 Tests Automatiques (Claude)
+  <% elsif @analysis.ai_provider == "improve" %>
+    ✨ Amélioration Automatique (Claude)
+  <% else %>
+    🤖 OpenAI (Standard)
+  <% end %>
+</p>
 
   <!-- ✅ VÉRIFICATION AI_FEEDBACK -->
   <% if @analysis.ai_feedback.blank? %>
