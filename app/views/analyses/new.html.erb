@@ -70,19 +70,23 @@
 <div class="form-buttons" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem;">
   <%= form.submit "🤖 Analyse Standard (OpenAI)",
       name: "ai_provider", value: "openai",
-      style: "flex: 1; min-width: 200px; background: #10a37f; color: white; padding: 0.8rem 1rem; border-radius: 8px; border: none; font-weight: 500; cursor: pointer;" %>
+      style: "flex: 1; min-width: 180px; background: #10a37f; color: white; padding: 0.8rem 0.8rem; border-radius: 8px; border: none; font-weight: 500; cursor: pointer;" %>
 
   <%= form.submit "⚡ Analyse Expert (Claude)",
       name: "ai_provider", value: "claude",
-      style: "flex: 1; min-width: 200px; background: #ff6b35; color: white; padding: 0.8rem 1rem; border-radius: 8px; border: none; font-weight: 500; cursor: pointer;" %>
+      style: "flex: 1; min-width: 180px; background: #ff6b35; color: white; padding: 0.8rem 0.8rem; border-radius: 8px; border: none; font-weight: 500; cursor: pointer;" %>
 
   <%= form.submit "📋 Générer Tests (Auto)",
       name: "ai_provider", value: "tests",
-      style: "flex: 1; min-width: 200px; background: #9b59b6; color: white; padding: 0.8rem 1rem; border-radius: 8px; border: none; font-weight: 500; cursor: pointer;" %>
+      style: "flex: 1; min-width: 180px; background: #9b59b6; color: white; padding: 0.8rem 0.8rem; border-radius: 8px; border: none; font-weight: 500; cursor: pointer;" %>
 
   <%= form.submit "✨ Améliorer Code (Auto)",
       name: "ai_provider", value: "improve",
-      style: "flex: 1; min-width: 200px; background: #e67e22; color: white; padding: 0.8rem 1rem; border-radius: 8px; border: none; font-weight: 500; cursor: pointer;" %>
+      style: "flex: 1; min-width: 180px; background: #e67e22; color: white; padding: 0.8rem 0.8rem; border-radius: 8px; border: none; font-weight: 500; cursor: pointer;" %>
+
+  <%= form.submit "👃 Détecter Code Smells",
+      name: "ai_provider", value: "smells",
+      style: "flex: 1; min-width: 180px; background: #e74c3c; color: white; padding: 0.8rem 0.8rem; border-radius: 8px; border: none; font-weight: 500; cursor: pointer;" %>
 </div>
 
   <% end %>

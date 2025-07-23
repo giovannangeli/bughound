@@ -28,13 +28,15 @@ def create
     Rails.logger.debug "params[:ai_provider]: #{params[:ai_provider]}"
 
     # Appelle la bonne API
-    response = case ai_provider
+response = case ai_provider
 when "claude"
   send_to_claude(@analysis.language, @analysis.code)
 when "tests"
   generate_tests(@analysis.language, @analysis.code)
 when "improve"
   improve_code(@analysis.language, @analysis.code)
+when "smells"
+  detect_code_smells(@analysis.language, @analysis.code)
 else
   send_to_openai(@analysis.language, @analysis.code)
 end
@@ -254,6 +256,31 @@ rescue => e
   "Erreur lors de l'amélioration : #{e.message}"
 end
 
+def detect_code_smells(language, code)
+  client = Anthropic::Client.new
+
+  prompt = build_smells_prompt(language, code)
+
+  Rails.logger.debug "=== SMELLS PROMPT ==="
+  Rails.logger.debug prompt
+  Rails.logger.debug "=== FIN SMELLS ==="
+
+  response = client.messages.create(
+    model: "claude-3-5-sonnet-20241022",
+    max_tokens: 2000,
+    messages: [
+      {
+        role: "user",
+        content: prompt
+      }
+    ]
+  )
+
+  response.content[0].text
+rescue => e
+  "Erreur lors de la détection : #{e.message}"
+end
+
   def get_compact_language_rules(language)
     case language.downcase.strip
     when "ruby"
@@ -395,6 +422,74 @@ def get_improvement_rules(language)
     "• Sécurité : Validation, exceptions\n• Performance : Streams, collections efficaces\n• Style : CamelCase, méthodes courtes\n• Documentation : Javadoc"
   else
     "• Sécurité : Validation entrées, gestion erreurs\n• Performance : Optimisation algorithmes\n• Style : Conventions du langage\n• Documentation : Commentaires explicites"
+  end
+end
+
+def build_smells_prompt(language, code)
+  smell_patterns = get_smell_patterns(language)
+
+  <<~PROMPT
+    Tu es un expert en détection de code smells. Analyse ce code pour identifier TOUS les problèmes de qualité sans les corriger.
+
+    CODE SMELLS À DÉTECTER :
+    #{smell_patterns}
+
+    CRITÈRES DE DÉTECTION :
+    • Long Method : >30 lignes ou >5 responsabilités
+    • Magic Numbers : Nombres en dur sans constante
+    • Bad Naming : Variables a,b,c ou noms non explicites
+    • Duplicate Code : Blocs similaires répétés
+    • Complex Conditions : >3 conditions logiques
+    • God Class : Classe avec trop de responsabilités
+    • Dead Code : Code non utilisé ou inaccessible
+
+    FORMAT OBLIGATOIRE :
+
+    👃 Code Smells détectés
+
+    🎯 Nombre de smells trouvés : X
+
+    🔴 Problèmes critiques :
+    [Liste des smells majeurs avec localisation]
+
+    🟡 Problèmes modérés :
+    [Liste des smells mineurs]
+
+    📊 Détail par catégorie :
+    • 🔍 **Long Methods** : [Nombre + détail]
+    • 🔢 **Magic Numbers** : [Nombre + détail]
+    • 📝 **Bad Naming** : [Nombre + détail]
+    • 📋 **Duplicate Code** : [Nombre + détail]
+    • 🌀 **Complex Logic** : [Nombre + détail]
+
+    🎓 Impact pédagogique :
+    [Explication pour développeur junior : pourquoi c'est problématique]
+
+    CODE À ANALYSER :
+    ```#{language.downcase}
+    #{code}
+    ```
+
+    IMPORTANT :
+    - NE PAS corriger le code
+    - Localiser précisément chaque smell
+    - Expliquer l'impact de chaque problème
+    - Conseils pédagogiques pour comprendre
+  PROMPT
+end
+
+def get_smell_patterns(language)
+  case language.downcase.strip
+  when "ruby"
+    "• Long Method : >30 lignes\n• Magic Numbers : Nombres sans constantes\n• Bad Naming : Variables non snake_case\n• N+1 Queries : Boucles avec requêtes"
+  when "python"
+    "• Long Function : >30 lignes\n• Magic Numbers : Constantes en dur\n• Bad Naming : Variables non PEP8\n• Missing Docstrings : Fonctions sans doc"
+  when "javascript", "js"
+    "• Long Function : >30 lignes\n• Magic Numbers : Nombres en dur\n• Var Usage : var au lieu de const/let\n• Callback Hell : Callbacks imbriqués"
+  when "java"
+    "• Long Method : >30 lignes\n• Magic Numbers : Constantes privées manquantes\n• God Class : Classes >500 lignes\n• Deep Nesting : Imbrications >4 niveaux"
+  else
+    "• Long Method : >30 lignes\n• Magic Numbers : Nombres sans explication\n• Bad Naming : Variables non explicites\n• Complex Logic : Conditions multiples"
   end
 end
 end
