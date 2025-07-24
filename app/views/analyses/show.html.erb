@@ -1,128 +1,191 @@
-<div style="max-width: 800px; margin: auto; padding: 2rem; font-family: sans-serif;">
-  <h1 style="font-size: 2rem; margin-bottom: 1rem;"><%= @analysis.title %></h1>
-  <p><strong>Langage :</strong> <%= @analysis.language %></p>
-<p><strong>Analysé par :</strong>
-  <% if @analysis.ai_provider == "claude" %>
-    ⚡ Claude (Expert)
-  <% elsif @analysis.ai_provider == "tests" %>
-    📋 Tests Automatiques (Claude)
-  <% elsif @analysis.ai_provider == "improve" %>
-    ✨ Amélioration Automatique (Claude)
-  <% elsif @analysis.ai_provider == "smells" %>
-    👃 Détection Code Smells (Claude)
-  <% else %>
-    🤖 OpenAI (Standard)
-  <% end %>
-</p>
-
-  <!-- ✅ VÉRIFICATION AI_FEEDBACK -->
-  <% if @analysis.ai_feedback.blank? %>
-    <!-- Analyse échouée - Affichage d'erreur -->
-    <div style="background-color: #f8d7da; padding: 1.5rem; border-left: 5px solid #e74c3c; border-radius: 6px; margin-top: 2rem;">
-      <h2 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.6rem; color: #e74c3c;">
-        ⚠️ Analyse échouée
-      </h2>
-      <p style="margin: 0.5rem 0; color: #721c24;">
-        L'analyse OpenAI n'a pas pu être effectuée. Cela peut être dû à :
-      </p>
-      <ul style="color: #721c24; margin: 0.5rem 0; padding-left: 1.5rem;">
-        <li>Fichier trop volumineux (> 1000 lignes)</li>
-        <li>Problème de connexion à l'API OpenAI</li>
-        <li>Timeout de l'API</li>
-        <li>Code dans un format non reconnu</li>
-      </ul>
-      <p style="margin: 0.5rem 0 0 0; color: #721c24;">
-        <strong>Solution :</strong> Essayez avec un fichier plus petit ou collez directement le code.
-      </p>
+<div class="analysis-container">
+  <!-- Header Card -->
+  <div class="analysis-card">
+    <div class="card-header">
+      <h1 style="margin: 0; font-size: 1.5rem; color: #2d3748;"><%= @analysis.title %></h1>
     </div>
-
-    <!-- ✅ CODE ANALYSÉ (même si analyse échouée) -->
-    <h2 style="margin-top: 2rem;">Code soumis :</h2>
-    <pre style="background-color: #f8f9fa; padding: 1rem; border-radius: 5px; overflow-x: auto; white-space: pre-wrap; font-size: 0.9rem; max-height: 400px; overflow-y: auto;">
-<%= @analysis.code %>
-    </pre>
-
-  <% else %>
-    <!-- Analyse réussie - Affichage normal -->
-
-    <!-- ✅ SCORE GLOBAL -->
-    <% if @score %>
-      <div style="background-color: <%= @score >= 8 ? '#d5f4e6' : @score >= 6 ? '#fff3cd' : '#f8d7da' %>; padding: 1.5rem; border-radius: 8px; margin: 2rem 0; text-align: center;">
-        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem; color: <%= @score >= 8 ? '#27ae60' : @score >= 6 ? '#f39c12' : '#e74c3c' %>;">
-          📊 Score global : <%= @score %>/10
-        </h2>
-        <p style="margin: 0; font-size: 1rem; opacity: 0.8;">
-          <%= case @score
-              when 8..10 then "Excellent travail ! 🎉"
-              when 6..7 then "Bon code, quelques améliorations possibles 👍"
-              when 4..5 then "Code correct mais perfectible 🔧"
-              else "Attention, des améliorations importantes sont nécessaires ⚠️"
-              end %>
-        </p>
+    <div class="card-content">
+      <div style="display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;">
+        <div>
+          <strong>Langage :</strong>
+          <span style="background: #e2e8f0; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 500;">
+            <%= @analysis.language %>
+          </span>
+        </div>
+        <div>
+          <strong>Analysé par :</strong>
+          <% if @analysis.ai_provider == "claude" %>
+            <span style="background: #fed7d7; color: #c53030; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 500;">
+              ⚡ Claude (Expert)
+            </span>
+          <% elsif @analysis.ai_provider == "tests" %>
+            <span style="background: #e9d8fd; color: #6b46c1; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 500;">
+              📋 Tests Automatiques
+            </span>
+          <% elsif @analysis.ai_provider == "improve" %>
+            <span style="background: #fbb6ce; color: #be185d; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 500;">
+              ✨ Amélioration Auto
+            </span>
+          <% elsif @analysis.ai_provider == "smells" %>
+            <span style="background: #fecaca; color: #dc2626; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 500;">
+              👃 Code Smells
+            </span>
+          <% else %>
+            <span style="background: #d1fae5; color: #059669; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 500;">
+              🤖 OpenAI (Standard)
+            </span>
+          <% end %>
+        </div>
       </div>
-    <% end %>
+    </div>
+  </div>
 
-    <!-- ✅ DÉTAILS CATÉGORIES -->
-    <% if @scores.present? %>
-      <h2 style="margin-top: 2rem;">🧪 Détail par catégorie :</h2>
-      <ul style="list-style: none; padding: 0;">
-        <% @scores.each do |key, score| %>
-          <% label = {
-            security: "🛡️ Sécurité",
-            performance: "⚙️ Performance",
-            readability: "📐 Lisibilité",
-            testing: "🧪 Tests"
-          }[key] %>
-          <% color =
-            if score <= 4
-              "#e74c3c"
-            elsif score <= 7
-              "#f39c12"
-            else
-              "#27ae60"
-            end
-          %>
-          <li style="margin-bottom: 0.8rem; display: flex; align-items: center;">
-            <div style="width: 1rem; height: 1rem; border-radius: 50%; background-color: <%= color %>; margin-right: 0.5rem;"></div>
-            <strong><%= label %> :</strong>&nbsp; <%= score %>/10
-          </li>
+  <!-- Score Card (only for standard analyses) -->
+  <% if @analysis.ai_provider.in?(["openai", "claude"]) && @score %>
+    <div class="analysis-card">
+      <div class="card-header">📊 Score Global</div>
+      <div class="card-content">
+        <div style="text-align: center; padding: 2rem;">
+          <div style="background: <%= @score >= 8 ? '#d5f4e6' : @score >= 6 ? '#fff3cd' : '#f8d7da' %>;
+                      color: <%= @score >= 8 ? '#27ae60' : @score >= 6 ? '#f39c12' : '#e74c3c' %>;
+                      padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem;">
+            <h2 style="font-size: 2rem; margin: 0 0 0.5rem 0;"><%= @score %>/10</h2>
+            <p style="margin: 0; font-size: 1rem; opacity: 0.8;">
+              <%= case @score
+                  when 8..10 then "Excellent travail ! 🎉"
+                  when 6..7 then "Bon code, quelques améliorations possibles 👍"
+                  when 4..5 then "Code correct mais perfectible 🔧"
+                  else "Attention, des améliorations importantes sont nécessaires ⚠️"
+                  end %>
+            </p>
+          </div>
+        </div>
+
+        <!-- Detailed Scores -->
+        <% if @scores.present? %>
+          <h3 style="margin-bottom: 1rem;">🧪 Détail par catégorie :</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+            <% @scores.each do |key, score| %>
+              <% label = {
+                security: "🛡️ Sécurité",
+                performance: "⚙️ Performance",
+                readability: "📐 Lisibilité",
+                testing: "🧪 Tests"
+              }[key] %>
+              <% color = score <= 4 ? "#e74c3c" : score <= 7 ? "#f39c12" : "#27ae60" %>
+              <div style="display: flex; align-items: center; padding: 1rem; border: 1px solid #e1e5e9; border-radius: 8px;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; background-color: <%= color %>; margin-right: 0.75rem;"></div>
+                <div>
+                  <strong><%= label %> :</strong>&nbsp;
+                  <span style="color: <%= color %>; font-weight: 600;"><%= score %>/10</span>
+                </div>
+              </div>
+            <% end %>
+          </div>
         <% end %>
-      </ul>
-    <% end %>
+      </div>
+    </div>
+  <% end %>
 
-    <!-- ✅ CODE ANALYSÉ -->
-    <h2 style="margin-top: 2rem;">Code analysé :</h2>
-    <pre style="background-color: #f8f9fa; padding: 1rem; border-radius: 5px; overflow-x: auto; white-space: pre-wrap; font-size: 0.9rem;">
-<%= @analysis.code %>
-    </pre>
+  <!-- Code Card -->
+  <div class="analysis-card">
+    <div class="card-header">💻 Code analysé</div>
+    <div class="card-content">
+      <pre class="code-block"><code class="language-<%= @analysis.language.downcase %>"><%= @analysis.code %></code></pre>
+    </div>
+  </div>
 
-    <!-- ✅ RETOUR DE L'AGENT COMPLET (avec protection) -->
-    <h2 style="margin-top: 2rem;">Retour de l'agent QA :</h2>
-    <div style="background-color: #e9f7ef; padding: 1rem; border-left: 4px solid #2ecc71; border-radius: 5px;">
-      <%
-        # Protection contre nil + nettoyage
-        clean_feedback = @analysis.ai_feedback.to_s
-          .gsub(/📊.*?Score.*?\d{1,2}\/10.*?\n/mi, "") # Enlève juste la ligne du score global
-          .gsub(/🔧.*$/m, "")                          # Enlève la section correction
-          .strip
-      %>
-      <%= markdown(clean_feedback) %>
+  <!-- Analysis Results Card -->
+  <% if @analysis.ai_feedback.present? %>
+    <div class="analysis-card">
+      <div class="card-header">
+        <% if @analysis.ai_provider == "tests" %>
+          🧪 Tests générés automatiquement
+        <% elsif @analysis.ai_provider == "improve" %>
+          ✨ Code amélioré automatiquement
+        <% elsif @analysis.ai_provider == "smells" %>
+          👃 Code Smells détectés
+        <% else %>
+          🤖 Retour de l'agent QA
+        <% end %>
+      </div>
+      <div class="card-content">
+        <div style="background: #f8f9fa; padding: 1.5rem; border-left: 4px solid #007bff; border-radius: 4px; font-family: system-ui; line-height: 1.6;">
+          <%
+            # Simple clean feedback - no complex parsing
+            clean_feedback = @analysis.ai_feedback.to_s
+
+            # For standard analyses, remove global score section
+            if @analysis.ai_provider.in?(["openai", "claude"])
+              clean_feedback = clean_feedback.gsub(/📊.*?Score.*?\d{1,2}\/10.*?\n/mi, "")
+              clean_feedback = clean_feedback.gsub(/🔧.*$/m, "")
+            end
+
+            clean_feedback = clean_feedback.strip
+          %>
+          <%= simple_format(clean_feedback, {}, wrapper_tag: "div") %>
+        </div>
+      </div>
     </div>
 
-    <!-- ✅ PROPOSITION DE CORRECTION -->
-    <% if @analysis.ai_feedback.include?("🔧") %>
-      <h2 style="margin-top: 2rem;">🔧 Proposition de correction :</h2>
-      <div style="background-color: #f4f6f6; padding: 1rem; border-left: 4px solid #5dade2; border-radius: 5px;">
-        <% correction_section = @analysis.ai_feedback.match(/🔧.*$/m) %>
-        <%= markdown(correction_section.to_s.strip) if correction_section %>
+    <!-- Simple Correction Section -->
+    <% if @analysis.ai_provider.in?(["openai", "claude"]) && @analysis.ai_feedback.include?("🔧") %>
+      <div class="analysis-card">
+        <div class="card-header">🔧 Proposition de correction</div>
+        <div class="card-content">
+          <% correction_section = @analysis.ai_feedback.match(/🔧.*$/m) %>
+          <% if correction_section %>
+            <div style="background: #f4f6f6; padding: 1.5rem; border-left: 4px solid #5dade2; border-radius: 4px;">
+              <%= simple_format(correction_section.to_s.strip, {}, wrapper_tag: "div") %>
+            </div>
+          <% end %>
+        </div>
       </div>
     <% end %>
 
+  <% else %>
+    <!-- Error Card -->
+    <div class="analysis-card">
+      <div class="card-content">
+        <div style="background-color: #f8d7da; padding: 1.5rem; border-left: 5px solid #e74c3c; border-radius: 6px;">
+          <h2 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.6rem; color: #e74c3c;">
+            ⚠️ Analyse échouée
+          </h2>
+          <p style="margin: 0.5rem 0; color: #721c24;">
+            L'analyse IA n'a pas pu être effectuée. Cela peut être dû à :
+          </p>
+          <ul style="color: #721c24; margin: 0.5rem 0; padding-left: 1.5rem;">
+            <li>Fichier trop volumineux (> 1000 lignes)</li>
+            <li>Problème de connexion à l'API</li>
+            <li>Timeout de l'API</li>
+            <li>Code dans un format non reconnu</li>
+          </ul>
+          <p style="margin: 0.5rem 0 0 0; color: #721c24;">
+            <strong>Solution :</strong> Essayez avec un fichier plus petit ou collez directement le code.
+          </p>
+        </div>
+      </div>
+    </div>
   <% end %>
 
-  <!-- ✅ BOUTONS (toujours visibles) -->
-  <div style="margin-top: 2rem;">
-    <%= link_to "Nouvelle analyse", new_analysis_path, style: "margin-right: 1rem; text-decoration: none; background: #3498db; color: white; padding: 0.5rem 1rem; border-radius: 4px;" %>
-    <%= link_to "Voir toutes les analyses", analyses_path, style: "text-decoration: none; background: #95a5a6; color: white; padding: 0.5rem 1rem; border-radius: 4px;" %>
+  <!-- Navigation Buttons -->
+  <div class="analysis-card">
+    <div class="card-content">
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <%= link_to "Nouvelle analyse", new_analysis_path,
+            style: "text-decoration: none; background: #007bff; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 500; transition: all 0.2s;" %>
+        <%= link_to "Voir toutes les analyses", analyses_path,
+            style: "text-decoration: none; background: #6c757d; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 500; transition: all 0.2s;" %>
+      </div>
+    </div>
   </div>
 </div>
+
+<script>
+// Initialize Prism.js for syntax highlighting
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.Prism) {
+    Prism.highlightAll();
+  }
+});
+</script>
