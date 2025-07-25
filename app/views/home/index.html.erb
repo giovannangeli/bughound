@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugHound - Analyse QA augmentée par IA</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 2rem;
+            right: 2rem;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            border-radius: 0 0 20px 20px;
+        }
+
+        .navbar.scrolled {
+            background: rgba(26, 26, 46, 0.95) !important;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0 0 20px 20px !important;
+        }
+
+        .navbar.scrolled .logo {
+            color: white !important;
+        }
+
+        .navbar.scrolled .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+        }
+
+        .navbar.scrolled .nav-link:hover {
+            color: white !important;
+            background: rgba(255,255,255,0.1) !important;
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-center {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: #2d3748;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .logo:hover {
+            color: #667eea;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link {
+            color: #6a7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #2d3748;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .nav-cta {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            color: white !important;
+            padding: 0.6rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(255,107,53,0.3);
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255,107,53,0.4);
+            background: linear-gradient(45deg, #f7931e, #ff6b35);
+        }
+
+        /* Mobile menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #ffffff;
+            color: #2d3748;
+            overflow-x: hidden;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 80vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            padding: 100px 2rem 2rem;
+            background: #ffffff;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #533a71 75%, #6b4e3d 100%);
+            border-radius: 20px;
+            padding: 6rem 3rem;
+            margin: 0 auto;
+            max-width: 1400px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+            background-size: 100px 100px;
+            animation: float 20s infinite linear;
+            border-radius: 20px;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            max-width: 1000px;
+            padding: 2rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 5.5rem);
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            line-height: 1.1;
+        }
+
+        .hero .subtitle {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 3rem;
+            font-weight: 300;
+            line-height: 1.4;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .unique-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite;
+            box-shadow: 0 4px 20px rgba(255,107,53,0.4);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .cta-primary {
+            background: white;
+            color: #667eea;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(255,255,255,0.2);
+        }
+
+        .cta-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255,255,255,0.3);
+        }
+
+        .cta-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .cta-secondary:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Features Section */
+        .features {
+            background: white;
+            padding: 5rem 2rem 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            color: #2d3748;
+        }
+
+        .ai-modes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .mode-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 1px solid #e1e5e9;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent-color);
+        }
+
+        .mode-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        .mode-card.openai { --accent-color: #10a37f; }
+        .mode-card.claude { --accent-color: #ff6b35; }
+        .mode-card.tests { --accent-color: #9b59b6; }
+        .mode-card.improve { --accent-color: #e67e22; }
+        .mode-card.smells { --accent-color: #e74c3c; }
+
+        .mode-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .mode-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #2d3748;
+        }
+
+        .mode-description {
+            color: #6a7280;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .mode-tech {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        /* Demo Section */
+        .demo {
+            background: #ffffff;
+            padding: 3rem 2rem;
+            margin-top: 0;
+        }
+
+        .demo-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .demo-content h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #2d3748;
+        }
+
+        .demo-features {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .demo-features li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .demo-features li::before {
+            content: '✅';
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .demo-visual {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .demo-code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+        }
+
+        .demo-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .demo-chick {
+            font-size: 2rem;
+            animation: bounce 1.5s ease-in-out infinite;
+            margin-right: 1rem;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .demo-result {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+
+        /* Stats Section */
+        .stats {
+            background: #ffffff;
+            padding: 5rem 2rem;
+            text-align: center;
+        }
+
+        .stats-container {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            color: white;
+            padding: 4rem 3rem;
+            border-radius: 20px;
+            margin: 0 auto;
+            max-width: 1400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .stat-item {
+            padding: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Footer */
+        .footer {
+            background: #ffffff;
+            color: #2d3748;
+            padding: 3rem 2rem 1rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tech-stack {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .tech-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            color: #6a7280;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-center,
+            .nav-right {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+                color: #2d3748;
+            }
+
+            .navbar {
+                padding: 1rem;
+            }
+
+            .demo-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .ai-modes {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .hero-gradient {
+                margin: 0 1rem;
+                border-radius: 24px;
+                padding: 4rem 2rem;
+                max-width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-content">
+            <%= link_to root_path, class: "logo" do %>
+                <span>🐣</span>
+                <span>BugHound</span>
+            <% end %>
+
+            <div class="nav-center">
+                <a href="#features" class="nav-link">Modes</a>
+                <a href="#demo" class="nav-link">Démo</a>
+                <%= link_to "Historique", analyses_path, class: "nav-link" %>
+            </div>
+
+            <div class="nav-right">
+                <a href="#" class="nav-link">Se connecter</a>
+                <%= link_to new_analysis_path, class: "nav-link nav-cta" do %>
+                    🚀 Analyser
+                <% end %>
+            </div>
+
+            <button class="mobile-menu-btn">☰</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-gradient">
+            <div class="hero-content">
+                <div class="unique-badge">
+                    🎯 5 MODES D'ANALYSE ULTRA-PRÉCIS
+                </div>
+                <h1>BugHound</h1>
+                <p class="subtitle">
+                    L'analyse QA augmentée par IA, réinventée pour les devs modernes.
+                </p>
+                <div class="cta-buttons">
+                    <%= link_to "🐣 Analyser mon code", new_analysis_path, class: "cta-primary" %>
+                    <a href="#demo" class="cta-secondary">👀 Voir la démo</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title">🎯 5 Modes d'Analyse Intelligents</h2>
+            <div class="ai-modes">
+                <div class="mode-card openai">
+                    <span class="mode-icon">🤖</span>
+                    <h3 class="mode-title">Analyse Standard</h3>
+                    <p class="mode-description">
+                        Score global + détails par catégorie (Sécurité, Performance, Lisibilité, Tests).
+                        Idéal pour un premier diagnostic rapide.
+                    </p>
+                    <p class="mode-tech">Powered by OpenAI GPT-4</p>
+                </div>
+
+                <div class="mode-card claude">
+                    <span class="mode-icon">⚡</span>
+                    <h3 class="mode-title">Analyse Expert</h3>
+                    <p class="mode-description">
+                        Analyse chirurgicale avec recommandations détaillées.
+                        Pour les développeurs qui veulent aller plus loin.
+                    </p>
+                    <p class="mode-tech">Powered by Claude-3.5-Sonnet</p>
+                </div>
+
+                <div class="mode-card tests">
+                    <span class="mode-icon">📋</span>
+                    <h3 class="mode-title">Tests Automatiques</h3>
+                    <p class="mode-description">
+                        Génère des tests unitaires complets (Jest, RSpec, pytest, JUnit).
+                        Tests prêts à copier-coller !
+                    </p>
+                    <p class="mode-tech">Auto-détection du framework</p>
+                </div>
+
+                <div class="mode-card improve">
+                    <span class="mode-icon">✨</span>
+                    <h3 class="mode-title">Amélioration Auto</h3>
+                    <p class="mode-description">
+                        Transforme votre code junior en code enterprise-grade.
+                        Refactoring complet avec best practices.
+                    </p>
+                    <p class="mode-tech">Code senior instantané</p>
+                </div>
+
+                <div class="mode-card smells">
+                    <span class="mode-icon">👃</span>
+                    <h3 class="mode-title">Code Smells</h3>
+                    <p class="mode-description">
+                        Détection pédagogique des mauvaises pratiques.
+                        Parfait pour apprendre et progresser.
+                    </p>
+                    <p class="mode-tech">Diagnostic éducatif</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section class="demo" id="demo">
+        <div class="container">
+            <div class="demo-container">
+                <div class="demo-content">
+                    <h2>🎬 Démo Interactive</h2>
+                    <ul class="demo-features">
+                        <li>Copier-coller ou upload de fichier</li>
+                        <li>Auto-détection du langage</li>
+                        <li>Analyse en temps réel</li>
+                        <li>Résultats détaillés avec scores</li>
+                        <li>Code amélioré généré automatiquement</li>
+                    </ul>
+                    <%= link_to "🚀 Essayer maintenant", new_analysis_path, class: "cta-primary" %>
+                </div>
+
+                <div class="demo-visual">
+                    <div class="demo-code">
+<span style="color: #bb86fc">def</span> <span style="color: #82aaff">calculate</span>(<span style="color: #ffcb6b">a</span>, <span style="color: #ffcb6b">b</span>)
+  <span style="color: #ffcb6b">a</span> <span style="color: #89ddff">+</span> <span style="color: #ffcb6b">b</span> <span style="color: #89ddff">*</span> <span style="color: #f78c6c">2</span>
+<span style="color: #bb86fc">end</span>
+                    </div>
+
+                    <div class="demo-loading">
+                        <span class="demo-chick">🐣</span>
+                        <span>Analyse Claude en cours...</span>
+                    </div>
+
+                    <div class="demo-result">
+                        <strong>📊 Score global : 4/10</strong><br>
+                        🔍 Variables non explicites détectées<br>
+                        🧪 Tests manquants<br>
+                        ✨ Code amélioré généré !
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="stats-container">
+            <div class="container">
+                <h2 style="margin-bottom: 3rem; font-size: 2.2rem;">📊 En Quelques Chiffres</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number">10+</span>
+                        <span class="stat-label">Langages supportés</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">2</span>
+                        <span class="stat-label">IA de pointe</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">5</span>
+                        <span class="stat-label">Modes d'analyse</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-label">Gratuit</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <span>💎</span> Ruby on Rails 7
+                </div>
+                <div class="tech-item">
+                    <span>🤖</span> OpenAI GPT-4
+                </div>
+                <div class="tech-item">
+                    <span>⚡</span> Claude-3.5-Sonnet
+                </div>
+                <div class="tech-item">
+                    <span>🎨</span> Modern UI/UX
+                </div>
+            </div>
+            <p style="opacity: 0.7; margin-top: 2rem;">
+                Développé avec ❤️ par un passionné de code<br>
+                BugHound © 2025 - La révolution de l'analyse de code
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth scrolling pour les ancres
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Animation au scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observer les cartes de modes
+        document.querySelectorAll('.mode-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'all 0.6s ease';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
