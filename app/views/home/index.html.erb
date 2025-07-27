@@ -15,44 +15,49 @@
         /* Navbar */
         .navbar {
             position: fixed;
-            top: 0;
+            top: 2rem;
             left: 2rem;
             right: 2rem;
             z-index: 1000;
-            padding: 1rem 2rem;
+            padding: 0.75rem 2rem;
             transition: all 0.3s ease;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(0,0,0,0.05);
-            border-radius: 0 0 20px 20px;
+            border-radius: 20px;
         }
 
         .navbar.scrolled {
-            background: rgba(26, 26, 46, 0.95) !important;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.2);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            border-radius: 0 0 20px 20px !important;
+            background: #ffffff !important;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            border-radius: 16px !important;
+            padding: 0.5rem 1.5rem;
+            top: 3rem;
+            left: 3rem;
+            right: 3rem;
         }
 
         .navbar.scrolled .logo {
-            color: white !important;
+            color: #2d3748 !important;
         }
 
         .navbar.scrolled .nav-link {
-            color: rgba(255,255,255,0.9) !important;
+            color: #6a7280 !important;
         }
 
         .navbar.scrolled .nav-link:hover {
-            color: white !important;
-            background: rgba(255,255,255,0.1) !important;
+            color: #2d3748 !important;
+            background: rgba(102, 126, 234, 0.1) !important;
         }
 
         .navbar-content {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 0 1rem;
         }
 
         .nav-center {
@@ -132,11 +137,11 @@
         .hero {
             min-height: 80vh;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: center;
             text-align: center;
             position: relative;
-            padding: 100px 2rem 2rem;
+            padding: 120px 2rem 2rem;
             background: #ffffff;
         }
 
@@ -150,6 +155,9 @@
             position: relative;
             overflow: hidden;
             box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .hero::before {
@@ -435,7 +443,7 @@
         }
 
         .stats-container {
-            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 25%, #1a202c 50%, #2c1810 75%, #553c1c 100%);
             color: white;
             padding: 4rem 3rem;
             border-radius: 20px;
@@ -546,7 +554,7 @@
             <% end %>
 
             <div class="nav-center">
-                <a href="#features" class="nav-link">Modes</a>
+                <a href="#features" class="nav-link">Features</a>
                 <a href="#demo" class="nav-link">Démo</a>
                 <%= link_to "Historique", analyses_path, class: "nav-link" %>
             </div>
@@ -723,7 +731,7 @@
                 </div>
             </div>
             <p style="opacity: 0.7; margin-top: 2rem;">
-                Développé avec ❤️ par un passionné de code<br>
+                Développé avec ❤️ par une passionnée de code<br>
                 BugHound © 2025 - La révolution de l'analyse de code
             </p>
         </div>
