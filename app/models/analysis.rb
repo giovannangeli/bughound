@@ -1,4 +1,5 @@
 class Analysis < ApplicationRecord
+  belongs_to :user, optional: true
   # Attribut virtuel pour le fichier uploadé
   attr_accessor :uploaded_file
 

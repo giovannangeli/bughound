@@ -1,15 +1,19 @@
 <div style="max-width: 900px; margin: auto; padding: 2rem; font-family: sans-serif;">
   <h1 style="font-size: 2.2rem; margin-bottom: 1.5rem;">📂 Historique des analyses</h1>
 
-  <% if @languages.present? %>
-    <div style="margin-bottom: 2rem;">
-      <strong>Filtrer par langage :</strong>
+<% if @languages.present? %>
+  <div style="margin-bottom: 2rem;">
+    <strong style="display: block; margin-bottom: 1rem;">Filtrer par langage :</strong>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
       <% @languages.each do |lang| %>
-        <%= link_to lang, analyses_path(language: lang), style: "margin-right: 0.5rem; padding: 0.3rem 0.6rem; background-color: #ecf0f1; border-radius: 4px; text-decoration: none; color: #2c3e50;" %>
+        <%= link_to lang, analyses_path(language: lang),
+            style: "padding: 0.5rem 1rem; background-color: #ecf0f1; border-radius: 6px; text-decoration: none; color: #2c3e50; font-size: 0.9rem; white-space: nowrap;" %>
       <% end %>
-      <%= link_to "Tous", analyses_path, style: "margin-left: 1rem; padding: 0.3rem 0.6rem; background-color: #bdc3c7; border-radius: 4px; text-decoration: none; color: white;" %>
+      <%= link_to "Tous", analyses_path,
+          style: "padding: 0.5rem 1rem; background-color: #3498db; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; white-space: nowrap;" %>
     </div>
-  <% end %>
+  </div>
+<% end %>
 
   <% if @analyses.empty? %>
     <p>Aucune analyse pour l’instant.</p>

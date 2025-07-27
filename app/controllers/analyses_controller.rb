@@ -1,15 +1,21 @@
 require "openai"
 
 class AnalysesController < ApplicationController
-  def index
-    if params[:language].present?
-      @analyses = Analysis.where(language: params[:language]).order(created_at: :desc)
+def index
+  if user_signed_in?
+    # Utilisateur connecté → Ses analyses seulement
+    @analyses = if params[:language].present?
+      current_user.analyses.where(language: params[:language]).order(created_at: :desc)
     else
-      @analyses = Analysis.all.order(created_at: :desc)
+      current_user.analyses.order(created_at: :desc)
     end
-
-    @languages = Analysis.distinct.pluck(:language).compact.sort
+  else
+    # Pas connecté → Redirection vers login
+    redirect_to new_user_session_path, notice: "Connectez-vous pour voir votre historique"
+    return
   end
+    @languages = ["Bash", "C++", "CSS", "Go", "HTML", "Java", "JavaScript", "PHP", "Python", "Ruby", "Rust", "SQL", "TypeScript"]
+end
 
   def new
     @analysis = Analysis.new
@@ -19,6 +25,8 @@ def create
   @analysis = Analysis.new(analysis_params)
 
   if @analysis.save
+    # Attacher l'user si connecté
+    @analysis.update(user: current_user) if user_signed_in?
     # Récupère le provider choisi
     ai_provider = params[:ai_provider] || "openai"
 
