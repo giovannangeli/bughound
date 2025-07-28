@@ -87,34 +87,51 @@
             transition: color 0.3s ease;
         }
 
-        .nav-link {
-            color: #6a7280;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-        }
+       .nav-link {
+    color: #6a7280;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
 
-        .nav-link:hover {
-            color: #2d3748;
-            background: rgba(102, 126, 234, 0.1);
-        }
+.nav-link:hover {
+    color: #2d3748;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+a[href*="new_user_session"].nav-link {
+    color: #6a7280 !important;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.6rem 1.2rem !important;
+    border-radius: 8px !important;
+    background: white !important;
+    border: 1px solid #e5e7eb !important;
+    transition: all 0.2s ease !important;
+}
+
+a[href*="new_user_session"].nav-link:hover {
+    color: #2d3748 !important;
+    border: 1px solid #d1d5db !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
 
         .nav-cta {
-            background: linear-gradient(45deg, #ff6b35, #f7931e);
-            color: white !important;
-            padding: 0.6rem 1.5rem;
-            border-radius: 25px;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(255,107,53,0.3);
-        }
+    background: linear-gradient(45deg, #ff6b35, #f7931e);
+    color: white !important;
+    padding: 0.6rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(255,107,53,0.3);
+}
 
-        .nav-cta:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255,107,53,0.4);
-            background: linear-gradient(45deg, #f7931e, #ff6b35);
-        }
+.nav-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255,107,53,0.4);
+    background: linear-gradient(45deg, #f7931e, #ff6b35);
+}
 
         /* Mobile menu */
         .mobile-menu-btn {
@@ -548,12 +565,18 @@
             position: relative;
         }
 
-        .user-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: inherit;
-        }
+       .user-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: inherit;
+}
+
+
+.user-btn:hover {
+    background: rgba(102, 126, 234, 0.1) !important;
+    color: #2d3748;
+}
 
         .dropdown-menu {
             position: absolute;
