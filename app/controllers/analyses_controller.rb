@@ -49,7 +49,14 @@ else
   send_to_openai(@analysis.language, @analysis.code)
 end
 
-    @analysis.update(ai_feedback: response, ai_provider: ai_provider)
+    result = @analysis.update(ai_feedback: response, ai_provider: ai_provider)
+    # AJOUTE ÇA POUR DEBUG
+Rails.logger.debug "=== UPDATE ANALYSIS ==="
+Rails.logger.debug "Response length: #{response.length}"
+Rails.logger.debug "Update result: #{result}"
+Rails.logger.debug "Analysis errors: #{@analysis.errors.full_messages}"
+Rails.logger.debug "AI feedback présent? #{@analysis.reload.ai_feedback.present?}"
+Rails.logger.debug "=== FIN UPDATE ==="
     redirect_to @analysis
   else
     render :new
@@ -110,7 +117,7 @@ end
       uri_base: "https://api.openai.com/v1"
     )
 
-    prompt = build_ultimate_prompt(language, code)
+    prompt = build_openai_improved_prompt(language, code)
 
     Rails.logger.debug "=== PROMPT COMPLET ==="
     Rails.logger.debug prompt
@@ -198,20 +205,35 @@ def send_to_claude(language, code)
   Rails.logger.debug prompt
   Rails.logger.debug "=== FIN CLAUDE ==="
 
-  response = client.messages.create(
-    model: "claude-3-5-sonnet-20241022",
-    max_tokens: 2000,
-    messages: [
-      {
-        role: "user",
-        content: prompt
-      }
-    ]
-  )
+  begin
+    Rails.logger.debug "=== AVANT APPEL CLAUDE ==="
 
-  response.content[0].text
-rescue => e
-  "Erreur lors de l'appel à Claude : #{e.message}"
+    response = client.messages.create(
+      model: "claude-3-5-sonnet-20241022",
+      max_tokens: 2000,
+      messages: [
+        {
+          role: "user",
+          content: prompt
+        }
+      ]
+    )
+
+    Rails.logger.debug "=== RÉPONSE CLAUDE BRUTE ==="
+    Rails.logger.debug response.inspect
+    Rails.logger.debug "=== CONTENU CLAUDE ==="
+    Rails.logger.debug response.content[0].text
+    Rails.logger.debug "=== FIN DEBUG CLAUDE ==="
+
+    return response.content[0].text
+
+  rescue => e
+    Rails.logger.error "=== ERREUR CLAUDE ==="
+    Rails.logger.error e.message
+    Rails.logger.error e.backtrace.join("\n")
+    Rails.logger.error "=== FIN ERREUR ==="
+    return "Erreur lors de l'appel à Claude : #{e.message}"
+  end
 end
 
 def generate_tests(language, code)
@@ -499,5 +521,60 @@ def get_smell_patterns(language)
   else
     "• Long Method : >30 lignes\n• Magic Numbers : Nombres sans explication\n• Bad Naming : Variables non explicites\n• Complex Logic : Conditions multiples"
   end
+end
+
+def build_openai_improved_prompt(language, code)
+  <<~PROMPT
+    Tu es un expert QA senior avec 15 ans d'expérience. Analyse ce code #{language} avec rigueur professionnelle mais équité.
+
+    BARÈMES ÉQUILIBRÉS (inspirés de Claude) :
+    • Sécurité : Pas de failles = 7-8/10, Quelques risques = 4-6/10, Failles critiques = 1-3/10, Exemplaire = 9-10/10
+    • Performance : Code simple correct = 6-7/10, Problèmes = 3-5/10, Optimisé = 8-10/10
+    • Lisibilité : Code lisible = 6-7/10, Variables a,b,c = 3-4/10, Exemplaire = 8-10/10
+    • Tests : Code simple sans tests = 4-5/10, Non testable = 1-3/10, Tests complets = 8-10/10
+
+    ADAPTATION AU CONTEXTE :
+    - Code simple (1-5 lignes) : Noter la fonctionnalité, pas l'architecture manquante
+    - Code complexe : Appliquer tous les critères strictement
+    - Être constructif dans les critiques
+
+    SPÉCIFICITÉS #{language.upcase} :
+    #{get_compact_language_rules(language)}
+
+    FORMAT OBLIGATOIRE (IDENTIQUE À CLAUDE) :
+
+    📊 Score qualité globale : X/10
+    [Justification courte et équilibrée]
+
+    🧾 Résumé global :
+    [2-3 phrases sur l'objectif et structure]
+
+    🛡️ Sécurité : X/10
+    [Analyse adaptée au contexte du code]
+
+    ⚙️ Performance : X/10
+    [Évaluation réaliste pour ce type de code]
+
+    📐 Lisibilité et qualité du code : X/10
+    [Critiques constructives avec contexte]
+
+    🧪 Recommandations de tests : X/10
+    [Suggestions adaptées à la complexité]
+
+    🔧 Proposition de correction :
+    [Code amélioré concret OU "Code fonctionnel - Suggestions d'amélioration :" + liste]
+
+    CODE :
+    ```#{language.downcase}
+    #{code}
+    ```
+
+    RÈGLES IMPORTANTES :
+    - TOUS les scores sont des NOMBRES ENTIERS (1-10)
+    - Score global = moyenne arrondie des 4 catégories
+    - Pour code simple : se concentrer sur la fonctionnalité
+    - Pour code complexe : analyser architecture et bonnes pratiques
+    - TOUJOURS proposer une amélioration concrète ou des suggestions utiles
+  PROMPT
 end
 end

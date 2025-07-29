@@ -8,7 +8,7 @@ class Analysis < ApplicationRecord
   validate :code_or_file_present
 
   # Callback pour traiter le fichier avant sauvegarde
-  before_validation :process_uploaded_file
+  before_validation :process_uploaded_file, on: :create
 
   private
 
