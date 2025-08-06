@@ -30,11 +30,6 @@ def create
     # Récupère le provider choisi
     ai_provider = params[:ai_provider] || "openai"
 
-    # AJOUT DEBUG
-    Rails.logger.debug "=== AI PROVIDER CHOISI ==="
-    Rails.logger.debug "ai_provider: #{ai_provider}"
-    Rails.logger.debug "params[:ai_provider]: #{params[:ai_provider]}"
-
     # Appelle la bonne API
 response = case ai_provider
 when "claude"
@@ -50,13 +45,7 @@ else
 end
 
     result = @analysis.update(ai_feedback: response, ai_provider: ai_provider)
-    # AJOUTE ÇA POUR DEBUG
-Rails.logger.debug "=== UPDATE ANALYSIS ==="
-Rails.logger.debug "Response length: #{response.length}"
-Rails.logger.debug "Update result: #{result}"
-Rails.logger.debug "Analysis errors: #{@analysis.errors.full_messages}"
-Rails.logger.debug "AI feedback présent? #{@analysis.reload.ai_feedback.present?}"
-Rails.logger.debug "=== FIN UPDATE ==="
+
     redirect_to @analysis
   else
     render :new
@@ -66,22 +55,18 @@ end
   def show
     @analysis = Analysis.find(params[:id])
 
-    # Debug pour identifier les problèmes de parsing
-    Rails.logger.debug "=== DEBUGGING SCORES ==="
-    Rails.logger.debug "AI Feedback: #{@analysis.ai_feedback}"
-
     # Protection contre ai_feedback nil
     if @analysis.ai_feedback.blank?
       @score = nil
       @scores = {}
-      Rails.logger.debug "AI Feedback est vide ou nil"
+
       return
     end
 
     # Score global - regex ultra-précise
     global_match = @analysis.ai_feedback.match(/📊.*?Score.*?(\d{1,2})\/10/mi)
     @score = global_match ? global_match[1].to_i : nil
-    Rails.logger.debug "Score global détecté: #{@score}"
+
 
     # Scores par catégorie avec regex strictes
     @scores = {}
@@ -102,7 +87,7 @@ end
     testing_match = @analysis.ai_feedback.match(/🧪.*?test.*?(\d{1,2})\/10/mi)
     @scores[:testing] = testing_match[1].to_i if testing_match
 
-    Rails.logger.debug "Scores détectés: #{@scores}"
+
   end
 
   private
@@ -118,15 +103,6 @@ end
     )
 
     prompt = build_openai_improved_prompt(language, code)
-
-    Rails.logger.debug "=== PROMPT COMPLET ==="
-    Rails.logger.debug prompt
-    Rails.logger.debug "=== FIN PROMPT ==="
-
-    Rails.logger.debug "=== DEBUG COMPLET ==="
-  Rails.logger.debug "Code length: #{code.length} caractères"
-  Rails.logger.debug "Prompt length: #{prompt.length} caractères"
-  Rails.logger.debug "Language: #{language}"
 
     response = client.chat(
       parameters: {
@@ -201,12 +177,8 @@ def send_to_claude(language, code)
 
   prompt = build_ultimate_prompt(language, code)
 
-  Rails.logger.debug "=== CLAUDE PROMPT ==="
-  Rails.logger.debug prompt
-  Rails.logger.debug "=== FIN CLAUDE ==="
-
   begin
-    Rails.logger.debug "=== AVANT APPEL CLAUDE ==="
+
 
     response = client.messages.create(
       model: "claude-3-5-sonnet-20241022",
@@ -219,19 +191,10 @@ def send_to_claude(language, code)
       ]
     )
 
-    Rails.logger.debug "=== RÉPONSE CLAUDE BRUTE ==="
-    Rails.logger.debug response.inspect
-    Rails.logger.debug "=== CONTENU CLAUDE ==="
-    Rails.logger.debug response.content[0].text
-    Rails.logger.debug "=== FIN DEBUG CLAUDE ==="
-
     return response.content[0].text
 
   rescue => e
-    Rails.logger.error "=== ERREUR CLAUDE ==="
-    Rails.logger.error e.message
-    Rails.logger.error e.backtrace.join("\n")
-    Rails.logger.error "=== FIN ERREUR ==="
+
     return "Erreur lors de l'appel à Claude : #{e.message}"
   end
 end
@@ -240,10 +203,6 @@ def generate_tests(language, code)
   client = Anthropic::Client.new
 
   prompt = build_tests_prompt(language, code)
-
-  Rails.logger.debug "=== TESTS PROMPT ==="
-  Rails.logger.debug prompt
-  Rails.logger.debug "=== FIN TESTS ==="
 
   response = client.messages.create(
     model: "claude-3-5-sonnet-20241022",
@@ -266,10 +225,6 @@ def improve_code(language, code)
 
   prompt = build_improve_prompt(language, code)
 
-  Rails.logger.debug "=== IMPROVE PROMPT ==="
-  Rails.logger.debug prompt
-  Rails.logger.debug "=== FIN IMPROVE ==="
-
   response = client.messages.create(
     model: "claude-3-5-sonnet-20241022",
     max_tokens: 2000,
@@ -290,10 +245,6 @@ def detect_code_smells(language, code)
   client = Anthropic::Client.new
 
   prompt = build_smells_prompt(language, code)
-
-  Rails.logger.debug "=== SMELLS PROMPT ==="
-  Rails.logger.debug prompt
-  Rails.logger.debug "=== FIN SMELLS ==="
 
   response = client.messages.create(
     model: "claude-3-5-sonnet-20241022",
@@ -554,6 +505,7 @@ def build_openai_improved_prompt(language, code)
 
     ⚙️ Performance : X/10
     [Évaluation réaliste pour ce type de code]
+
 
     📐 Lisibilité et qualité du code : X/10
     [Critiques constructives avec contexte]
