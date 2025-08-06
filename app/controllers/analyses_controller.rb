@@ -298,6 +298,12 @@ end
 
     📋 Tests générés automatiquement
 
+    📊 Score : X/10
+    [Évaluation de la facilité à tester ce code]
+
+    🧪 Recommandations de tests : X/10
+    [Score basé sur la complexité et le nombre de tests nécessaires]
+
     🧪 Framework : #{test_framework}
 
     🎯 Scénarios testés :
@@ -426,6 +432,9 @@ def build_smells_prompt(language, code)
 
     FORMAT OBLIGATOIRE :
 
+    📊 Score : X/10
+    [Synthèse basée sur le nombre et gravité des smells]
+
     👃 Code Smells détectés
 
     🎯 Nombre de smells trouvés : X
@@ -456,6 +465,7 @@ def build_smells_prompt(language, code)
     - Localiser précisément chaque smell
     - Expliquer l'impact de chaque problème
     - Conseils pédagogiques pour comprendre
+    - Score 10/10 = code parfait, 1/10 = code très problématique
   PROMPT
 end
 
@@ -476,57 +486,60 @@ end
 
 def build_openai_improved_prompt(language, code)
   <<~PROMPT
-    Tu es un expert QA senior avec 15 ans d'expérience. Analyse ce code #{language} avec rigueur professionnelle mais équité.
+    Tu es un expert QA pour une analyse rapide et bienveillante. Sois plus indulgent que dans une revue de code stricte.
 
-    BARÈMES ÉQUILIBRÉS (inspirés de Claude) :
-    • Sécurité : Pas de failles = 7-8/10, Quelques risques = 4-6/10, Failles critiques = 1-3/10, Exemplaire = 9-10/10
-    • Performance : Code simple correct = 6-7/10, Problèmes = 3-5/10, Optimisé = 8-10/10
-    • Lisibilité : Code lisible = 6-7/10, Variables a,b,c = 3-4/10, Exemplaire = 8-10/10
-    • Tests : Code simple sans tests = 4-5/10, Non testable = 1-3/10, Tests complets = 8-10/10
+    BARÈMES GÉNÉREUX pour analyse rapide :
+    • Sécurité : Code sans failles évidentes = 8-9/10, Quelques risques = 6-7/10, Failles critiques = 3-5/10
+    • Performance : Code fonctionnel = 7-8/10, Problèmes légers = 5-6/10, Problèmes majeurs = 3-4/10
+    • Lisibilité : Code compréhensible = 7-8/10, Variables a,b,c = 5-6/10, Très clair = 9-10/10
+    • Tests : Code sans tests = 5-6/10, Quelques tests = 7-8/10, Tests complets = 9-10/10
 
-    ADAPTATION AU CONTEXTE :
-    - Code simple (1-5 lignes) : Noter la fonctionnalité, pas l'architecture manquante
-    - Code complexe : Appliquer tous les critères strictement
-    - Être constructif dans les critiques
+    ADAPTATION - ANALYSE RAPIDE :
+    - Être constructif et encourageant
+    - Se concentrer sur les points les plus importants
+    - Éviter les critiques mineures pour du code fonctionnel
+    - Donner des scores généreux si pas de problème majeur
+
+    ⚠️ Pour code mathématique simple : Ne pas inventer de problèmes inexistants
 
     SPÉCIFICITÉS #{language.upcase} :
     #{get_compact_language_rules(language)}
 
-    FORMAT OBLIGATOIRE (IDENTIQUE À CLAUDE) :
+    FORMAT OBLIGATOIRE :
 
     📊 Score qualité globale : X/10
-    [Justification courte et équilibrée]
+    [Justification encourageante]
 
     🧾 Résumé global :
-    [2-3 phrases sur l'objectif et structure]
+    [2-3 phrases positives sur l'objectif]
 
     🛡️ Sécurité : X/10
-    [Analyse adaptée au contexte du code]
+    [Analyse bienveillante - pas d'invention de failles]
 
     ⚙️ Performance : X/10
-    [Évaluation réaliste pour ce type de code]
+    [Évaluation généreuse pour code fonctionnel]
+
 
 
     📐 Lisibilité et qualité du code : X/10
-    [Critiques constructives avec contexte]
+    [Critiques constructives mais encourageantes]
 
     🧪 Recommandations de tests : X/10
-    [Suggestions adaptées à la complexité]
+    [Suggestions simples]
 
     🔧 Proposition de correction :
-    [Code amélioré concret OU "Code fonctionnel - Suggestions d'amélioration :" + liste]
+    [Amélioration légère OU "Code fonctionnel - Quelques suggestions optionnelles"]
 
     CODE :
     ```#{language.downcase}
     #{code}
     ```
 
-    RÈGLES IMPORTANTES :
-    - TOUS les scores sont des NOMBRES ENTIERS (1-10)
-    - Score global = moyenne arrondie des 4 catégories
-    - Pour code simple : se concentrer sur la fonctionnalité
-    - Pour code complexe : analyser architecture et bonnes pratiques
-    - TOUJOURS proposer une amélioration concrète ou des suggestions utiles
+    RÈGLES pour ANALYSE RAPIDE :
+    - Scores généreux pour code fonctionnel (7-8/10 minimum)
+    - Être encourageant et positif dans les commentaires
+    - Se concentrer sur l'essentiel, éviter les détails mineurs
+    - Toujours finir par quelque chose de positif
   PROMPT
 end
 end

@@ -41,7 +41,7 @@
   </div>
 
   <!-- Score Card (only for standard analyses) -->
-  <% if @analysis.ai_provider.in?(["openai", "claude"]) && @score %>
+  <% if @analysis.ai_provider.in?(["openai", "claude", "tests", "smells"]) && @score %>
     <div class="analysis-card">
       <div class="card-header">📊 Score Global</div>
       <div class="card-content">
