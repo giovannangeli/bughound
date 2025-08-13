@@ -13,6 +13,10 @@
  *= require_tree .
  *= require_self
  */
+ /* FIX: Scroll offset pour navbar fixe */
+html {
+  scroll-padding-top: 80px;
+}
 /* BugHound Modern Interface */
 .analysis-container {
   max-width: 1000px;
