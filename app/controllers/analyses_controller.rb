@@ -24,7 +24,7 @@ end
 def create
   @analysis = Analysis.new(analysis_params)
 
-  if @analysis.save
+    if @analysis.save
     # Attacher l'user si connecté
     @analysis.update(user: current_user) if user_signed_in?
     # Récupère le provider choisi
