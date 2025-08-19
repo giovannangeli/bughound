@@ -106,22 +106,27 @@
       <div class="actions-section">
         <div class="actions-grid">
           <button type="submit" name="ai_provider" value="openai" class="action-button" data-color="#10b981">
+          <i class="fa-solid fa-magnifying-glass"></i>
             Analyse rapide
           </button>
 
           <button type="submit" name="ai_provider" value="claude" class="action-button" data-color="#3b82f6">
+          <i class="fa-solid fa-brain"></i>
             Analyse expert
           </button>
 
           <button type="submit" name="ai_provider" value="tests" class="action-button" data-color="#8b5cf6">
+          <i class="fa-solid fa-list-check"></i>
             Tests automatiques
           </button>
 
           <button type="submit" name="ai_provider" value="smells" class="action-button" data-color="#f59e0b">
+          <i class="fa-solid fa-triangle-exclamation"></i>
             Code smells
           </button>
 
           <button type="submit" name="ai_provider" value="improve" class="action-button action-button-wide" data-color="#ec4899">
+          <i class="fa-solid fa-screwdriver-wrench"></i>
             Refactorisation
           </button>
         </div>
@@ -456,6 +461,11 @@ body {
 .action-button:hover::before { opacity: .06; }
 .action-button:active { transform: translateY(-1px); }
 .action-button-wide { grid-column: 1 / -1; }
+.action-button i {
+  font-size: 1rem;
+  color: inherit;
+  transition: all .25s ease;
+}
 
 /* Loading overlay */
 .loading-overlay { 
