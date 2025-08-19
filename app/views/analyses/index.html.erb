@@ -1,48 +1,400 @@
-<div style="max-width: 900px; margin: auto; padding: 2rem; font-family: sans-serif;">
-  <h1 style="font-size: 2.2rem; margin-bottom: 1.5rem;">📂 Historique des analyses</h1>
+<div class="analyses-container">
+  <div class="analyses-header">
+    <h1 class="analyses-title">Historique des analyses</h1>
+    <p class="analyses-subtitle">Retrouvez toutes vos analyses de code précédentes</p>
+  </div>
 
-<% if @languages.present? %>
-  <div style="margin-bottom: 2rem;">
-    <strong style="display: block; margin-bottom: 1rem;">Filtrer par langage :</strong>
-    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
-      <% @languages.each do |lang| %>
-        <%= link_to lang, analyses_path(language: lang),
-            style: "padding: 0.5rem 1rem; background-color: #ecf0f1; border-radius: 6px; text-decoration: none; color: #2c3e50; font-size: 0.9rem; white-space: nowrap;" %>
+  <div class="analyses-card">
+    <% if @languages.present? %>
+      <div class="filters-section">
+        <h3 class="filters-title">Filtrer par langage</h3>
+        <div class="dropdown-container">
+          <div class="select-wrapper">
+            <select class="language-select" onchange="window.location.href=this.value">
+              <option value="<%= analyses_path %>" <%= 'selected' if params[:language].blank? %>>Tous les langages</option>
+              <% @languages.each do |lang| %>
+                <option value="<%= analyses_path(language: lang) %>" <%= 'selected' if params[:language] == lang %>><%= lang %></option>
+              <% end %>
+            </select>
+            <svg class="select-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="content-section">
+      <% if @analyses.empty? %>
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <h3 class="empty-title">Aucune analyse trouvée</h3>
+          <p class="empty-description">
+            <% if params[:language].present? %>
+              Aucune analyse en <%= params[:language] %> pour le moment.
+            <% else %>
+              Commencez par créer votre première analyse de code !
+            <% end %>
+          </p>
+          <%= link_to new_analysis_path, class: "btn-primary" do %>
+            <i class="fas fa-plus"></i>
+            <span>Nouvelle analyse</span>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="table-container">
+          <table class="analyses-table">
+            <thead>
+              <tr>
+                <th>Titre</th>
+                <th>Langage</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @analyses.each do |analysis| %>
+                <tr class="table-row">
+                  <td class="title-cell">
+                    <div class="title-content">
+                      <%= analysis.title.present? ? analysis.title : "Analyse sans titre" %>
+                    </div>
+                  </td>
+                  <td class="language-cell">
+                    <span class="language-badge"><%= analysis.language %></span>
+                  </td>
+                  <td class="date-cell">
+                    <%= l(analysis.created_at, format: :short) %>
+                  </td>
+                  <td class="action-cell">
+                    <%= link_to analysis_path(analysis), class: "btn-view" do %>
+                      <i class="fas fa-eye"></i>
+                      <span>Voir</span>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bottom-actions">
+          <%= link_to new_analysis_path, class: "btn-primary" do %>
+            <i class="fas fa-plus"></i>
+            <span>Nouvelle analyse</span>
+          <% end %>
+        </div>
       <% end %>
-      <%= link_to "Tous", analyses_path,
-          style: "padding: 0.5rem 1rem; background-color: #3498db; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; white-space: nowrap;" %>
     </div>
   </div>
-<% end %>
-
-  <% if @analyses.empty? %>
-    <p>Aucune analyse pour l’instant.</p>
-  <% else %>
-    <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
-      <thead>
-        <tr style="background-color: #f2f2f2;">
-          <th style="padding: 0.75rem; text-align: left;">Titre</th>
-          <th style="padding: 0.75rem; text-align: left;">Langage</th>
-          <th style="padding: 0.75rem; text-align: left;">Date</th>
-          <th style="padding: 0.75rem; text-align: center;">Voir</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @analyses.each do |analysis| %>
-          <tr style="border-top: 1px solid #ddd;">
-            <td style="padding: 0.75rem;"><%= analysis.title %></td>
-            <td style="padding: 0.75rem;"><%= analysis.language %></td>
-            <td style="padding: 0.75rem;"><%= l(analysis.created_at, format: :short) %></td>
-            <td style="padding: 0.75rem; text-align: center;">
-              <%= link_to "👁️", analysis_path(analysis), style: "text-decoration: none; padding: 0.3rem 0.6rem; background: #3498db; color: white; border-radius: 4px;" %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  <% end %>
-
-  <div style="margin-top: 2rem;">
-    <%= link_to "➕ Nouvelle analyse", new_analysis_path, style: "text-decoration: none; background: #2ecc71; color: white; padding: 0.6rem 1rem; border-radius: 5px;" %>
-  </div>
 </div>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', sans-serif; 
+  background: #fafafa; 
+  color: #0a0a0a; 
+  line-height: 1.6; 
+  -webkit-font-smoothing: antialiased; 
+  -moz-osx-font-smoothing: grayscale; 
+}
+
+.analyses-container { max-width: 1000px; margin: 0 auto; padding: 3rem 1.5rem; }
+
+/* Header élégant */
+.analyses-header { text-align: center; margin-bottom: 3rem; }
+.analyses-title { 
+  font-size: 2.5rem; 
+  font-weight: 700; 
+  color: #0a0a0a; 
+  margin-bottom: 0.75rem; 
+  letter-spacing: -0.02em; 
+}
+.analyses-subtitle { 
+  font-size: 1.125rem; 
+  color: #6b7280; 
+  font-weight: 400; 
+}
+
+/* Card principale */
+.analyses-card { 
+  background: white; 
+  border-radius: 20px; 
+  padding: 2.5rem; 
+  box-shadow: 0 4px 25px rgba(0,0,0,0.08); 
+  border: 1px solid #e5e7eb; 
+}
+
+/* Section des filtres */
+.filters-section { margin-bottom: 2.5rem; }
+.filters-title { 
+  font-size: 1rem; 
+  font-weight: 600; 
+  color: #1f2937; 
+  margin-bottom: 1rem; 
+}
+
+/* Dropdown moderne */
+.dropdown-container {
+  max-width: 280px;
+}
+
+.select-wrapper { 
+  position: relative; 
+}
+
+.language-select {
+  width: 100%; 
+  padding: 0.875rem 1.125rem; 
+  padding-right: 2.75rem;
+  font-size: 0.9375rem; 
+  border: 1.5px solid #e5e7eb; 
+  border-radius: 12px; 
+  background: white; 
+  color: #0a0a0a; 
+  transition: all .2s ease;
+  appearance: none;
+  cursor: pointer;
+}
+
+.language-select:focus { 
+  outline: none; 
+  border-color: #3b82f6; 
+  box-shadow: 0 0 0 4px rgba(59,130,246,.08); 
+}
+
+.select-icon { 
+  position: absolute; 
+  right: 1.125rem; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  width: 20px; 
+  height: 20px; 
+  color: #6b7280; 
+  pointer-events: none; 
+}
+
+/* Empty state moderne */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.6;
+}
+.empty-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+}
+.empty-description {
+  font-size: 1rem;
+  color: #6b7280;
+  margin-bottom: 2rem;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Tableau moderne */
+.table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.analyses-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.analyses-table th {
+  background: #f8fafc;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.analyses-table th:last-child {
+  text-align: center;
+}
+
+.table-row {
+  transition: all 0.2s ease;
+}
+
+.table-row:hover {
+  background: #f8fafc;
+}
+
+.table-row td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.title-cell {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.language-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 20px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.date-cell {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.action-cell {
+  text-align: center;
+}
+
+/* Boutons modernes */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+}
+
+.btn-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: #64748b;
+  text-decoration: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-view::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7, #dda0dd, #98d8c8);
+  background-size: 400% 400%;
+  border-radius: 8px;
+  opacity: 0;
+  transition: all .3s ease;
+  animation: gradientShift 3s ease infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: xor;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+}
+
+.btn-view:hover::before {
+  opacity: 1;
+}
+
+.btn-view:hover {
+  background: white;
+  color: #1e293b;
+  border-color: transparent;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Actions du bas */
+.bottom-actions {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .analyses-container { padding: 2rem 1rem; }
+  .analyses-title { font-size: 2rem; }
+  .analyses-card { padding: 1.5rem; }
+  
+  .dropdown-container {
+    max-width: 100%;
+  }
+  
+  .table-container {
+    border-radius: 8px;
+  }
+  
+  .analyses-table th,
+  .analyses-table td {
+    padding: 0.75rem;
+    font-size: 0.8125rem;
+  }
+  
+  .language-badge {
+    padding: 0.1875rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .btn-view {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .btn-view span {
+    display: none;
+  }
+  
+  .empty-state {
+    padding: 3rem 1rem;
+  }
+  
+  .empty-icon {
+    font-size: 3rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .analyses-table {
+    font-size: 0.75rem;
+  }
+  
+  .analyses-table th:nth-child(3),
+  .analyses-table td:nth-child(3) {
+    display: none;
+  }
+}
+</style>
