@@ -7,18 +7,38 @@
   <div class="analyses-card">
     <% if @languages.present? %>
       <div class="filters-section">
-        <h3 class="filters-title">Filtrer par langage</h3>
-        <div class="dropdown-container">
-          <div class="select-wrapper">
-            <select class="language-select" onchange="window.location.href=this.value">
-              <option value="<%= analyses_path %>" <%= 'selected' if params[:language].blank? %>>Tous les langages</option>
-              <% @languages.each do |lang| %>
-                <option value="<%= analyses_path(language: lang) %>" <%= 'selected' if params[:language] == lang %>><%= lang %></option>
-              <% end %>
-            </select>
-            <svg class="select-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
+        <h3 class="filters-title">Filtres</h3>
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label class="filter-label">Langage</label>
+            <div class="select-wrapper">
+              <select class="language-select" onchange="updateFilters('language', this.value)">
+                <option value="">Tous les langages</option>
+                <% @languages.each do |lang| %>
+                  <option value="<%= lang %>" <%= 'selected' if params[:language] == lang %>><%= lang %></option>
+                <% end %>
+              </select>
+              <svg class="select-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label">Type d'analyse</label>
+            <div class="select-wrapper">
+              <select class="language-select" onchange="updateFilters('ai_provider', this.value)">
+                <option value="">Tous les types</option>
+                <option value="openai" <%= 'selected' if params[:ai_provider] == 'openai' %>>Analyse rapide</option>
+                <option value="claude" <%= 'selected' if params[:ai_provider] == 'claude' %>>Analyse expert</option>
+                <option value="tests" <%= 'selected' if params[:ai_provider] == 'tests' %>>Tests automatiques</option>
+                <option value="smells" <%= 'selected' if params[:ai_provider] == 'smells' %>>Code smells</option>
+                <option value="improve" <%= 'selected' if params[:ai_provider] == 'improve' %>>Refactoring</option>
+              </select>
+              <svg class="select-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
           </div>
         </div>
       </div>
@@ -47,6 +67,7 @@
             <thead>
               <tr>
                 <th>Titre</th>
+                <th>Type</th>
                 <th>Langage</th>
                 <th>Date</th>
                 <th>Action</th>
@@ -59,6 +80,13 @@
                     <div class="title-content">
                       <%= analysis.title.present? ? analysis.title : "Analyse sans titre" %>
                     </div>
+                  </td>
+                  <td class="type-cell">
+                    <% type_info = analysis_type_info(analysis.ai_provider) %>
+                    <span class="type-badge" style="background-color: <%= type_info[:color] %>15; color: <%= type_info[:color] %>; border: 1px solid <%= type_info[:color] %>30;">
+                      <i class="fas <%= type_info[:icon] %>"></i>
+                      <%= type_info[:name] %>
+                    </span>
                   </td>
                   <td class="language-cell">
                     <span class="language-badge"><%= analysis.language %></span>
@@ -132,14 +160,29 @@ body {
   font-size: 1rem; 
   font-weight: 600; 
   color: #1f2937; 
-  margin-bottom: 1rem; 
+  margin-bottom: 1.25rem; 
+}
+
+/* Grid de filtres */
+.filters-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
 }
 
 /* Dropdown moderne */
-.dropdown-container {
-  max-width: 280px;
-}
-
 .select-wrapper { 
   position: relative; 
 }
@@ -246,6 +289,21 @@ body {
   color: #1f2937;
 }
 
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.type-badge i {
+  font-size: 0.75rem;
+}
+
 .language-badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
@@ -350,8 +408,9 @@ body {
   .analyses-title { font-size: 2rem; }
   .analyses-card { padding: 1.5rem; }
   
-  .dropdown-container {
-    max-width: 100%;
+  .filters-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
   
   .table-container {
@@ -364,7 +423,7 @@ body {
     font-size: 0.8125rem;
   }
   
-  .language-badge {
+  .language-badge, .type-badge {
     padding: 0.1875rem 0.5rem;
     font-size: 0.75rem;
   }
@@ -393,8 +452,24 @@ body {
   }
   
   .analyses-table th:nth-child(3),
-  .analyses-table td:nth-child(3) {
+  .analyses-table td:nth-child(3),
+  .analyses-table th:nth-child(4),
+  .analyses-table td:nth-child(4) {
     display: none;
   }
 }
 </style>
+
+<script>
+function updateFilters(filterType, value) {
+  const url = new URL(window.location);
+  
+  if (value) {
+    url.searchParams.set(filterType, value);
+  } else {
+    url.searchParams.delete(filterType);
+  }
+  
+  window.location.href = url.toString();
+}
+</script>

@@ -3,18 +3,25 @@ require "openai"
 class AnalysesController < ApplicationController
 def index
   if user_signed_in?
-    # Utilisateur connecté → Ses analyses seulement
-    @analyses = if params[:language].present?
-      current_user.analyses.where(language: params[:language]).order(created_at: :desc)
-    else
-      current_user.analyses.order(created_at: :desc)
-    end
+    # Utilisateur connecté → Ses analyses avec filtres
+    @analyses = current_user.analyses
+    
+    # Filtre par langage
+    @analyses = @analyses.where(language: params[:language]) if params[:language].present?
+    
+    # Filtre par type d'analyse (ai_provider)
+    @analyses = @analyses.where(ai_provider: params[:ai_provider]) if params[:ai_provider].present?
+    
+    # Ordre par date décroissante
+    @analyses = @analyses.order(created_at: :desc)
   else
     # Pas connecté → Redirection vers login
     redirect_to new_user_session_path, notice: "Connectez-vous pour voir votre historique"
     return
   end
-    @languages = ["Bash", "C++", "CSS", "Go", "HTML", "Java", "JavaScript", "PHP", "Python", "Ruby", "Rust", "SQL", "TypeScript"]
+  
+  # Liste des langages disponibles (inchangée)
+  @languages = ["Bash", "C++", "CSS", "Go", "HTML", "Java", "JavaScript", "PHP", "Python", "Ruby", "Rust", "SQL", "TypeScript"]
 end
 
   def new
