@@ -69,6 +69,7 @@
                 <th>Titre</th>
                 <th>Type</th>
                 <th>Langage</th>
+                <th>Score</th>
                 <th>Date</th>
                 <th>Action</th>
               </tr>
@@ -90,6 +91,14 @@
                   </td>
                   <td class="language-cell">
                     <span class="language-badge"><%= analysis.language %></span>
+                  </td>
+                  <td class="score-cell">
+                    <% score = extract_global_score(analysis.ai_feedback, analysis.ai_provider) %>
+                    <% badge_info = score_badge_info(score) %>
+                    <span class="score-badge" style="background-color: <%= badge_info[:bg_color] %>; color: <%= badge_info[:color] %>; border: 1px solid <%= badge_info[:color] %>30;">
+                      <i class="fas fa-chart-line"></i>
+                      <%= badge_info[:text] %>
+                    </span>
                   </td>
                   <td class="date-cell">
                     <%= l(analysis.created_at, format: :short) %>
@@ -256,9 +265,10 @@ body {
   background: white;
 }
 
+/* Headers avec alignement parfait */
 .analyses-table th {
   background: #f8fafc;
-  padding: 1rem 1.25rem;
+  padding: 1rem 1.75rem;
   text-align: left;
   font-weight: 600;
   font-size: 0.875rem;
@@ -266,9 +276,21 @@ body {
   border-bottom: 1px solid #e5e7eb;
 }
 
-.analyses-table th:last-child {
+/* Alignement spécifique des headers */
+.analyses-table th:nth-child(2), /* Type */
+.analyses-table th:nth-child(3), /* Langage */
+.analyses-table th:nth-child(4), /* Score */
+.analyses-table th:nth-child(6) { /* Action */
   text-align: center;
 }
+
+/* Largeurs spécifiques pour équilibrer */
+.analyses-table th:nth-child(1) { width: 25%; } /* Titre */
+.analyses-table th:nth-child(2) { width: 15%; } /* Type */
+.analyses-table th:nth-child(3) { width: 12%; } /* Langage */
+.analyses-table th:nth-child(4) { width: 12%; } /* Score */
+.analyses-table th:nth-child(5) { width: 18%; } /* Date */
+.analyses-table th:nth-child(6) { width: 18%; } /* Action */
 
 .table-row {
   transition: all 0.2s ease;
@@ -279,7 +301,7 @@ body {
 }
 
 .table-row td {
-  padding: 1rem 1.25rem;
+  padding: 1rem 1.75rem;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
 }
@@ -289,7 +311,12 @@ body {
   color: #1f2937;
 }
 
-.type-badge {
+/* Alignement des cellules avec !important pour forcer */
+.type-cell, .language-cell, .score-cell, .action-cell {
+  text-align: center !important;
+}
+
+.type-badge, .score-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
@@ -300,7 +327,7 @@ body {
   white-space: nowrap;
 }
 
-.type-badge i {
+.type-badge i, .score-badge i {
   font-size: 0.75rem;
 }
 
@@ -317,10 +344,6 @@ body {
 .date-cell {
   color: #6b7280;
   font-size: 0.875rem;
-}
-
-.action-cell {
-  text-align: center;
 }
 
 /* Boutons modernes */
@@ -423,7 +446,7 @@ body {
     font-size: 0.8125rem;
   }
   
-  .language-badge, .type-badge {
+  .language-badge, .type-badge, .score-badge {
     padding: 0.1875rem 0.5rem;
     font-size: 0.75rem;
   }
@@ -451,10 +474,13 @@ body {
     font-size: 0.75rem;
   }
   
+  /* Responsive intelligent: garde Titre | Score | Action */
+  .analyses-table th:nth-child(2),
+  .analyses-table td:nth-child(2),
   .analyses-table th:nth-child(3),
   .analyses-table td:nth-child(3),
-  .analyses-table th:nth-child(4),
-  .analyses-table td:nth-child(4) {
+  .analyses-table th:nth-child(5),
+  .analyses-table td:nth-child(5) {
     display: none;
   }
 }
