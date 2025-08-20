@@ -104,10 +104,27 @@
                     <%= l(analysis.created_at, format: :short) %>
                   </td>
                   <td class="action-cell">
-                    <%= link_to analysis_path(analysis), class: "btn-view" do %>
-                      <i class="fas fa-eye"></i>
-                      <span>Voir</span>
-                    <% end %>
+                    <div class="dropdown-container" data-dropdown>
+                      <button class="btn-dropdown" data-dropdown-trigger>
+                        <i class="fas fa-eye"></i>
+                        <span>Voir</span>
+                        <i class="fas fa-chevron-down dropdown-chevron"></i>
+                      </button>
+                      <div class="dropdown-menu" data-dropdown-menu>
+                        <%= link_to analysis_path(analysis), class: "dropdown-item dropdown-item-primary" do %>
+                          <i class="fas fa-eye"></i>
+                          <span>Voir l'analyse</span>
+                        <% end %>
+                        <button class="dropdown-item" onclick="duplicateAnalysis(<%= analysis.id %>)">
+                          <i class="fas fa-copy"></i>
+                          <span>Dupliquer</span>
+                        </button>
+                        <button class="dropdown-item dropdown-item-danger" onclick="deleteAnalysis(<%= analysis.id %>, '<%= analysis.title.present? ? analysis.title : "Analyse sans titre" %>')">
+                          <i class="fas fa-trash"></i>
+                          <span>Supprimer</span>
+                        </button>
+                      </div>
+                    </div>
                   </td>
                 </tr>
               <% end %>
@@ -254,7 +271,6 @@ body {
 
 /* Tableau moderne */
 .table-container {
-  overflow-x: auto;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
 }
@@ -263,12 +279,13 @@ body {
   width: 100%;
   border-collapse: collapse;
   background: white;
+  table-layout: fixed;
 }
 
 /* Headers avec alignement parfait */
 .analyses-table th {
   background: #f8fafc;
-  padding: 1rem 1.75rem;
+  padding: 1rem 1.5rem;
   text-align: left;
   font-weight: 600;
   font-size: 0.875rem;
@@ -284,13 +301,6 @@ body {
   text-align: center;
 }
 
-/* Largeurs spécifiques pour équilibrer */
-.analyses-table th:nth-child(1) { width: 25%; } /* Titre */
-.analyses-table th:nth-child(2) { width: 15%; } /* Type */
-.analyses-table th:nth-child(3) { width: 12%; } /* Langage */
-.analyses-table th:nth-child(4) { width: 12%; } /* Score */
-.analyses-table th:nth-child(5) { width: 18%; } /* Date */
-.analyses-table th:nth-child(6) { width: 18%; } /* Action */
 
 .table-row {
   transition: all 0.2s ease;
@@ -301,7 +311,7 @@ body {
 }
 
 .table-row td {
-  padding: 1rem 1.75rem;
+  padding: 1rem 1.5rem;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
 }
@@ -367,11 +377,18 @@ body {
   box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
 }
 
-.btn-view {
+/* Dropdown Container */
+.dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown Trigger Button - Version compacte */
+.btn-dropdown {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.5rem 1rem;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
   background: transparent;
   color: #64748b;
   text-decoration: none;
@@ -382,9 +399,10 @@ body {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 
-.btn-view::before {
+.btn-dropdown::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -401,16 +419,118 @@ body {
   -webkit-mask-composite: xor;
 }
 
-.btn-view:hover::before {
+.btn-dropdown:hover::before {
   opacity: 1;
 }
 
-.btn-view:hover {
+.btn-dropdown:hover {
   background: white;
   color: #1e293b;
   border-color: transparent;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0,0,0,.1);
+}
+
+.dropdown-chevron {
+  font-size: 0.625rem;
+  margin-left: 0.125rem;
+  transition: transform 0.2s ease;
+}
+
+.dropdown-container.open .dropdown-chevron {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu - Version compacte */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 150px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 0.375rem 0;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px) scale(0.95);
+  transition: all 0.2s ease;
+}
+
+.dropdown-container.open .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+/* Dropdown Items - Version compacte */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  color: #374151;
+  text-decoration: none;
+  background: none;
+  border: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.dropdown-item:hover {
+  background: rgba(59, 130, 246, 0.08);
+  color: #1e293b;
+  transform: scale(1.02);
+}
+
+.dropdown-item i {
+  font-size: 0.8125rem;
+  width: 14px;
+  transition: color 0.2s ease;
+}
+
+/* Primary Item (Voir) avec gradient */
+.dropdown-item-primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.dropdown-item-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7, #dda0dd, #98d8c8);
+  background-size: 400% 400%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  animation: gradientShift 3s ease infinite;
+}
+
+.dropdown-item-primary:hover::before {
+  opacity: 0.1;
+}
+
+.dropdown-item-primary:hover {
+  color: #1e293b;
+  background: transparent;
+}
+
+/* Danger Item (Supprimer) */
+.dropdown-item-danger:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+}
+
+.dropdown-item-danger:hover i {
+  color: #dc2626;
 }
 
 @keyframes gradientShift {
@@ -497,5 +617,54 @@ function updateFilters(filterType, value) {
   }
   
   window.location.href = url.toString();
+}
+
+// Dropdown functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const dropdowns = document.querySelectorAll('[data-dropdown]');
+  
+  dropdowns.forEach(dropdown => {
+    const trigger = dropdown.querySelector('[data-dropdown-trigger]');
+    const menu = dropdown.querySelector('[data-dropdown-menu]');
+    
+    // Toggle dropdown
+    trigger.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Close other dropdowns
+      dropdowns.forEach(d => {
+        if (d !== dropdown) {
+          d.classList.remove('open');
+        }
+      });
+      
+      // Toggle current dropdown
+      dropdown.classList.toggle('open');
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!dropdown.contains(e.target)) {
+        dropdown.classList.remove('open');
+      }
+    });
+    
+    // Prevent menu clicks from closing dropdown immediately
+    menu.addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+  });
+});
+
+// Temporary functions for Dupliquer and Supprimer
+function duplicateAnalysis(analysisId) {
+  alert('🔄 Fonctionnalité "Dupliquer" bientôt disponible !\n\nAnalyse ID: ' + analysisId);
+}
+
+function deleteAnalysis(analysisId, analysisTitle) {
+  if (confirm('🗑️ Êtes-vous sûr de vouloir supprimer l\'analyse :\n\n"' + analysisTitle + '" ?\n\nCette action est irréversible.')) {
+    alert('❌ Fonctionnalité "Supprimer" bientôt disponible !\n\nAnalyse ID: ' + analysisId);
+  }
 }
 </script>
