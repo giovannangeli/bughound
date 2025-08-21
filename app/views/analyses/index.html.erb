@@ -119,15 +119,10 @@
                           <i class="fas fa-share"></i>
                           <span>Partager</span>
                         </button>
-                        <%= link_to analysis_path(analysis), method: :delete, 
-                            class: "dropdown-item dropdown-item-danger",
-                            data: { 
-                              turbo_method: :delete,
-                              turbo_confirm: "🗑️ Êtes-vous sûr de vouloir supprimer '#{analysis.title.present? ? analysis.title : "Analyse sans titre"}' ?\n\nCette action est irréversible."
-                            } do %>
+                        <button class="dropdown-item dropdown-item-danger" onclick="openDeleteModal(<%= analysis.id %>, '<%= analysis.title.present? ? analysis.title : "Analyse sans titre" %>')">
                           <i class="fas fa-trash"></i>
                           <span>Supprimer</span>
-                        <% end %>
+                        </button>
                       </div>
                     </div>
                   </td>
@@ -164,6 +159,32 @@
           <button onclick="downloadAnalysisPDF()" class="share-btn share-btn-secondary">
             <i class="fas fa-file-pdf"></i>
             <span>Télécharger PDF</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de suppression -->
+  <div id="deleteModal" class="share-modal-overlay">
+    <div class="share-modal">
+      <div class="share-modal-header">
+        <h3>🗑️ Supprimer cette analyse</h3>
+        <button onclick="closeDeleteModal()" class="share-modal-close">&times;</button>
+      </div>
+      <div class="share-modal-body">
+        <p id="deleteModalTitle" class="share-modal-title"></p>
+        <p style="color: #dc2626; font-weight: 500; margin-bottom: 1.5rem;">
+          ⚠️ Cette action est irréversible
+        </p>
+        <div class="share-options">
+          <button onclick="confirmDelete()" class="share-btn share-btn-danger">
+            <i class="fas fa-trash"></i>
+            <span>Supprimer définitivement</span>
+          </button>
+          <button onclick="closeDeleteModal()" class="share-btn share-btn-secondary">
+            <i class="fas fa-times"></i>
+            <span>Annuler</span>
           </button>
         </div>
       </div>
@@ -214,7 +235,7 @@
   }
 }
 
-/* Modal de partage */
+/* Modal de partage et suppression */
 .share-modal-overlay {
   display: none;
   position: fixed;
@@ -240,7 +261,7 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   max-width: 400px;
   width: 90%;
-  }
+}
 
 .share-modal-header {
   display: flex;
@@ -310,6 +331,16 @@
 
 .share-btn-secondary:hover {
   background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.share-btn-danger {
+  background: #dc2626;
+  color: white;
+}
+
+.share-btn-danger:hover {
+  background: #b91c1c;
   transform: translateY(-1px);
 }
 
@@ -777,7 +808,6 @@ body {
     display: none;
   }
 }
-
 </style>
 
 <script>
@@ -796,6 +826,7 @@ function updateFilters(filterType, value) {
 // Variables globales
 let currentAnalysisUrl = null;
 let currentAnalysisId = null;
+let currentDeleteId = null;
 let isModalOpen = false;
 
 // DROPDOWNS - VERSION CLICK UNIQUEMENT
@@ -827,12 +858,16 @@ document.addEventListener('click', function(e) {
     });
   }
   
-  // Fermer modal si clic sur overlay
+  // Fermer modals si clic sur overlay
   if (e.target.id === 'shareModal') {
     closeShareModal();
   }
+  if (e.target.id === 'deleteModal') {
+    closeDeleteModal();
+  }
 });
 
+// MODAL DE PARTAGE
 function openShareModal(analysisId, analysisTitle, analysisUrl) {
   currentAnalysisId = analysisId;
   currentAnalysisUrl = analysisUrl;
@@ -844,6 +879,47 @@ function closeShareModal() {
   document.getElementById('shareModal').classList.remove('active');
   isModalOpen = false;
   currentAnalysisUrl = null;
+}
+
+// MODAL DE SUPPRESSION
+function openDeleteModal(analysisId, analysisTitle) {
+  currentDeleteId = analysisId;
+  document.getElementById('deleteModalTitle').textContent = `Analyse: "${analysisTitle}"`;
+  document.getElementById('deleteModal').classList.add('active');
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').classList.remove('active');
+  currentDeleteId = null;
+}
+
+function confirmDelete() {
+  if (currentDeleteId) {
+    // Créer un formulaire invisible pour la suppression
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/analyses/${currentDeleteId}`;
+    form.style.display = 'none';
+    
+    // Ajouter le token CSRF
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'authenticity_token';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+    
+    // Ajouter la méthode DELETE
+    const methodInput = document.createElement('input');
+    methodInput.type = 'hidden';
+    methodInput.name = '_method';
+    methodInput.value = 'delete';
+    form.appendChild(methodInput);
+    
+    // Ajouter au DOM et soumettre
+    document.body.appendChild(form);
+    form.submit();
+  }
 }
 
 // COPIE STYLÉE - FEEDBACK DANS LE BOUTON
