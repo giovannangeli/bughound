@@ -115,14 +115,19 @@
                           <i class="fas fa-eye"></i>
                           <span>Voir l'analyse</span>
                         <% end %>
-                        <button class="dropdown-item" onclick="duplicateAnalysis(<%= analysis.id %>)">
-                          <i class="fas fa-copy"></i>
-                          <span>Dupliquer</span>
-                        </button>
-                        <button class="dropdown-item dropdown-item-danger" onclick="deleteAnalysis(<%= analysis.id %>, '<%= analysis.title.present? ? analysis.title : "Analyse sans titre" %>')">
-                          <i class="fas fa-trash"></i>
-                          <span>Supprimer</span>
-                        </button>
+<%= link_to duplicate_analysis_path(analysis), method: :post, class: "dropdown-item", data: { turbo_method: :post } do %>
+  <i class="fas fa-copy"></i>
+  <span>Dupliquer</span>
+<% end %>
+<%= link_to analysis_path(analysis), method: :delete, 
+    class: "dropdown-item dropdown-item-danger",
+    data: { 
+      turbo_method: :delete,
+      turbo_confirm: "🗑️ Êtes-vous sûr de vouloir supprimer '#{analysis.title.present? ? analysis.title : "Analyse sans titre"}' ?\n\nCette action est irréversible."
+    } do %>
+  <i class="fas fa-trash"></i>
+  <span>Supprimer</span>
+<% end %>
                       </div>
                     </div>
                   </td>
@@ -144,6 +149,48 @@
 </div>
 
 <style>
+/* Messages d'alerte */
+.alert {
+  padding: 1rem 1.5rem;
+  margin: 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  position: relative;
+  animation: slideDown 0.3s ease;
+  /* AUTO-DISPARITION FLUIDE */
+  animation: slideDown 0.3s ease, slideUp 0.5s ease 3s forwards;
+}
+
+@keyframes slideUp {
+  0% { 
+    opacity: 1; 
+    max-height: 100px; 
+    margin: 1rem; 
+    padding: 1rem 1.5rem; 
+  }
+  100% { 
+    opacity: 0; 
+    max-height: 0; 
+    margin: 0; 
+    padding: 0 1.5rem; 
+  }
+}
+.alert-success {
+  background: #10b981;
+  color: white;
+  border: 1px solid #059669;
+}
+
+.alert-danger {
+  background: #ef4444;
+  color: white;
+  border: 1px solid #dc2626;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { 
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', sans-serif; 
@@ -619,52 +666,46 @@ function updateFilters(filterType, value) {
   window.location.href = url.toString();
 }
 
-// Dropdown functionality
-document.addEventListener('DOMContentLoaded', function() {
+// Dropdown functionality - VERSION PROPRE
+function initDropdowns() {
   const dropdowns = document.querySelectorAll('[data-dropdown]');
   
   dropdowns.forEach(dropdown => {
     const trigger = dropdown.querySelector('[data-dropdown-trigger]');
-    const menu = dropdown.querySelector('[data-dropdown-menu]');
     
-    // Toggle dropdown
-    trigger.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
+    // Nettoyer les anciens event listeners en clonant
+    if (trigger) {
+      const newTrigger = trigger.cloneNode(true);
+      trigger.parentNode.replaceChild(newTrigger, trigger);
       
-      // Close other dropdowns
-      dropdowns.forEach(d => {
-        if (d !== dropdown) {
-          d.classList.remove('open');
-        }
+      // Ajouter le nouveau listener
+      newTrigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Close other dropdowns
+        dropdowns.forEach(d => {
+          if (d !== dropdown) {
+            d.classList.remove('open');
+          }
+        });
+        
+        // Toggle current dropdown
+        dropdown.classList.toggle('open');
       });
-      
-      // Toggle current dropdown
-      dropdown.classList.toggle('open');
-    });
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-      if (!dropdown.contains(e.target)) {
-        dropdown.classList.remove('open');
-      }
-    });
-    
-    // Prevent menu clicks from closing dropdown immediately
-    menu.addEventListener('click', function(e) {
-      e.stopPropagation();
-    });
+    }
   });
-});
-
-// Temporary functions for Dupliquer and Supprimer
-function duplicateAnalysis(analysisId) {
-  alert('🔄 Fonctionnalité "Dupliquer" bientôt disponible !\n\nAnalyse ID: ' + analysisId);
+  
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('[data-dropdown]')) {
+      dropdowns.forEach(dropdown => {
+        dropdown.classList.remove('open');
+      });
+    }
+  });
 }
 
-function deleteAnalysis(analysisId, analysisTitle) {
-  if (confirm('🗑️ Êtes-vous sûr de vouloir supprimer l\'analyse :\n\n"' + analysisTitle + '" ?\n\nCette action est irréversible.')) {
-    alert('❌ Fonctionnalité "Supprimer" bientôt disponible !\n\nAnalyse ID: ' + analysisId);
-  }
-}
+document.addEventListener('DOMContentLoaded', initDropdowns);
+document.addEventListener('turbo:load', initDropdowns);
 </script>
