@@ -5,6 +5,7 @@ Rails.application.routes.draw do
 resources :analyses, only: [:index, :new, :create, :show, :destroy] do
   member do
     get 'share'
+    get 'download_pdf'
   end
 end
 

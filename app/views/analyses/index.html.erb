@@ -795,6 +795,7 @@ function updateFilters(filterType, value) {
 
 // Variables globales
 let currentAnalysisUrl = null;
+let currentAnalysisId = null;
 let isModalOpen = false;
 
 // DROPDOWNS - VERSION CLICK UNIQUEMENT
@@ -833,6 +834,7 @@ document.addEventListener('click', function(e) {
 });
 
 function openShareModal(analysisId, analysisTitle, analysisUrl) {
+  currentAnalysisId = analysisId;
   currentAnalysisUrl = analysisUrl;
   document.getElementById('shareModalTitle').textContent = `Analyse: "${analysisTitle}"`;
   document.getElementById('shareModal').classList.add('active');
@@ -878,23 +880,23 @@ function copyAnalysisUrl() {
 
 // PDF STYLÉ
 function downloadAnalysisPDF() {
-  const button = document.querySelector('.share-btn-secondary');
-  const originalHTML = button.innerHTML;
-  
-  // Animation de traitement
-  button.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Génération...</span>';
-  button.style.background = '#3b82f6';
-  button.style.color = 'white';
-  
-  setTimeout(() => {
-    button.innerHTML = '<i class="fas fa-info-circle"></i><span>Bientôt disponible !</span>';
-    button.style.background = '#8b5cf6';
+  if (currentAnalysisId) {
+    // Téléchargement du PDF
+    window.open(`/analyses/${currentAnalysisId}/download_pdf.pdf`, '_blank');
+    
+    // Feedback visuel
+    const button = document.querySelector('.share-btn-secondary');
+    const originalHTML = button.innerHTML;
+    
+    button.innerHTML = '<i class="fas fa-check"></i><span>PDF généré !</span>';
+    button.style.background = '#059669';
+    button.style.color = 'white';
     
     setTimeout(() => {
       button.innerHTML = originalHTML;
       button.style.background = '#f3f4f6';
       button.style.color = '#374151';
-    }, 2500);
-  }, 1500);
+    }, 2000);
+  }
 }
 </script>

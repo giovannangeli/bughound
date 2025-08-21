@@ -129,6 +129,40 @@ def destroy
   end
 end
 
+def download_pdf
+  @analysis = find_user_analysis(params[:id])
+  return unless @analysis
+  
+  # Calcul des scores pour le PDF (comme dans show)
+  if @analysis.ai_feedback.present?
+    global_match = @analysis.ai_feedback.match(/.*?Score.*?(\d{1,2})\/10/mi)
+    @score = global_match ? global_match[1].to_i : nil
+    
+    @scores = {}
+    security_match = @analysis.ai_feedback.match(/.*?Sécurité.*?(\d{1,2})\/10/mi)
+    @scores[:security] = security_match[1].to_i if security_match
+    
+    performance_match = @analysis.ai_feedback.match(/.*?Performance.*?(\d{1,2})\/10/mi)
+    @scores[:performance] = performance_match[1].to_i if performance_match
+    
+    readability_match = @analysis.ai_feedback.match(/.*?Lisibilité.*?(\d{1,2})\/10/mi)
+    @scores[:readability] = readability_match[1].to_i if readability_match
+    
+    testing_match = @analysis.ai_feedback.match(/.*?test.*?(\d{1,2})\/10/mi)
+    @scores[:testing] = testing_match[1].to_i if testing_match
+  end
+  
+  respond_to do |format|
+    format.html { redirect_to analysis_path(@analysis) }
+format.pdf do
+  render pdf: "analyse_#{@analysis.id}",
+         encoding: "UTF-8",
+         margin: { top: 15, left: 15, right: 15, bottom: 20 },
+         footer: { center: "BugHound • Analyse ##{@analysis.id} • [page]/[topage]" }
+end
+  end
+end
+
 private
 
 # Méthode sécurisée pour trouver une analyse

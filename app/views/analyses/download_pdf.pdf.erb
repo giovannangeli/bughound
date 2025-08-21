@@ -1,0 +1,50 @@
+<div style="font-family: Arial, sans-serif; padding: 20px;">
+  <h1 style="color: #2d3748; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
+  BugHound - Rapport d'Analyse
+</h1>
+  
+  <div style="margin: 20px 0;">
+    <h3>Informations</h3>
+    <p><strong>Titre:</strong> <%= @analysis.title.present? ? @analysis.title : "Analyse sans titre" %></p>
+    <p><strong>Langage:</strong> <%= @analysis.language %></p>
+    <p><strong>Date d'analyse:</strong> <%= @analysis.created_at.strftime("%d/%m/%Y à %H:%M") %></p>
+    <p><strong>Généré le:</strong> <%= Time.now.in_time_zone("Europe/Paris").strftime("%d/%m/%Y à %H:%M") %></p>
+  </div>
+
+  <% if @score %>
+  <div style="margin: 20px 0; text-align: center;">
+    <h3>Score Global</h3>
+    <div style="font-size: 48px; font-weight: bold; color: <%= @score >= 8 ? '#059669' : @score >= 6 ? '#f59e0b' : '#dc2626' %>;">
+      <%= @score %>/10
+    </div>
+  </div>
+  <% end %>
+
+  <div style="margin: 20px 0;">
+    <h3>Code analysé</h3>
+    <pre style="background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-wrap: break-word;"><%= @analysis.code %></pre>
+  </div>
+
+  <% if @analysis.ai_feedback.present? %>
+<div style="margin: 20px 0;">
+  <h3>Analyse</h3>
+  <div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #667eea;">
+    <%
+      # Nettoyer les emojis pour le PDF
+      clean_feedback = @analysis.ai_feedback.to_s
+      clean_feedback = clean_feedback.gsub(/📊/, '')
+      clean_feedback = clean_feedback.gsub(/🛡️/, '')
+      clean_feedback = clean_feedback.gsub(/⚙️/, '')
+      clean_feedback = clean_feedback.gsub(/📐/, '')
+      clean_feedback = clean_feedback.gsub(/🧪/, '')
+      clean_feedback = clean_feedback.gsub(/🔧/, '')
+      clean_feedback = clean_feedback.gsub(/🧾/, '')
+      clean_feedback = clean_feedback.gsub(/👃/, '')
+      clean_feedback = clean_feedback.gsub(/✨/, '')
+      clean_feedback = clean_feedback.strip
+    %>
+    <%= simple_format(clean_feedback) %>
+  </div>
+</div>
+<% end %>
+</div>
