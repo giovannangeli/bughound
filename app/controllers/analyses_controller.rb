@@ -99,23 +99,13 @@ end
 
   # À ajouter dans ton AnalysesController (après la méthode show)
 
-def duplicate
-  @original_analysis = find_user_analysis(params[:id])
+def share
+  @analysis = find_user_analysis(params[:id])
+  return unless @analysis # Protection si find_user_analysis redirige
   
-  # Génération du nouveau titre avec (Copie)
-  new_title = generate_duplicate_title(@original_analysis.title)
-  
-  # Création de la copie
-  @new_analysis = @original_analysis.dup
-  @new_analysis.title = new_title
-  @new_analysis.created_at = Time.current
-  @new_analysis.updated_at = Time.current
-  
-  if @new_analysis.save
-    redirect_to @new_analysis, notice: "✅ Analyse dupliquée avec succès !"
-  else
-    redirect_to analyses_path, alert: "❌ Erreur lors de la duplication"
-  end
+  # Pour l'instant, simple redirection vers l'analyse
+  # On développera la vraie fonctionnalité partage après
+  redirect_to @analysis, notice: "🔗 Fonctionnalité partage bientôt disponible !"
 end
 
 def destroy
@@ -153,33 +143,7 @@ rescue ActiveRecord::RecordNotFound
   return
 end
 
-# Génération intelligente du titre de copie
-def generate_duplicate_title(original_title)
-  base_title = original_title.present? ? original_title : "Analyse sans titre"
-  
-  # Si déjà une copie, incrémenter le numéro
-  if base_title.match(/\(Copie( \d+)?\)$/)
-    # Extraire le titre de base sans (Copie X)
-    clean_title = base_title.gsub(/\s*\(Copie( \d+)?\)$/, '')
-    
-    # Trouver le prochain numéro disponible
-    existing_copies = current_user.analyses.where("title LIKE ?", "#{clean_title} (Copie%)")
-    copy_numbers = existing_copies.map do |analysis|
-      match = analysis.title.match(/\(Copie( (\d+))?\)$/)
-      match ? (match[2] ? match[2].to_i : 1) : 0
-    end
-    
-    next_number = copy_numbers.empty? ? 1 : copy_numbers.max + 1
-    next_number == 1 ? "#{clean_title} (Copie)" : "#{clean_title} (Copie #{next_number})"
-  else
-    # Première copie
-    "#{base_title} (Copie)"
-  end
-end
-
-  
-
- def analysis_params
+  def analysis_params
   params.require(:analysis).permit(:title, :language, :code, :uploaded_file, :ai_provider)
 end
 

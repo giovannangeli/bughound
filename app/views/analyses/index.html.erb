@@ -115,9 +115,9 @@
                           <i class="fas fa-eye"></i>
                           <span>Voir l'analyse</span>
                         <% end %>
-<%= link_to duplicate_analysis_path(analysis), method: :post, class: "dropdown-item", data: { turbo_method: :post } do %>
-  <i class="fas fa-copy"></i>
-  <span>Dupliquer</span>
+<%= link_to share_analysis_path(analysis), class: "dropdown-item" do %>
+  <i class="fas fa-share"></i>
+  <span>Partager</span>
 <% end %>
 <%= link_to analysis_path(analysis), method: :delete, 
     class: "dropdown-item dropdown-item-danger",
