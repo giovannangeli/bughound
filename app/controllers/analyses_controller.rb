@@ -101,11 +101,12 @@ end
 
 def share
   @analysis = find_user_analysis(params[:id])
-  return unless @analysis # Protection si find_user_analysis redirige
+  return unless @analysis
   
-  # Pour l'instant, simple redirection vers l'analyse
-  # On développera la vraie fonctionnalité partage après
-  redirect_to @analysis, notice: "🔗 Fonctionnalité partage bientôt disponible !"
+  respond_to do |format|
+    format.html { redirect_to @analysis } # Pour navigation normale
+    format.json { render json: { url: analysis_url(@analysis), title: @analysis.title } }
+  end
 end
 
 def destroy

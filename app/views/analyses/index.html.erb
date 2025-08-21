@@ -115,19 +115,19 @@
                           <i class="fas fa-eye"></i>
                           <span>Voir l'analyse</span>
                         <% end %>
-<%= link_to share_analysis_path(analysis), class: "dropdown-item" do %>
-  <i class="fas fa-share"></i>
-  <span>Partager</span>
-<% end %>
-<%= link_to analysis_path(analysis), method: :delete, 
-    class: "dropdown-item dropdown-item-danger",
-    data: { 
-      turbo_method: :delete,
-      turbo_confirm: "🗑️ Êtes-vous sûr de vouloir supprimer '#{analysis.title.present? ? analysis.title : "Analyse sans titre"}' ?\n\nCette action est irréversible."
-    } do %>
-  <i class="fas fa-trash"></i>
-  <span>Supprimer</span>
-<% end %>
+                        <button class="dropdown-item" onclick="openShareModal(<%= analysis.id %>, '<%= analysis.title.present? ? analysis.title : "Analyse sans titre" %>', '<%= analysis_url(analysis) %>')">
+                          <i class="fas fa-share"></i>
+                          <span>Partager</span>
+                        </button>
+                        <%= link_to analysis_path(analysis), method: :delete, 
+                            class: "dropdown-item dropdown-item-danger",
+                            data: { 
+                              turbo_method: :delete,
+                              turbo_confirm: "🗑️ Êtes-vous sûr de vouloir supprimer '#{analysis.title.present? ? analysis.title : "Analyse sans titre"}' ?\n\nCette action est irréversible."
+                            } do %>
+                          <i class="fas fa-trash"></i>
+                          <span>Supprimer</span>
+                        <% end %>
                       </div>
                     </div>
                   </td>
@@ -146,6 +146,29 @@
       <% end %>
     </div>
   </div>
+
+  <!-- Modal de partage -->
+  <div id="shareModal" class="share-modal-overlay">
+    <div class="share-modal">
+      <div class="share-modal-header">
+        <h3>🔗 Partager cette analyse</h3>
+        <button onclick="closeShareModal()" class="share-modal-close">&times;</button>
+      </div>
+      <div class="share-modal-body">
+        <p id="shareModalTitle" class="share-modal-title"></p>
+        <div class="share-options">
+          <button onclick="copyAnalysisUrl()" class="share-btn share-btn-primary">
+            <i class="fas fa-copy"></i>
+            <span>Copier le lien</span>
+          </button>
+          <button onclick="downloadAnalysisPDF()" class="share-btn share-btn-secondary">
+            <i class="fas fa-file-pdf"></i>
+            <span>Télécharger PDF</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>
@@ -156,25 +179,9 @@
   border-radius: 8px;
   font-weight: 500;
   position: relative;
-  animation: slideDown 0.3s ease;
-  /* AUTO-DISPARITION FLUIDE */
   animation: slideDown 0.3s ease, slideUp 0.5s ease 3s forwards;
 }
 
-@keyframes slideUp {
-  0% { 
-    opacity: 1; 
-    max-height: 100px; 
-    margin: 1rem; 
-    padding: 1rem 1.5rem; 
-  }
-  100% { 
-    opacity: 0; 
-    max-height: 0; 
-    margin: 0; 
-    padding: 0 1.5rem; 
-  }
-}
 .alert-success {
   background: #10b981;
   color: white;
@@ -191,6 +198,126 @@
   from { transform: translateY(-20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+@keyframes slideUp {
+  0% { 
+    opacity: 1; 
+    max-height: 100px; 
+    margin: 1rem; 
+    padding: 1rem 1.5rem; 
+  }
+  100% { 
+    opacity: 0; 
+    max-height: 0; 
+    margin: 0; 
+    padding: 0 1.5rem; 
+  }
+}
+
+/* Modal de partage */
+.share-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+}
+
+.share-modal-overlay.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.share-modal {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+  }
+
+.share-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.share-modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.share-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0.25rem;
+}
+
+.share-modal-body {
+  padding: 1.5rem;
+}
+
+.share-modal-title {
+  margin-bottom: 1.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.share-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.share-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.share-btn-primary {
+  background: #10b981;
+  color: white;
+}
+
+.share-btn-primary:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.share-btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.share-btn-secondary:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { 
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', sans-serif; 
@@ -347,7 +474,6 @@ body {
 .analyses-table th:nth-child(6) { /* Action */
   text-align: center;
 }
-
 
 .table-row {
   transition: all 0.2s ease;
@@ -651,6 +777,7 @@ body {
     display: none;
   }
 }
+
 </style>
 
 <script>
@@ -666,46 +793,108 @@ function updateFilters(filterType, value) {
   window.location.href = url.toString();
 }
 
-// Dropdown functionality - VERSION PROPRE
-function initDropdowns() {
-  const dropdowns = document.querySelectorAll('[data-dropdown]');
-  
-  dropdowns.forEach(dropdown => {
-    const trigger = dropdown.querySelector('[data-dropdown-trigger]');
+// Variables globales
+let currentAnalysisUrl = null;
+let isModalOpen = false;
+
+// DROPDOWNS - VERSION CLICK UNIQUEMENT
+document.addEventListener('click', function(e) {
+  // Gestion des dropdowns
+  if (e.target.closest('[data-dropdown-trigger]')) {
+    e.preventDefault();
+    e.stopPropagation();
     
-    // Nettoyer les anciens event listeners en clonant
-    if (trigger) {
-      const newTrigger = trigger.cloneNode(true);
-      trigger.parentNode.replaceChild(newTrigger, trigger);
-      
-      // Ajouter le nouveau listener
-      newTrigger.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Close other dropdowns
-        dropdowns.forEach(d => {
-          if (d !== dropdown) {
-            d.classList.remove('open');
-          }
-        });
-        
-        // Toggle current dropdown
-        dropdown.classList.toggle('open');
-      });
+    const dropdown = e.target.closest('[data-dropdown]');
+    const isOpen = dropdown.classList.contains('open');
+    
+    // Fermer tous les autres dropdowns
+    document.querySelectorAll('[data-dropdown]').forEach(d => {
+      d.classList.remove('open');
+    });
+    
+    // Toggle le dropdown actuel seulement
+    if (!isOpen) {
+      dropdown.classList.add('open');
     }
-  });
+    return;
+  }
   
-  // Close dropdowns when clicking outside
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('[data-dropdown]')) {
-      dropdowns.forEach(dropdown => {
-        dropdown.classList.remove('open');
-      });
-    }
+  // Fermer dropdowns si clic ailleurs
+  if (!e.target.closest('[data-dropdown]')) {
+    document.querySelectorAll('[data-dropdown]').forEach(d => {
+      d.classList.remove('open');
+    });
+  }
+  
+  // Fermer modal si clic sur overlay
+  if (e.target.id === 'shareModal') {
+    closeShareModal();
+  }
+});
+
+function openShareModal(analysisId, analysisTitle, analysisUrl) {
+  currentAnalysisUrl = analysisUrl;
+  document.getElementById('shareModalTitle').textContent = `Analyse: "${analysisTitle}"`;
+  document.getElementById('shareModal').classList.add('active');
+}
+
+function closeShareModal() {
+  document.getElementById('shareModal').classList.remove('active');
+  isModalOpen = false;
+  currentAnalysisUrl = null;
+}
+
+// COPIE STYLÉE - FEEDBACK DANS LE BOUTON
+function copyAnalysisUrl() {
+  if (!currentAnalysisUrl) return;
+  
+  const button = document.querySelector('.share-btn-primary');
+  const originalHTML = button.innerHTML;
+  
+  navigator.clipboard.writeText(currentAnalysisUrl).then(() => {
+    // Animation de succès
+    button.innerHTML = '<i class="fas fa-check"></i><span>Lien copié !</span>';
+    button.style.background = '#059669';
+    button.style.transform = 'scale(1.05)';
+    
+    setTimeout(() => {
+      button.innerHTML = originalHTML;
+      button.style.background = '#10b981';
+      button.style.transform = 'scale(1)';
+    }, 2000);
+    
+  }).catch(() => {
+    // Fallback stylé
+    button.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Erreur copie</span>';
+    button.style.background = '#f59e0b';
+    
+    setTimeout(() => {
+      const textToCopy = prompt('Copiez ce lien :', currentAnalysisUrl);
+      button.innerHTML = originalHTML;
+      button.style.background = '#10b981';
+    }, 1000);
   });
 }
 
-document.addEventListener('DOMContentLoaded', initDropdowns);
-document.addEventListener('turbo:load', initDropdowns);
+// PDF STYLÉ
+function downloadAnalysisPDF() {
+  const button = document.querySelector('.share-btn-secondary');
+  const originalHTML = button.innerHTML;
+  
+  // Animation de traitement
+  button.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Génération...</span>';
+  button.style.background = '#3b82f6';
+  button.style.color = 'white';
+  
+  setTimeout(() => {
+    button.innerHTML = '<i class="fas fa-info-circle"></i><span>Bientôt disponible !</span>';
+    button.style.background = '#8b5cf6';
+    
+    setTimeout(() => {
+      button.innerHTML = originalHTML;
+      button.style.background = '#f3f4f6';
+      button.style.color = '#374151';
+    }, 2500);
+  }, 1500);
+}
 </script>
