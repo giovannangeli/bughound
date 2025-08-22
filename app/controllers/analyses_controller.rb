@@ -150,16 +150,41 @@ def download_pdf
     
     testing_match = @analysis.ai_feedback.match(/.*?test.*?(\d{1,2})\/10/mi)
     @scores[:testing] = testing_match[1].to_i if testing_match
+    
+# NOUVEAU : Nettoyer TOUS les emojis pour le PDF
+@clean_feedback = @analysis.ai_feedback.to_s
+@clean_feedback = @clean_feedback.gsub(/📊/, '')
+@clean_feedback = @clean_feedback.gsub(/🛡️/, '')
+@clean_feedback = @clean_feedback.gsub(/⚙️/, '')
+@clean_feedback = @clean_feedback.gsub(/📐/, '')
+@clean_feedback = @clean_feedback.gsub(/🧪/, '')
+@clean_feedback = @clean_feedback.gsub(/🔧/, '')
+@clean_feedback = @clean_feedback.gsub(/🧾/, '')
+@clean_feedback = @clean_feedback.gsub(/👃/, '')
+@clean_feedback = @clean_feedback.gsub(/✨/, '')
+@clean_feedback = @clean_feedback.gsub(/📋/, '')
+@clean_feedback = @clean_feedback.gsub(/🎯/, '')
+@clean_feedback = @clean_feedback.gsub(/💻/, '')
+@clean_feedback = @clean_feedback.gsub(/📚/, '')
+@clean_feedback = @clean_feedback.gsub(/🔴/, '')
+@clean_feedback = @clean_feedback.gsub(/🟡/, '')
+@clean_feedback = @clean_feedback.gsub(/🔍/, '')
+@clean_feedback = @clean_feedback.gsub(/🔢/, '')
+@clean_feedback = @clean_feedback.gsub(/📝/, '')
+@clean_feedback = @clean_feedback.gsub(/🌀/, '')
+@clean_feedback = @clean_feedback.gsub(/🎓/, '')
+@clean_feedback = @clean_feedback.gsub(/🚀/, '')
+@clean_feedback = @clean_feedback.strip
   end
   
   respond_to do |format|
     format.html { redirect_to analysis_path(@analysis) }
-format.pdf do
-  render pdf: "analyse_#{@analysis.id}",
-         encoding: "UTF-8",
-         margin: { top: 15, left: 15, right: 15, bottom: 20 },
-         footer: { center: "BugHound • Analyse ##{@analysis.id} • [page]/[topage]" }
-end
+    format.pdf do
+      render pdf: "analyse_#{@analysis.id}",
+             encoding: "UTF-8",
+             margin: { top: 15, left: 15, right: 15, bottom: 20 },
+             footer: { center: "BugHound • Analyse ##{@analysis.id} • [page]/[topage]" }
+    end
   end
 end
 

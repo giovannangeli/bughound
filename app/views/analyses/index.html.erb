@@ -101,7 +101,7 @@
                     </span>
                   </td>
                   <td class="date-cell">
-                    <%= l(analysis.created_at, format: :short) %>
+                    <%= analysis.created_at.in_time_zone("Europe/Paris").strftime("%d/%m/%Y à %H:%M") %>
                   </td>
                   <td class="action-cell">
                     <div class="dropdown-container" data-dropdown>
