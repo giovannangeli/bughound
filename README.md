@@ -17,7 +17,7 @@ Pensée comme un **agent QA intelligent**, elle fournit un retour structuré, p�
 ## 🛠️ Stack technique
 
 - **Backend** : Ruby on Rails 7.1, PostgreSQL, Devise  
-- **Frontend** : Hotwire (Turbo + Stimulus), SCSS custom, Prism.js pour le code highlight  
+- **Frontend** : JavaScript (Stimulus + Turbo / Hotwire), Prism.js (code highlighting), SCSS custom  
 - **IA** : intégration **OpenAI GPT-4** et **Anthropic Claude 3.5**  
 - **Autres** : WickedPDF pour l’export PDF, Dotenv pour la gestion des clés API  
 
