@@ -1,187 +1,222 @@
-<div class="analysis-container">
-  <!-- Header Card -->
-  <div class="analysis-card">
-    <div class="card-header">
-      <h1 style="margin: 0; font-size: 1.5rem; color: #2d3748;"><%= @analysis.title %></h1>
-    </div>
-    <div class="card-content">
-      <div style="display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;">
-        <div>
-          <strong>Langage :</strong>
-          <span style="background: #e2e8f0; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 500;">
-            <%= @analysis.language %>
-          </span>
-        </div>
-        <div>
-          <strong>Analysé par :</strong>
+<div class="analysis-container-premium">
+  <div class="analysis-card-premium">
+    
+    <!-- Header unifié avec partage -->
+    <div class="analysis-header-premium">
+      <div class="analysis-meta">
+        <h1 class="analysis-title-premium"><%= @analysis.title %></h1>
+        <div class="analysis-badges">
+          <span class="lang-badge-premium"><%= @analysis.language %></span>
           <% if @analysis.ai_provider == "claude" %>
-            <span style="background: #fed7d7; color: #c53030; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 500;">
-              ⚡ Claude (Expert)
-            </span>
+            <span class="provider-badge-premium claude">⚡ Claude (Expert)</span>
           <% elsif @analysis.ai_provider == "tests" %>
-            <span style="background: #e9d8fd; color: #6b46c1; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 500;">
-              📋 Tests Automatiques
-            </span>
+            <span class="provider-badge-premium tests">📋 Tests Automatiques</span>
           <% elsif @analysis.ai_provider == "improve" %>
-            <span style="background: #fbb6ce; color: #be185d; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 500;">
-              ✨ Amélioration Auto
-            </span>
+            <span class="provider-badge-premium improve">✨ Amélioration Auto</span>
           <% elsif @analysis.ai_provider == "smells" %>
-            <span style="background: #fecaca; color: #dc2626; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 500;">
-              👃 Code Smells
-            </span>
+            <span class="provider-badge-premium smells">👃 Code Smells</span>
           <% else %>
-            <span style="background: #d1fae5; color: #059669; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 500;">
-              🤖 OpenAI (Standard)
-            </span>
+            <span class="provider-badge-premium openai">🤖 OpenAI (Standard)</span>
           <% end %>
         </div>
       </div>
+      
+      <!-- Bouton partage -->
+      <div class="dropdown-container-premium" data-dropdown>
+        <button class="btn-share-premium" data-dropdown-trigger>
+          <i class="fas fa-share"></i>
+          <span>Partager</span>
+          <i class="fas fa-chevron-down dropdown-chevron"></i>
+        </button>
+        <div class="dropdown-menu-premium" data-dropdown-menu>
+          <button class="dropdown-item-premium" onclick="copyAnalysisUrl()">
+            <i class="fas fa-copy"></i>
+            <span>Copier le lien</span>
+          </button>
+          <button class="dropdown-item-premium" onclick="downloadAnalysisPDF()">
+            <i class="fas fa-file-pdf"></i>
+            <span>Télécharger PDF</span>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- Score Card (only for standard analyses) -->
-  <% if @analysis.ai_provider.in?(["openai", "claude", "tests", "smells"]) && @score %>
-    <div class="analysis-card">
-      <div class="card-header">📊 Score Global</div>
-      <div class="card-content">
-        <div style="text-align: center; padding: 2rem;">
-          <div style="background: <%= @score >= 8 ? '#d5f4e6' : @score >= 6 ? '#fff3cd' : '#f8d7da' %>;
-                      color: <%= @score >= 8 ? '#27ae60' : @score >= 6 ? '#f39c12' : '#e74c3c' %>;
-                      padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem;">
-            <h2 style="font-size: 2rem; margin: 0 0 0.5rem 0;"><%= @score %>/10</h2>
-            <p style="margin: 0; font-size: 1rem; opacity: 0.8;">
+    <!-- Score Hero (si applicable) -->
+    <% if @analysis.ai_provider.in?(["openai", "claude", "tests", "smells"]) && @score %>
+      <div class="score-section-premium">
+        <div class="score-hero-premium">
+          <div class="score-display-premium" data-score="<%= @score %>">
+            <span class="score-number-premium"><%= @score %>/10</span>
+            <span class="score-message-premium">
               <%= case @score
                   when 8..10 then "Excellent travail ! 🎉"
                   when 6..7 then "Bon code, quelques améliorations possibles 👍"
                   when 4..5 then "Code correct mais perfectible 🔧"
                   else "Attention, des améliorations importantes sont nécessaires ⚠️"
                   end %>
-            </p>
+            </span>
           </div>
         </div>
-
-        <!-- Detailed Scores -->
+        
+        <!-- Scores détaillés horizontaux -->
         <% if @scores.present? %>
-          <h3 style="margin-bottom: 1rem;">🧪 Détail par catégorie :</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+          <div class="scores-detail-premium">
             <% @scores.each do |key, score| %>
               <% label = {
                 security: "🛡️ Sécurité",
-                performance: "⚙️ Performance",
+                performance: "⚙️ Performance", 
                 readability: "📐 Lisibilité",
                 testing: "🧪 Tests"
               }[key] %>
-              <% color = score <= 4 ? "#e74c3c" : score <= 7 ? "#f39c12" : "#27ae60" %>
-              <div style="display: flex; align-items: center; padding: 1rem; border: 1px solid #e1e5e9; border-radius: 8px;">
-                <div style="width: 12px; height: 12px; border-radius: 50%; background-color: <%= color %>; margin-right: 0.75rem;"></div>
-                <div>
-                  <strong><%= label %> :</strong>&nbsp;
-                  <span style="color: <%= color %>; font-weight: 600;"><%= score %>/10</span>
-                </div>
+              <div class="score-item-premium" data-score="<%= score %>">
+                <span class="score-label-premium"><%= label %></span>
+                <span class="score-value-premium"><%= score %>/10</span>
               </div>
             <% end %>
           </div>
         <% end %>
       </div>
-    </div>
-  <% end %>
+    <% end %>
 
-  <!-- Code Card -->
-  <div class="analysis-card">
-    <div class="card-header">💻 Code analysé</div>
-    <div class="card-content">
-      <pre class="code-block"><code class="language-<%= @analysis.language.downcase %>"><%= @analysis.code %></code></pre>
-    </div>
-  </div>
-
-  <!-- Analysis Results Card -->
-  <% if @analysis.ai_feedback.present? %>
-    <div class="analysis-card">
-      <div class="card-header">
-        <% if @analysis.ai_provider == "tests" %>
-          🧪 Tests générés automatiquement
-        <% elsif @analysis.ai_provider == "improve" %>
-          ✨ Code amélioré automatiquement
-        <% elsif @analysis.ai_provider == "smells" %>
-          👃 Code Smells détectés
-        <% else %>
-          🤖 Retour de l'agent QA
-        <% end %>
+    <!-- Code collapsible -->
+    <div class="code-section-premium">
+      <button class="code-toggle-premium" onclick="toggleCode()">
+        <i class="fas fa-code code-icon"></i>
+        <span>Code analysé</span>
+        <i class="fas fa-chevron-down code-chevron"></i>
+      </button>
+      <div class="code-content-premium" style="display: none;">
+        <pre class="code-block"><code class="language-<%= @analysis.language.downcase %>"><%= @analysis.code %></code></pre>
       </div>
-      <div class="card-content">
-        <div style="background: #f8f9fa; padding: 1.5rem; border-left: 4px solid #007bff; border-radius: 4px; font-family: system-ui; line-height: 1.6;">
-          <%
-            # Simple clean feedback - no complex parsing
-            clean_feedback = @analysis.ai_feedback.to_s
+    </div>
 
-            # For standard analyses, remove global score section
+    <!-- Feedback Section -->
+    <% if @analysis.ai_feedback.present? %>
+      <div class="feedback-section-premium">
+        <h3 class="feedback-title-premium">
+          <% if @analysis.ai_provider == "tests" %>
+            🧪 Tests générés automatiquement
+          <% elsif @analysis.ai_provider == "improve" %>
+            ✨ Code amélioré automatiquement
+          <% elsif @analysis.ai_provider == "smells" %>
+            👃 Code Smells détectés
+          <% else %>
+            🤖 Retour de l'agent QA
+          <% end %>
+        </h3>
+        <div class="feedback-content-premium">
+          <%
+            # Clean feedback comme dans ton code existant
+            clean_feedback = @analysis.ai_feedback.to_s
             if @analysis.ai_provider.in?(["openai", "claude"])
               clean_feedback = clean_feedback.gsub(/📊.*?Score.*?\d{1,2}\/10.*?\n/mi, "")
               clean_feedback = clean_feedback.gsub(/🔧.*$/m, "")
             end
-
             clean_feedback = clean_feedback.strip
           %>
           <%= simple_format(clean_feedback, {}, wrapper_tag: "div") %>
         </div>
       </div>
-    </div>
 
-    <!-- Simple Correction Section -->
-    <% if @analysis.ai_provider.in?(["openai", "claude"]) && @analysis.ai_feedback.include?("🔧") %>
-      <div class="analysis-card">
-        <div class="card-header">🔧 Proposition de correction</div>
-        <div class="card-content">
-          <% correction_section = @analysis.ai_feedback.match(/🔧.*$/m) %>
-          <% if correction_section %>
-            <div style="background: #f4f6f6; padding: 1.5rem; border-left: 4px solid #5dade2; border-radius: 4px;">
+      <!-- Correction Section -->
+      <% if @analysis.ai_provider.in?(["openai", "claude"]) && @analysis.ai_feedback.include?("🔧") %>
+        <div class="correction-section-premium">
+          <h3 class="correction-title-premium">🔧 Proposition de correction</h3>
+          <div class="correction-content-premium">
+            <% correction_section = @analysis.ai_feedback.match(/🔧.*$/m) %>
+            <% if correction_section %>
               <%= simple_format(correction_section.to_s.strip, {}, wrapper_tag: "div") %>
-            </div>
-          <% end %>
+            <% end %>
+          </div>
         </div>
-      </div>
-    <% end %>
+      <% end %>
 
-  <% else %>
-    <!-- Error Card -->
-    <div class="analysis-card">
-      <div class="card-content">
-        <div style="background-color: #f8d7da; padding: 1.5rem; border-left: 5px solid #e74c3c; border-radius: 6px;">
-          <h2 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.6rem; color: #e74c3c;">
-            ⚠️ Analyse échouée
-          </h2>
-          <p style="margin: 0.5rem 0; color: #721c24;">
-            L'analyse IA n'a pas pu être effectuée. Cela peut être dû à :
-          </p>
-          <ul style="color: #721c24; margin: 0.5rem 0; padding-left: 1.5rem;">
+    <% else %>
+      <!-- Error Section -->
+      <div class="error-section-premium">
+        <div class="error-content-premium">
+          <h3 class="error-title-premium">⚠️ Analyse échouée</h3>
+          <p>L'analyse IA n'a pas pu être effectuée. Cela peut être dû à :</p>
+          <ul>
             <li>Fichier trop volumineux (> 1000 lignes)</li>
             <li>Problème de connexion à l'API</li>
             <li>Timeout de l'API</li>
             <li>Code dans un format non reconnu</li>
           </ul>
-          <p style="margin: 0.5rem 0 0 0; color: #721c24;">
-            <strong>Solution :</strong> Essayez avec un fichier plus petit ou collez directement le code.
-          </p>
+          <p><strong>Solution :</strong> Essayez avec un fichier plus petit ou collez directement le code.</p>
         </div>
       </div>
-    </div>
-  <% end %>
+    <% end %>
 
-  <!-- Navigation Buttons -->
-  <div class="analysis-card">
-    <div class="card-content">
-      <div style="display: flex; gap: 1rem; justify-content: center;">
-        <%= link_to "Nouvelle analyse", new_analysis_path,
-            style: "text-decoration: none; background: #007bff; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 500; transition: all 0.2s;" %>
-        <%= link_to "Voir toutes les analyses", analyses_path,
-            style: "text-decoration: none; background: #6c757d; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 500; transition: all 0.2s;" %>
-      </div>
+    <!-- Navigation Buttons -->
+    <div class="navigation-premium">
+      <%= link_to "Nouvelle analyse", new_analysis_path, class: "btn-primary-premium" %>
+      <%= link_to "Voir toutes les analyses", analyses_path, class: "btn-secondary-premium" %>
     </div>
+
   </div>
 </div>
 
 <script>
+// Code collapsible toggle
+function toggleCode() {
+  const content = document.querySelector('.code-content-premium');
+  const chevron = document.querySelector('.code-chevron');
+  
+  if (content.style.display === 'none') {
+    content.style.display = 'block';
+    chevron.style.transform = 'rotate(180deg)';
+  } else {
+    content.style.display = 'none';
+    chevron.style.transform = 'rotate(0deg)';
+  }
+}
+
+// Dropdown functionality (réutilise ton code existant)
+document.addEventListener('click', function(e) {
+  if (e.target.closest('[data-dropdown-trigger]')) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const dropdown = e.target.closest('[data-dropdown]');
+    const isOpen = dropdown.classList.contains('open');
+    
+    document.querySelectorAll('[data-dropdown]').forEach(d => {
+      d.classList.remove('open');
+    });
+    
+    if (!isOpen) {
+      dropdown.classList.add('open');
+    }
+    return;
+  }
+  
+  if (!e.target.closest('[data-dropdown]')) {
+    document.querySelectorAll('[data-dropdown]').forEach(d => {
+      d.classList.remove('open');
+    });
+  }
+});
+
+// Fonctions de partage (à adapter avec tes variables)
+function copyAnalysisUrl() {
+  const currentUrl = window.location.href;
+  navigator.clipboard.writeText(currentUrl).then(() => {
+    // Feedback visuel
+    const button = document.querySelector('.dropdown-item-premium');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i><span>Lien copié !</span>';
+    setTimeout(() => {
+      button.innerHTML = originalText;
+    }, 2000);
+  });
+}
+
+function downloadAnalysisPDF() {
+  const analysisId = '<%= @analysis.id %>';
+  window.open(`/analyses/${analysisId}/download_pdf.pdf`, '_blank');
+}
+
 // Initialize Prism.js for syntax highlighting
 document.addEventListener('DOMContentLoaded', function() {
   if (window.Prism) {
