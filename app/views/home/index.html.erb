@@ -76,17 +76,21 @@
         .logo {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.10rem;
             text-decoration: none;
-            color: 
-#2d3748;
+            color: #000000;
             font-weight: 700;
             font-size: 1.2rem;
         }
 
+        .logo-image {
+    width: 28px;  /* Ajuste selon tes besoins */
+    height: 28px; /* Même hauteur pour garder les proportions */
+    object-fit: contain; /* Pour éviter la déformation */
+}
+
         .logo:hover {
-            color: 
-#667eea;
+            color: #BCCCDC;
             transition: color 0.3s ease;
         }
 
@@ -748,7 +752,7 @@ a[href*="new_user_session"].nav-link:hover {
     <nav class="navbar" id="navbar">
         <div class="navbar-content">
             <%= link_to root_path, class: "logo" do %>
-                <span>🐣</span>
+                <%= image_tag "logo.png", alt: "BugHound Logo", class: "logo-image" %>
                 <span>BugHound</span>
             <% end %>
 
