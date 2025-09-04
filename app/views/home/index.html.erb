@@ -131,23 +131,20 @@ a[href*="new_user_session"].nav-link:hover {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
-        .nav-cta {
-    background: linear-gradient(45deg, 
-#ff6b35, 
-#f7931e);
+      .nav-cta {
+    background: #1f2937;
     color: white !important;
     padding: 0.6rem 1.5rem;
     border-radius: 8px;
     font-weight: 600;
-    box-shadow: 0 4px 15px rgba(255,107,53,0.3);
+    box-shadow: none;
+    transition: all 0.2s ease;
 }
 
 .nav-cta:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255,107,53,0.4);
-    background: linear-gradient(45deg, 
-#f7931e, 
-#ff6b35);
+    background: #374151;
+    transform: none;
+    box-shadow: none;
 }
 
         /* Mobile menu */
@@ -688,31 +685,38 @@ a[href*="new_user_session"].nav-link:hover {
 
 
 .user-btn:hover {
-    background: rgba(102, 126, 234, 0.1) !important;
-    color: #2d3748;
+  background: transparent !important;  /* pas de halo rectangulaire */
+  color: inherit;
 }
 
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            border: 1px solid #e1e5e9;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            min-width: 150px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
 
-        .user-dropdown:hover .dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
+
+    .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    min-width: 150px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1100;
+    pointer-events: none; /* 🚫 clics désactivés par défaut */
+}
+
+.dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto; /* ✅ clics activés quand ouvert */
+}
+
+
+    
 
         .dropdown-item {
             display: block;
@@ -744,6 +748,40 @@ a[href*="new_user_session"].nav-link:hover {
             color: #6a7280;
             opacity: 0.8;
         }
+
+.user-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;                   /* 40px = plus respirant, premium */
+  height: 40px;
+  border-radius: 9999px;         /* cercle parfait */
+  background: radial-gradient(
+    circle at 30% 30%,
+    #6366F1 0%,
+    #3B82F6 60%,
+    #7C3AED 100%
+  );
+  color: #fff;
+  font-weight: 600;              /* semibold : net mais pas massif */
+  font-size: 14px;               /* un poil plus petit = initiales mieux centrées */
+  letter-spacing: 0.2px;         /* micro-ajustement de lisibilité */
+  border: 1px solid rgba(255,255,255,0.25); /* détache du fond clair de la navbar */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);   /* relief subtil */
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.user-avatar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+.user-avatar:focus-visible {
+  outline: 2px solid rgba(99,102,241,0.5);  /* accessibilité clavier */
+  outline-offset: 2px;
+}
+
+
     </style>
 
 </head>
@@ -765,31 +803,51 @@ a[href*="new_user_session"].nav-link:hover {
 <div class="nav-right">
   <% if user_signed_in? %>
     <div class="user-dropdown">
-      <button class="nav-link user-btn">
-        👤
+      <button
+        id="userMenuBtn"
+        class="nav-link user-btn"
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded="false"
+        aria-controls="userMenu"
+        aria-label="Ouvrir le menu utilisateur">
+        <div class="user-avatar" aria-hidden="true">
+          <% if current_user.first_name.present? && current_user.last_name.present? %>
+            <%= current_user.first_name.first.upcase %><%= current_user.last_name.first.upcase %>
+          <% else %>
+            <%= current_user.email.split('@').first[0..1].upcase %>
+          <% end %>
+        </div>
       </button>
-      <div class="dropdown-menu">
-        <div class="user-info">
+
+      <div id="userMenu" class="dropdown-menu" role="menu" aria-labelledby="userMenuBtn">
+        <div class="user-info" role="presentation">
           <strong>
-  <% if current_user.first_name.present? && current_user.last_name.present? %>
-    <%= "#{current_user.first_name.upcase} #{current_user.last_name.upcase}" %>
-  <% else %>
-    <%= current_user.email.split('@').first.upcase %>
-  <% end %>
-</strong>
+            <% if current_user.first_name.present? && current_user.last_name.present? %>
+              <%= "#{current_user.first_name.upcase} #{current_user.last_name.upcase}" %>
+            <% else %>
+              <%= current_user.email.split('@').first.upcase %>
+            <% end %>
+          </strong>
           <small><%= current_user.email %></small>
         </div>
         <hr style="margin: 0.5rem 0; border: none; border-top: 1px solid #e1e5e9;">
-        <%= link_to "Se déconnecter", destroy_user_session_path, data: { "turbo-method": :delete }, class: "dropdown-item" %>
+        <%= link_to "Se déconnecter",
+                    destroy_user_session_path,
+                    data: { "turbo-method": :delete },
+                    class: "dropdown-item",
+                    role: "menuitem" %>
       </div>
     </div>
   <% else %>
     <%= link_to "Se connecter", new_user_session_path, class: "nav-link" %>
   <% end %>
+
   <%= link_to new_analysis_path, class: "nav-link nav-cta" do %>
-    🚀 Analyser
+    Analyser
   <% end %>
 </div>
+
 
             <button class="mobile-menu-btn">☰</button>
         </div>
@@ -988,84 +1046,116 @@ a[href*="new_user_session"].nav-link:hover {
         </div>
     </footer>
 
-    <script>
-        // Navbar scroll effect - Compatible Turbo
-        function initNavbar() {
-            const navbar = document.getElementById('navbar');
-            if (!navbar) return;
+    <!-- Script user menu : version scoped -->
+<!-- Script user menu : version SCOPÉE à la navbar -->
+<!-- Script user menu : ultra-scopé, sans effets de bord -->
+<script>
+  let userMenuController; // pour pouvoir nettoyer proprement
 
-            // Remove existing listener to avoid duplicates
-            window.removeEventListener('scroll', window.navbarScrollHandler);
+  function wireUserMenu() {
+    const btn  = document.getElementById("userMenuBtn");
+    const menu = document.getElementById("userMenu");
+    if (!btn || !menu) return; // rien à faire (ex: page login)
 
-            // Create new scroll handler
-            window.navbarScrollHandler = () => {
-                if (window.scrollY > 50) {
-                    navbar.classList.add('scrolled');
-                } else {
-                    navbar.classList.remove('scrolled');
-                }
-            };
+    // Nettoie d’anciens bindings si on revient via Turbo
+    if (userMenuController) userMenuController.abort();
+    userMenuController = new AbortController();
+    const { signal } = userMenuController;
 
-            window.addEventListener('scroll', window.navbarScrollHandler);
-        }
+    // Ouvrir / fermer sur clic bouton
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = menu.classList.toggle("show");
+      btn.setAttribute("aria-expanded", isOpen);
+      if (isOpen) {
+        const firstItem = menu.querySelector('[role="menuitem"], a, button');
+        if (firstItem) firstItem.focus();
+        // Attache "clic à l'extérieur" UNIQUEMENT quand ouvert
+        const onOutside = (ev) => {
+          if (!menu.contains(ev.target) && !btn.contains(ev.target)) {
+            menu.classList.remove("show");
+            btn.setAttribute("aria-expanded", "false");
+            document.removeEventListener("click", onOutside, true);
+          }
+        };
+        document.addEventListener("click", onOutside, true);
+      }
+    }, { signal });
 
-        // Initialize on page load AND Turbo navigation
-        document.addEventListener('DOMContentLoaded', initNavbar);
-        document.addEventListener('turbo:load', initNavbar);
+    // Échap ferme le menu
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      if (!menu.classList.contains("show")) return;
+      menu.classList.remove("show");
+      btn.setAttribute("aria-expanded", "false");
+      btn.focus();
+    }, { signal });
 
-        // Smooth scrolling pour les ancres
-        function initSmoothScrolling() {
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                });
-            });
-        }
+    // Reset AVANT snapshot Turbo (et retire tous les handlers)
+    document.addEventListener("turbo:before-cache", () => {
+      menu.classList.remove("show");
+      btn.setAttribute("aria-expanded", "false");
+      if (userMenuController) userMenuController.abort();
+      userMenuController = null;
+    }, { once: true });
+  }
 
-        // Animation au scroll
-        function initScrollAnimations() {
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
+  document.addEventListener("DOMContentLoaded", wireUserMenu);
+  document.addEventListener("turbo:load", wireUserMenu);
+  document.addEventListener("turbo:render", wireUserMenu);
+</script>
 
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                    }
-                });
-            }, observerOptions);
 
-            // Observer les cartes de modes
-            document.querySelectorAll('.mode-card').forEach(card => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(30px)';
-                card.style.transition = 'all 0.6s ease';
-                observer.observe(card);
-            });
-        }
 
-        // Initialize all on both events
-        document.addEventListener('DOMContentLoaded', function() {
-            initNavbar();
-            initSmoothScrolling();
-            initScrollAnimations();
-        });
-
-        document.addEventListener('turbo:load', function() {
-            initNavbar();
-            initSmoothScrolling();
-            initScrollAnimations();
-        });
     </script>
-</body>
+
+    <!-- Script pour le menu utilisateur -->
+    <script>
+        function initUserMenu() {
+            const btn  = document.getElementById("userMenuBtn");
+            const menu = document.getElementById("userMenu");
+            if (!btn || !menu) return;
+
+            // éviter doublons si Turbo recharge
+            if (btn.dataset.bound === "true") return;
+            btn.dataset.bound = "true";
+
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const isOpen = menu.classList.toggle("show");
+                btn.setAttribute("aria-expanded", isOpen);
+                if (isOpen) {
+                    const firstItem = menu.querySelector('[role="menuitem"], a, button');
+                    if (firstItem) firstItem.focus();
+                }
+            });
+
+            document.addEventListener("click", (e) => {
+                if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                    menu.classList.remove("show");
+                    btn.setAttribute("aria-expanded", "false");
+                }
+            });
+
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") {
+                    menu.classList.remove("show");
+                    btn.setAttribute("aria-expanded", "false");
+                    btn.focus();
+                }
+            });
+
+            // Reset avant mise en cache Turbo
+            document.addEventListener("turbo:before-cache", () => {
+                menu.classList.remove("show");
+                btn.setAttribute("aria-expanded", "false");
+                btn.removeAttribute("data-bound"); // ✅ permet de re-binder après restaurationxs
+            }, { once: true });
+        }
+
+        document.addEventListener("DOMContentLoaded", initUserMenu);
+        document.addEventListener("turbo:load", initUserMenu);
+        document.addEventListener("turbo:render", initUserMenu);
+    </script>
+  </body>
 </html>
