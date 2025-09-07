@@ -412,12 +412,6 @@ a[href*="new_user_session"].nav-link:hover {
             color: #2d3748;
         }
 
-        .ai-modes {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 4rem;
-        }
 
         .mode-card {
             background: white;
@@ -654,9 +648,6 @@ a[href*="new_user_session"].nav-link:hover {
                 gap: 2rem;
             }
 
-            .ai-modes {
-                grid-template-columns: 1fr;
-            }
 
             .cta-buttons {
                 flex-direction: column;
@@ -756,7 +747,7 @@ a[href*="new_user_session"].nav-link:hover {
   width: 40px;                   /* 40px = plus respirant, premium */
   height: 40px;
   border-radius: 9999px;         /* cercle parfait */
-  background: #f1f5f9
+  background: #f1f5f9;
   color: #475569;
   font-weight: 600;              /* semibold : net mais pas massif */
   font-size: 14px;               /* un poil plus petit = initiales mieux centrées */
@@ -792,6 +783,82 @@ label[for] {
   cursor: pointer;
   pointer-events: auto;
 }
+
+/* --- Carrousel façon Stripe --- */
+
+/* Wrapper pour positionner les flèches */
+.modes-scroller-wrapper {
+  position: relative;
+}
+
+/* Piste horizontale (on réutilise .ai-modes mais en mode carrousel) */
+.ai-modes {
+  display: grid;
+  grid-auto-flow: column;          /* colonnes qui s’enchaînent horizontalement */
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: .5rem 0 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Nombre de cartes visibles selon la largeur */
+@media (min-width: 1024px) {
+  /* 3 cartes visibles (gap = 24px → 2 gaps = 48px) */
+  .ai-modes { grid-auto-columns: calc((100% - 48px) / 3); }
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+  /* 2 cartes visibles */
+  .ai-modes { grid-auto-columns: calc((100% - 24px) / 2); }
+}
+@media (max-width: 639px) {
+  /* 1 carte visible */
+  .ai-modes { grid-auto-columns: 100%; }
+}
+
+/* Chaque carte s’aligne sur le début au scroll */
+.mode-card {
+  scroll-snap-align: start;
+  will-change: transform;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+/* Hover “grossit légèrement” + ombre plus marquée */
+.mode-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+}
+
+/* Flèches */
+.modes-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #111827;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+  z-index: 5;
+}
+.modes-arrow:hover { transform: translateY(-50%) scale(1.05); }
+.modes-arrow.left  { left: -6px; }
+.modes-arrow.right { right: -6px; }
+.modes-arrow.is-disabled { opacity: .35; pointer-events: none; }
+
+/* (Optionnel) Discret scrollbar styling */
+.ai-modes::-webkit-scrollbar { height: 8px; }
+.ai-modes::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 999px; }
+.ai-modes::-webkit-scrollbar-track { background: transparent; }
+
 
 
     </style>
@@ -911,62 +978,83 @@ label[for] {
 </section>
 
     <!-- Features Section -->
-    <section class="features" id="features">
-        <div class="container">
-            <h2 class="section-title">5 Modes d'Analyse Intelligents</h2>
-            <div class="ai-modes">
-                <div class="mode-card openai">
-                    <span class="mode-icon">🤖</span>
-                    <h3 class="mode-title">Analyse Standard</h3>
-                    <p class="mode-description">
-                        Score global + détails par catégorie (Sécurité, Performance, Lisibilité, Tests).
-                        Idéal pour un premier diagnostic rapide.
-                    </p>
-                    <p class="mode-tech">Powered by OpenAI GPT-4</p>
-                </div>
+<section class="features" id="features">
+  <div class="container">
+    <h2 class="section-title">5 Modes d'Analyse Intelligents</h2>
 
-                <div class="mode-card claude">
-                    <span class="mode-icon">⚡</span>
-                    <h3 class="mode-title">Analyse Expert</h3>
-                    <p class="mode-description">
-                        Analyse chirurgicale avec recommandations détaillées.
-                        Pour les développeurs qui veulent aller plus loin.
-                    </p>
-                    <p class="mode-tech">Powered by Anthropic</p>
-                </div>
+    <!-- Wrapper du carrousel avec flèches -->
+    <div class="modes-scroller-wrapper">
+      <button class="modes-arrow left" aria-label="Voir la carte précédente">
+        <!-- chevron gauche -->
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M12.5 4.5L7 10l5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
 
-                <div class="mode-card tests">
-                    <span class="mode-icon">📋</span>
-                    <h3 class="mode-title">Tests Automatiques</h3>
-                    <p class="mode-description">
-                        Génère des tests unitaires complets (Jest, RSpec, pytest, JUnit).
-                        Tests prêts à copier-coller !
-                    </p>
-                    <p class="mode-tech">Auto-détection du framework</p>
-                </div>
-
-                <div class="mode-card improve">
-                    <span class="mode-icon">✨</span>
-                    <h3 class="mode-title">Amélioration Auto</h3>
-                    <p class="mode-description">
-                        Transforme votre code junior en code enterprise-grade.
-                        Refactoring complet avec best practices.
-                    </p>
-                    <p class="mode-tech">Code senior instantané</p>
-                </div>
-
-                <div class="mode-card smells">
-                    <span class="mode-icon">👃</span>
-                    <h3 class="mode-title">Code Smells</h3>
-                    <p class="mode-description">
-                        Détection pédagogique des mauvaises pratiques.
-                        Parfait pour apprendre et progresser.
-                    </p>
-                    <p class="mode-tech">Diagnostic éducatif</p>
-                </div>
-            </div>
+      <!-- Piste du carrousel (défilement horizontal) -->
+      <div id="modesTrack" class="ai-modes">
+        <div class="mode-card openai">
+          <span class="mode-icon">🤖</span>
+          <h3 class="mode-title">Analyse Standard</h3>
+          <p class="mode-description">
+            Score global + détails par catégorie (Sécurité, Performance, Lisibilité, Tests).
+            Idéal pour un premier diagnostic rapide.
+          </p>
+          <p class="mode-tech">Powered by OpenAI GPT-4</p>
         </div>
-    </section>
+
+        <div class="mode-card claude">
+          <span class="mode-icon">⚡</span>
+          <h3 class="mode-title">Analyse Expert</h3>
+          <p class="mode-description">
+            Analyse chirurgicale avec recommandations détaillées.
+            Pour les développeurs qui veulent aller plus loin.
+          </p>
+          <p class="mode-tech">Powered by Anthropic</p>
+        </div>
+
+        <div class="mode-card tests">
+          <span class="mode-icon">📋</span>
+          <h3 class="mode-title">Tests Automatiques</h3>
+          <p class="mode-description">
+            Génère des tests unitaires complets (Jest, RSpec, pytest, JUnit).
+            Tests prêts à copier-coller !
+          </p>
+          <p class="mode-tech">Auto-détection du framework</p>
+        </div>
+
+        <div class="mode-card improve">
+          <span class="mode-icon">✨</span>
+          <h3 class="mode-title">Amélioration Auto</h3>
+          <p class="mode-description">
+            Transforme votre code junior en code enterprise-grade.
+            Refactoring complet avec best practices.
+          </p>
+          <p class="mode-tech">Code senior instantané</p>
+        </div>
+
+        <div class="mode-card smells">
+          <span class="mode-icon">👃</span>
+          <h3 class="mode-title">Code Smells</h3>
+          <p class="mode-description">
+            Détection pédagogique des mauvaises pratiques.
+            Parfait pour apprendre et progresser.
+          </p>
+          <p class="mode-tech">Diagnostic éducatif</p>
+        </div>
+      </div>
+
+      <button class="modes-arrow right" aria-label="Voir la carte suivante">
+        <!-- chevron droit -->
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M7.5 4.5L13 10l-5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+
 
     <!-- Demo Section -->
     <section class="demo" id="demo">
@@ -1069,11 +1157,53 @@ class BugHoundApp {
     this.init();
   }
 
+// Carrousel des 5 cards avec flèches
+initModesCarousel() {
+  const track = document.getElementById('modesTrack');
+  const left  = document.querySelector('.modes-arrow.left');
+  const right = document.querySelector('.modes-arrow.right');
+  if (!track || !left || !right) return;
+
+  const controller = new AbortController();
+  this.controllers.set('modesCarousel', controller);
+  const { signal } = controller;
+
+  // Taille d’un “pas” = largeur d’une carte + gap
+  const getStep = () => {
+    const card = track.querySelector('.mode-card');
+    if (!card) return 0;
+    const styles = getComputedStyle(track);
+    const gap = parseFloat(styles.columnGap || styles.gap) || 24;
+    return card.getBoundingClientRect().width + gap;
+  };
+
+  const updateArrows = () => {
+    const maxScroll = track.scrollWidth - track.clientWidth - 1;
+    left.classList.toggle('is-disabled', track.scrollLeft <= 0);
+    right.classList.toggle('is-disabled', track.scrollLeft >= maxScroll);
+  };
+
+  const scrollByStep = (dir) => {
+    track.scrollBy({ left: dir * getStep(), behavior: 'smooth' });
+  };
+
+  left.addEventListener('click',  () => scrollByStep(-1), { signal });
+  right.addEventListener('click', () => scrollByStep(1),  { signal });
+  track.addEventListener('scroll', updateArrows, { signal, passive: true });
+  window.addEventListener('resize', updateArrows, { signal });
+
+  // init
+  updateArrows();
+}
+
+
   init() {
     this.initNavbar();
     this.initUserMenu();
     this.initSmoothScrolling();
     this.initScrollAnimations();
+    this.initModesCarousel();
+
   }
 
   // Nettoyage sécurisé avant cache Turbo
