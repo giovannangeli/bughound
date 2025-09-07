@@ -756,29 +756,41 @@ a[href*="new_user_session"].nav-link:hover {
   width: 40px;                   /* 40px = plus respirant, premium */
   height: 40px;
   border-radius: 9999px;         /* cercle parfait */
-  background: radial-gradient(
-    circle at 30% 30%,
-    #6366F1 0%,
-    #3B82F6 60%,
-    #7C3AED 100%
-  );
-  color: #fff;
+  background: #f1f5f9
+  color: #475569;
   font-weight: 600;              /* semibold : net mais pas massif */
   font-size: 14px;               /* un poil plus petit = initiales mieux centrées */
   letter-spacing: 0.2px;         /* micro-ajustement de lisibilité */
-  border: 1px solid rgba(255,255,255,0.25); /* détache du fond clair de la navbar */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);   /* relief subtil */
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: all 0.15s ease;
 }
 
 .user-avatar:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  background: #e2e8f0;   /* Légèrement plus foncé au hover */
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .user-avatar:focus-visible {
   outline: 2px solid rgba(99,102,241,0.5);  /* accessibilité clavier */
   outline-offset: 2px;
+}
+
+/* Fix upload fichier - double clic */
+input[type="file"] {
+  pointer-events: auto !important;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+input[type="file"]:hover {
+  opacity: 1;
+}
+
+label[for] {
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 
@@ -1046,116 +1058,180 @@ a[href*="new_user_session"].nav-link:hover {
         </div>
     </footer>
 
-    <!-- Script user menu : version scoped -->
-<!-- Script user menu : version SCOPÉE à la navbar -->
-<!-- Script user menu : ultra-scopé, sans effets de bord -->
-<script>
-  let userMenuController; // pour pouvoir nettoyer proprement
+    <script>
+// ========================================
+// SCRIPT CONSOLIDÉ - Version finale sécurisée
+// ========================================
 
-  function wireUserMenu() {
-    const btn  = document.getElementById("userMenuBtn");
+class BugHoundApp {
+  constructor() {
+    this.controllers = new Map();
+    this.init();
+  }
+
+  init() {
+    this.initNavbar();
+    this.initUserMenu();
+    this.initSmoothScrolling();
+    this.initScrollAnimations();
+  }
+
+  // Nettoyage sécurisé avant cache Turbo
+  cleanup() {
+    this.controllers.forEach(controller => {
+      if (controller && typeof controller.abort === 'function') {
+        controller.abort();
+      }
+    });
+    this.controllers.clear();
+  }
+
+  // Navbar avec scroll effect
+  initNavbar() {
+    const navbar = document.getElementById('navbar');
+    if (!navbar) return;
+
+    const controller = new AbortController();
+    this.controllers.set('navbar', controller);
+
+    const scrollHandler = () => {
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    };
+
+    window.addEventListener('scroll', scrollHandler, { 
+      signal: controller.signal,
+      passive: true 
+    });
+  }
+
+  // Menu utilisateur - Version robuste
+  initUserMenu() {
+    const btn = document.getElementById("userMenuBtn");
     const menu = document.getElementById("userMenu");
-    if (!btn || !menu) return; // rien à faire (ex: page login)
+    if (!btn || !menu) return;
 
-    // Nettoie d’anciens bindings si on revient via Turbo
-    if (userMenuController) userMenuController.abort();
-    userMenuController = new AbortController();
-    const { signal } = userMenuController;
+    const controller = new AbortController();
+    this.controllers.set('userMenu', controller);
+    const { signal } = controller;
 
-    // Ouvrir / fermer sur clic bouton
+    // Toggle menu au clic
     btn.addEventListener("click", (e) => {
+      e.preventDefault();
       e.stopPropagation();
+      
       const isOpen = menu.classList.toggle("show");
       btn.setAttribute("aria-expanded", isOpen);
+      
       if (isOpen) {
+        // Focus sur premier élément
         const firstItem = menu.querySelector('[role="menuitem"], a, button');
         if (firstItem) firstItem.focus();
-        // Attache "clic à l'extérieur" UNIQUEMENT quand ouvert
-        const onOutside = (ev) => {
-          if (!menu.contains(ev.target) && !btn.contains(ev.target)) {
-            menu.classList.remove("show");
-            btn.setAttribute("aria-expanded", "false");
-            document.removeEventListener("click", onOutside, true);
-          }
-        };
-        document.addEventListener("click", onOutside, true);
       }
     }, { signal });
 
-    // Échap ferme le menu
-    document.addEventListener("keydown", (e) => {
-      if (e.key !== "Escape") return;
-      if (!menu.classList.contains("show")) return;
-      menu.classList.remove("show");
-      btn.setAttribute("aria-expanded", "false");
-      btn.focus();
+    // Fermer sur clic extérieur
+    document.addEventListener("click", (e) => {
+      if (!menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.remove("show");
+        btn.setAttribute("aria-expanded", "false");
+      }
     }, { signal });
 
-    // Reset AVANT snapshot Turbo (et retire tous les handlers)
-    document.addEventListener("turbo:before-cache", () => {
-      menu.classList.remove("show");
-      btn.setAttribute("aria-expanded", "false");
-      if (userMenuController) userMenuController.abort();
-      userMenuController = null;
-    }, { once: true });
+    // Fermer sur Echap
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && menu.classList.contains("show")) {
+        menu.classList.remove("show");
+        btn.setAttribute("aria-expanded", "false");
+        btn.focus();
+      }
+    }, { signal });
   }
 
-  document.addEventListener("DOMContentLoaded", wireUserMenu);
-  document.addEventListener("turbo:load", wireUserMenu);
-  document.addEventListener("turbo:render", wireUserMenu);
-</script>
+  // Smooth scrolling pour les ancres
+  initSmoothScrolling() {
+    const controller = new AbortController();
+    this.controllers.set('smoothScroll', controller);
 
+    document.addEventListener('click', (e) => {
+      const anchor = e.target.closest('a[href^="#"]');
+      if (!anchor) return;
 
+      e.preventDefault();
+      const target = document.querySelector(anchor.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    }, { signal: controller.signal });
+  }
 
-    </script>
+  // Animations au scroll
+  initScrollAnimations() {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
 
-    <!-- Script pour le menu utilisateur -->
-    <script>
-        function initUserMenu() {
-            const btn  = document.getElementById("userMenuBtn");
-            const menu = document.getElementById("userMenu");
-            if (!btn || !menu) return;
-
-            // éviter doublons si Turbo recharge
-            if (btn.dataset.bound === "true") return;
-            btn.dataset.bound = "true";
-
-            btn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                const isOpen = menu.classList.toggle("show");
-                btn.setAttribute("aria-expanded", isOpen);
-                if (isOpen) {
-                    const firstItem = menu.querySelector('[role="menuitem"], a, button');
-                    if (firstItem) firstItem.focus();
-                }
-            });
-
-            document.addEventListener("click", (e) => {
-                if (!menu.contains(e.target) && !btn.contains(e.target)) {
-                    menu.classList.remove("show");
-                    btn.setAttribute("aria-expanded", "false");
-                }
-            });
-
-            document.addEventListener("keydown", (e) => {
-                if (e.key === "Escape") {
-                    menu.classList.remove("show");
-                    btn.setAttribute("aria-expanded", "false");
-                    btn.focus();
-                }
-            });
-
-            // Reset avant mise en cache Turbo
-            document.addEventListener("turbo:before-cache", () => {
-                menu.classList.remove("show");
-                btn.setAttribute("aria-expanded", "false");
-                btn.removeAttribute("data-bound"); // ✅ permet de re-binder après restaurationxs
-            }, { once: true });
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
         }
+      });
+    }, observerOptions);
 
-        document.addEventListener("DOMContentLoaded", initUserMenu);
-        document.addEventListener("turbo:load", initUserMenu);
-        document.addEventListener("turbo:render", initUserMenu);
-    </script>
-  </body>
-</html>
+    // Observer les cartes de modes
+    document.querySelectorAll('.mode-card').forEach(card => {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(30px)';
+      card.style.transition = 'all 0.6s ease';
+      observer.observe(card);
+    });
+
+    // Nettoyage de l'observer
+    const controller = new AbortController();
+    this.controllers.set('animations', { abort: () => observer.disconnect() });
+  }
+}
+
+// Instance globale
+let bugHoundApp;
+
+// Initialisation sécurisée
+function initApp() {
+  // Nettoie l'ancienne instance
+  if (bugHoundApp) {
+    bugHoundApp.cleanup();
+  }
+  
+  // Crée nouvelle instance
+  bugHoundApp = new BugHoundApp();
+}
+
+// Events Turbo
+document.addEventListener('DOMContentLoaded', initApp);
+document.addEventListener('turbo:load', initApp);
+document.addEventListener('turbo:render', initApp);
+
+// Nettoyage avant mise en cache
+document.addEventListener('turbo:before-cache', () => {
+  if (bugHoundApp) {
+    bugHoundApp.cleanup();
+    
+    // Reset états visuels
+    const menu = document.getElementById("userMenu");
+    const btn = document.getElementById("userMenuBtn");
+    if (menu && btn) {
+      menu.classList.remove("show");
+      btn.setAttribute("aria-expanded", "false");
+    }
+  }
+});
+</script>

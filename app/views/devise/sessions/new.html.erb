@@ -1,147 +1,188 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Se connecter - BugHound</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <%= csrf_meta_tags %>
-  <%= csp_meta_tag %>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<% content_for :title, "Se connecter - BugHound" %>
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      background: #ffffff;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-    }
+<style>
+  body {
+    background: #f8f9fa;
+    min-height: 100vh;
+    padding: 2rem;
+  }
 
-    .auth-container {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-      padding: 3rem;
-      width: 100%;
-      max-width: 400px;
-      border: 1px solid #e1e5e9;
-    }
+  /* Container principal centré */
+  .auth-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 4rem);
+  }
 
-    .logo {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
+  .auth-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    padding: 3rem;
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #e1e5e9;
+  }
 
-    .logo h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #2d3748;
-      margin-bottom: 0.5rem;
-    }
+  .logo {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
 
-    .logo span {
-      font-size: 2.5rem;
-    }
+  .logo h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+  }
 
-    .form-title {
-      text-align: center;
-      font-size: 1.8rem;
-      font-weight: 600;
-      color: #2d3748;
-      margin-bottom: 2rem;
-    }
+  .logo span {
+    font-size: 2.5rem;
+  }
 
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
+  .form-title {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 2rem;
+  }
 
-    label {
-      display: block;
-      font-weight: 500;
-      color: #374151;
-      margin-bottom: 0.5rem;
-    }
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
 
-    input[type="email"],
-    input[type="password"] {
-      width: 100%;
-      padding: 0.875rem;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 1rem;
-      transition: all 0.2s ease;
-      background: #f9fafb;
-    }
+  label {
+    display: block;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+  }
 
-    input:focus {
-      outline: none;
-      border-color: #667eea;
-      background: white;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
+  input[type="email"],
+  input[type="password"] {
+    width: 100%;
+    padding: 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    background: #f9fafb;
+  }
 
-    .btn-primary {
-      width: 100%;
-      padding: 0.875rem;
-      background: linear-gradient(45deg, #ff6b35, #f7931e);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      margin-top: 1rem;
-    }
+  input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
 
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
-    }
+.btn-primary {
+  width: 100%;
+  padding: 1rem;  /* Changé de 0.875rem à 1rem */
+  background: linear-gradient(45deg, #ff6b35, #f7931e);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
+  text-align: center;  /* Ajouté */
+  display: block;      /* Ajouté */
+}
 
-    .auth-links {
-      text-align: center;
-      margin-top: 2rem;
-      padding-top: 2rem;
-      border-top: 1px solid #e5e7eb;
-    }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+  }
 
-    .auth-links a {
-      color: #667eea;
-      text-decoration: none;
-      font-weight: 500;
-    }
+.auth-links {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+}
 
-    .auth-links a:hover {
-      text-decoration: underline;
-    }
+.auth-links p {
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+}
 
-    .remember-me {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-      color: #6b7280;
-    }
+.auth-links a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  display: inline-block;
+  padding: 0.25rem 0;
+}
 
-    .error-messages {
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 1.5rem;
-      color: #dc2626;
-      text-align: center;
-    }
-  </style>
-</head>
+.auth-links a:hover {
+  text-decoration: underline;
+}
 
-<body>
+.auth-links p:last-child {
+  margin-bottom: 0;
+}
+
+  .remember-me {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+  }
+
+  /* Styles pour les alertes Rails */
+  .alert {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+  }
+
+  .alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+  }
+
+  .alert-danger {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+  }
+
+  /* Uniformiser inputs, boutons et alertes */
+input[type="email"],
+input[type="password"],
+.btn-primary,
+.alert {
+  width: 100%;             /* même largeur */
+  box-sizing: border-box;  /* inclure padding + border dans le calcul */
+  border-radius: 8px;      /* arrondis cohérents */
+}
+
+/* Harmoniser padding */
+input[type="email"],
+input[type="password"] {
+  padding: 1rem;
+  background: #f9fafb;
+  font-size: 1rem;
+}
+
+.alert {
+  padding: 1rem;
+  font-size: 0.95rem;
+  text-align: center;   /* centrer le texte dans l’encart */
+}
+
+</style>
+
+<div class="auth-wrapper">
   <div class="auth-container">
     <div class="logo">
       <span>🐣</span>
@@ -150,8 +191,14 @@
 
     <h2 class="form-title">Se connecter</h2>
 
+    <% if notice %>
+      <div class="alert alert-success">
+        <%= notice %>
+      </div>
+    <% end %>
+
     <% if alert %>
-      <div class="error-messages">
+      <div class="alert alert-danger">
         <%= alert %>
       </div>
     <% end %>
@@ -186,5 +233,4 @@
       <% end %>
     </div>
   </div>
-</body>
-</html>
+</div>
