@@ -412,32 +412,128 @@ a[href*="new_user_session"].nav-link:hover {
             color: #2d3748;
         }
 
+        /* Header de section à la Stripe */
+/* Header aligné à gauche comme Stripe */
+.features-header{
+  max-width: 980px; margin: 0 0 4.5rem;   /* plus de centrage du bloc : ancré à gauche */
+  text-align: left;
+}
 
-        .mode-card {
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            border: 1px solid #e1e5e9;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
+/* Ne change pas les autres sections : on cible seulement la section features */
+.features .section-title{ text-align: left; margin-bottom: .75rem; }
 
-        .mode-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--accent-color);
-        }
+/* Option mobile : on recentre sous 768px si tu veux */
+@media (max-width: 768px){
+  .features-header{ margin: 0 auto 2rem; text-align: center; }
+  .features .section-title{ text-align: center; }
+}
 
-        .mode-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
-        }
+.section-subtitle{
+  color:#6a7280;
+  font-size: clamp(1rem,1.8vw,1.125rem);
+  line-height: 1.6;
+  margin-top:.75rem;
+}
+
+/* Espace pour les flèches et confort visuel */
+.modes-scroller-wrapper{
+  position: relative;
+  margin-top: 1.5rem;
+  padding: .25rem 2.5rem; /* dégage la place pour les flèches */
+}
+
+/* Carrousel horizontal */
+.ai-modes{
+  display:grid;
+  grid-auto-flow: column;
+  gap:24px;
+  overflow-x:auto;
+  overflow-y:hidden;        /* ✅ supprime la barre verticale à droite */
+  scrollbar-width: none;    /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge legacy */
+  scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+  padding:.5rem 0 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+.ai-modes::-webkit-scrollbar{ display:none; } /* ✅ masque la scrollbar WebKit */
+
+/* Responsiveness 3 / 2 / 1 cartes */
+@media (min-width:1024px){ .ai-modes{ grid-auto-columns: calc((100% - 48px)/3); } }
+@media (min-width:640px) and (max-width:1023px){ .ai-modes{ grid-auto-columns: calc((100% - 24px)/2); } }
+@media (max-width:639px){ .ai-modes{ grid-auto-columns: 100%; } }
+
+/* Cards plus “imposantes” */
+.mode-card{
+  scroll-snap-align: start;
+  will-change: transform;
+  transition: transform .25s ease, box-shadow .25s ease;
+  padding: 2.25rem;          /* + de présence */
+  min-height: 320px;         /* hauteur généreuse */
+}
+.mode-title{ font-size: 1.5rem; }
+.mode-description{ font-size: 1.05rem; }
+
+/* Hover uniquement (pas d’auto-zoom) */
+.features .mode-card { 
+  transition: transform .18s ease, box-shadow .18s ease; 
+}
+
+.features .mode-card:hover{
+  transform: translateY(-2px) scale(1.008);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+}
+
+
+/* Flèches flottantes */
+.modes-arrow{
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:44px;height:44px;border-radius:9999px;
+  border:1px solid #e5e7eb;background:#fff;color:#111827;
+  display:inline-flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+  cursor:pointer; z-index:5;
+  transition:transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+  backdrop-filter: blur(4px);
+}
+.modes-arrow:hover{ transform:translateY(-50%) scale(1.05); }
+.modes-arrow.left{ left:-14px; }    /* un peu décollées comme Stripe */
+.modes-arrow.right{ right:-14px; }
+.modes-arrow.is-disabled{ opacity:.35; pointer-events:none; }
+
+
+
+ /* Cards plus imposantes + style consolidé (évite les overrides) */
+.features .mode-card{
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e1e5e9;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
+
+  /* taille/présence */
+  padding: 2.5rem;        /* + d’air que 2rem */
+  min-height: 360px;      /* hauteur généreuse */
+
+  /* carrousel */
+  scroll-snap-align: start;
+  will-change: transform;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+/* Accent top conservé */
+.features .mode-card::before{
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:4px;
+  background: var(--accent-color);
+}
+
+
+/* Typo un peu plus large, comme Stripe */
+.features .mode-title{ font-size: 1.5rem; }
+.features .mode-description{ font-size: 1.05rem; }
+
 
         .mode-card.openai { --accent-color: #10a37f; }
         .mode-card.claude { --accent-color: #ff6b35; }
@@ -784,81 +880,9 @@ label[for] {
   pointer-events: auto;
 }
 
-/* --- Carrousel façon Stripe --- */
-
-/* Wrapper pour positionner les flèches */
-.modes-scroller-wrapper {
-  position: relative;
+.features .section-title { 
+  margin-bottom: 28px;  /* espace Titre → Texte */
 }
-
-/* Piste horizontale (on réutilise .ai-modes mais en mode carrousel) */
-.ai-modes {
-  display: grid;
-  grid-auto-flow: column;          /* colonnes qui s’enchaînent horizontalement */
-  gap: 24px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  padding: .5rem 0 1rem;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Nombre de cartes visibles selon la largeur */
-@media (min-width: 1024px) {
-  /* 3 cartes visibles (gap = 24px → 2 gaps = 48px) */
-  .ai-modes { grid-auto-columns: calc((100% - 48px) / 3); }
-}
-@media (min-width: 640px) and (max-width: 1023px) {
-  /* 2 cartes visibles */
-  .ai-modes { grid-auto-columns: calc((100% - 24px) / 2); }
-}
-@media (max-width: 639px) {
-  /* 1 carte visible */
-  .ai-modes { grid-auto-columns: 100%; }
-}
-
-/* Chaque carte s’aligne sur le début au scroll */
-.mode-card {
-  scroll-snap-align: start;
-  will-change: transform;
-  transition: transform .25s ease, box-shadow .25s ease;
-}
-
-/* Hover “grossit légèrement” + ombre plus marquée */
-.mode-card:hover {
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.15);
-}
-
-/* Flèches */
-.modes-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
-  border-radius: 9999px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  color: #111827;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,.08);
-  cursor: pointer;
-  transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
-  z-index: 5;
-}
-.modes-arrow:hover { transform: translateY(-50%) scale(1.05); }
-.modes-arrow.left  { left: -6px; }
-.modes-arrow.right { right: -6px; }
-.modes-arrow.is-disabled { opacity: .35; pointer-events: none; }
-
-/* (Optionnel) Discret scrollbar styling */
-.ai-modes::-webkit-scrollbar { height: 8px; }
-.ai-modes::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 999px; }
-.ai-modes::-webkit-scrollbar-track { background: transparent; }
-
 
 
     </style>
@@ -980,7 +1004,14 @@ label[for] {
     <!-- Features Section -->
 <section class="features" id="features">
   <div class="container">
-    <h2 class="section-title">5 Modes d'Analyse Intelligents</h2>
+    <div class="features-header">
+  <h2 class="section-title">5 Modes d'Analyse Intelligents</h2>
+  <p class="section-subtitle">
+    Choisissez un mode pour diagnostiquer, améliorer et tester votre code. 
+    Défilez pour découvrir les options — chaque carte détaille le bénéfice et la techno utilisée.
+  </p>
+</div>
+
 
     <!-- Wrapper du carrousel avec flèches -->
     <div class="modes-scroller-wrapper">
@@ -1318,12 +1349,14 @@ initModesCarousel() {
     }, observerOptions);
 
     // Observer les cartes de modes
-    document.querySelectorAll('.mode-card').forEach(card => {
-      card.style.opacity = '0';
-      card.style.transform = 'translateY(30px)';
-      card.style.transition = 'all 0.6s ease';
-      observer.observe(card);
-    });
+ // N'animer que les éléments marqués, pas les cards du carrousel
+document.querySelectorAll('[data-animate]').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(30px)';
+  el.style.transition = 'all 0.6s ease';
+  observer.observe(el);
+});
+
 
     // Nettoyage de l'observer
     const controller = new AbortController();
