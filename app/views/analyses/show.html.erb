@@ -41,36 +41,108 @@
       </div>
     </div>
 
-    <!-- Score Hero (si applicable) -->
-    <% if @analysis.ai_provider.in?(["openai", "claude", "tests", "smells"]) && @score %>
+    <!-- Score (hero + détails) -->
+    <% if @analysis.ai_provider.in?(["openai","claude","tests","smells"]) && @score.present? %>
+      <%
+        score       = (@score || 0).to_f
+        ring_r      = 50
+        ring_c      = (2 * Math::PI * ring_r)
+        ring_offset = ring_c * (1 - score / 10.0)
+        tier = case score
+               when 8..10 then 'good'
+               when 6..7  then 'ok'
+               else              'bad'
+               end
+        grad = case tier
+               when 'good' then { start: '#34d399', stop: '#10b981' }  # emerald 400→500
+               when 'ok'   then { start: '#fbbf24', stop: '#f59e0b' }  # amber 400→500
+               else              { start: '#f87171', stop: '#ef4444' } # red 400→500
+               end
+      %>
+
       <div class="score-section-premium">
-        <div class="score-hero-premium">
-          <div class="score-display-premium" data-score="<%= @score %>">
-            <span class="score-number-premium"><%= @score %>/10</span>
-            <span class="score-message-premium">
-              <%= case @score
-                  when 8..10 then "Excellent travail ! 🎉"
-                  when 6..7 then "Bon code, quelques améliorations possibles 👍"
-                  when 4..5 then "Code correct mais perfectible 🔧"
-                  else "Attention, des améliorations importantes sont nécessaires ⚠️"
+        <div class="score-row-premium">
+          <div class="ring-premium" role="img" aria-label="Score global <%= score.to_i %> sur 10">
+            <svg viewBox="0 0 120 120" width="120" height="120" class="ring-svg" aria-hidden="true">
+              <defs>
+                <!-- ID unique par analyse pour éviter les collisions -->
+                <linearGradient id="ringGrad-<%= @analysis.id %>" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%"   stop-color="<%= grad[:start] %>" />
+                  <stop offset="100%" stop-color="<%= grad[:stop] %>" />
+                </linearGradient>
+              </defs>
+
+              <!-- fond -->
+              <circle class="ring-bg" cx="60" cy="60" r="<%= ring_r %>" />
+
+              <!-- progrès -->
+              <circle
+                class="ring-progress tier-<%= tier %>"
+                cx="60" cy="60" r="<%= ring_r %>"
+                style="stroke-dasharray:<%= ring_c %>px; stroke-dashoffset:<%= ring_offset %>px;"
+              />
+
+              <!-- “sheen” gradient animé discret -->
+              <circle
+                class="ring-sheen"
+                cx="60" cy="60" r="<%= ring_r %>"
+                style="stroke-dasharray: 12 <%= ring_c %>px;"
+                stroke="url(#ringGrad-<%= @analysis.id %>)"
+              />
+            </svg>
+
+            <div class="ring-center">
+              <div class="ring-score"><%= (score % 1 == 0) ? score.to_i : ('%.1f' % score) %></div>
+              <div class="ring-denom">/10</div>
+            </div>
+          </div>
+
+          <div class="score-meta-premium">
+            <div class="score-meta-title">Score global</div>
+            <div class="score-meta-text">
+              <%= case score
+                  when 8..10 then "Code excellent, très peu d’actions requises."
+                  when 6..7  then "Ton code est globalement bon, quelques améliorations possibles."
+                  when 4..5  then "Code correct mais perfectible — prioriser quelques corrections."
+                  else             "Attention : plusieurs améliorations importantes sont nécessaires."
                   end %>
-            </span>
+            </div>
           </div>
         </div>
-        
-        <!-- Scores détaillés horizontaux -->
+
         <% if @scores.present? %>
-          <div class="scores-detail-premium">
-            <% @scores.each do |key, score| %>
-              <% label = {
-                security: "🛡️ Sécurité",
-                performance: "⚙️ Performance", 
-                readability: "📐 Lisibilité",
-                testing: "🧪 Tests"
-              }[key] %>
-              <div class="score-item-premium" data-score="<%= score %>">
-                <span class="score-label-premium"><%= label %></span>
-                <span class="score-value-premium"><%= score %>/10</span>
+          <div class="scores-stack-premium" role="group" aria-label="Scores détaillés">
+            <% sections = {
+              security:    { label: "Sécurité",    icon: "fa-shield-halved", key: :security    },
+              performance: { label: "Performance", icon: "fa-gauge-high",    key: :performance },
+              readability: { label: "Lisibilité",  icon: "fa-bezier-curve",  key: :readability },
+              testing:     { label: "Tests",       icon: "fa-flask-vial",    key: :testing     }
+            } %>
+
+            <% sections.each do |slug, h| %>
+              <%
+                s   = (@scores[h[:key]] || 0).to_f
+                pct = [[(s * 10).to_i, 0].max, 100].min
+                tier_s = case s
+                         when 8..10 then 'good'
+                         when 6..7  then 'ok'
+                         else              'bad'
+                         end
+              %>
+              <div class="stack-item">
+                <div class="stack-label">
+                  <i class="fa-solid <%= h[:icon] %>"></i>
+                    <span><%= h[:label] %></span>
+                </div>
+                <div class="stack-bar" role="progressbar"
+     aria-valuenow="<%= s.to_i %>" aria-valuemin="0" aria-valuemax="10">
+
+                  <!-- Couleur de la barre selon le score -->
+                  <span class="stack-bar-fill stack-tier-<%= tier_s %>" style="width:<%= pct %>%"></span>
+                </div>
+                <div class="stack-value" aria-label="<%= h[:label] %> <%= s.to_i %> sur 10">
+                  <%= s.to_i %>/10
+                </div>
               </div>
             <% end %>
           </div>
@@ -106,7 +178,6 @@
         </h3>
         <div class="feedback-content-premium">
           <%
-            # Clean feedback comme dans ton code existant
             clean_feedback = @analysis.ai_feedback.to_s
             if @analysis.ai_provider.in?(["openai", "claude"])
               clean_feedback = clean_feedback.gsub(/📊.*?Score.*?\d{1,2}\/10.*?\n/mi, "")
@@ -162,7 +233,6 @@
 function toggleCode() {
   const content = document.querySelector('.code-content-premium');
   const chevron = document.querySelector('.code-chevron');
-  
   if (content.style.display === 'none') {
     content.style.display = 'block';
     chevron.style.transform = 'rotate(180deg)';
@@ -172,43 +242,30 @@ function toggleCode() {
   }
 }
 
-// Dropdown functionality (réutilise ton code existant)
+// Dropdown
 document.addEventListener('click', function(e) {
   if (e.target.closest('[data-dropdown-trigger]')) {
     e.preventDefault();
     e.stopPropagation();
-    
     const dropdown = e.target.closest('[data-dropdown]');
     const isOpen = dropdown.classList.contains('open');
-    
-    document.querySelectorAll('[data-dropdown]').forEach(d => {
-      d.classList.remove('open');
-    });
-    
-    if (!isOpen) {
-      dropdown.classList.add('open');
-    }
+    document.querySelectorAll('[data-dropdown]').forEach(d => d.classList.remove('open'));
+    if (!isOpen) dropdown.classList.add('open');
     return;
   }
-  
   if (!e.target.closest('[data-dropdown]')) {
-    document.querySelectorAll('[data-dropdown]').forEach(d => {
-      d.classList.remove('open');
-    });
+    document.querySelectorAll('[data-dropdown]').forEach(d => d.classList.remove('open'));
   }
 });
 
-// Fonctions de partage (à adapter avec tes variables)
+// Partage
 function copyAnalysisUrl() {
   const currentUrl = window.location.href;
   navigator.clipboard.writeText(currentUrl).then(() => {
-    // Feedback visuel
     const button = document.querySelector('.dropdown-item-premium');
     const originalText = button.innerHTML;
     button.innerHTML = '<i class="fas fa-check"></i><span>Lien copié !</span>';
-    setTimeout(() => {
-      button.innerHTML = originalText;
-    }, 2000);
+    setTimeout(() => { button.innerHTML = originalText; }, 2000);
   });
 }
 
@@ -217,10 +274,8 @@ function downloadAnalysisPDF() {
   window.open(`/analyses/${analysisId}/download_pdf.pdf`, '_blank');
 }
 
-// Initialize Prism.js for syntax highlighting
+// Prism
 document.addEventListener('DOMContentLoaded', function() {
-  if (window.Prism) {
-    Prism.highlightAll();
-  }
+  if (window.Prism) Prism.highlightAll();
 });
 </script>
