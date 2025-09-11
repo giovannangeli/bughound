@@ -162,62 +162,111 @@
       </div>
     </div>
 
-    <!-- Feedback Section -->
-    <% if @analysis.ai_feedback.present? %>
-      <div class="feedback-section-premium">
-        <h3 class="feedback-title-premium">
-          <% if @analysis.ai_provider == "tests" %>
-            🧪 Tests générés automatiquement
-          <% elsif @analysis.ai_provider == "improve" %>
-            ✨ Code amélioré automatiquement
-          <% elsif @analysis.ai_provider == "smells" %>
-            👃 Code Smells détectés
-          <% else %>
-            🤖 Retour de l'agent QA
-          <% end %>
-        </h3>
-        <div class="feedback-content-premium">
-          <%
-            clean_feedback = @analysis.ai_feedback.to_s
-            if @analysis.ai_provider.in?(["openai", "claude"])
-              clean_feedback = clean_feedback.gsub(/📊.*?Score.*?\d{1,2}\/10.*?\n/mi, "")
-              clean_feedback = clean_feedback.gsub(/🔧.*$/m, "")
-            end
-            clean_feedback = clean_feedback.strip
-          %>
-          <%= simple_format(clean_feedback, {}, wrapper_tag: "div") %>
-        </div>
-      </div>
+ <!-- Feedback Section -->
+<% if @analysis.ai_feedback.present? %>
+  <% parsed = parse_ai_feedback(@analysis.ai_feedback) %>
 
-      <!-- Correction Section -->
-      <% if @analysis.ai_provider.in?(["openai", "claude"]) && @analysis.ai_feedback.include?("🔧") %>
-        <div class="correction-section-premium">
-          <h3 class="correction-title-premium">🔧 Proposition de correction</h3>
-          <div class="correction-content-premium">
-            <% correction_section = @analysis.ai_feedback.match(/🔧.*$/m) %>
-            <% if correction_section %>
-              <%= simple_format(correction_section.to_s.strip, {}, wrapper_tag: "div") %>
-            <% end %>
-          </div>
-        </div>
+  <div class="feedback-section-premium">
+    <h3 class="feedback-title-premium">
+      <% if @analysis.ai_provider == "tests" %>
+        🧪 Tests générés automatiquement
+      <% elsif @analysis.ai_provider == "improve" %>
+        ✨ Code amélioré automatiquement
+      <% elsif @analysis.ai_provider == "smells" %>
+        👃 Code Smells détectés
+      <% else %>
+        🤖 Retour de l'agent QA
       <% end %>
+    </h3>
+
+    <% if @analysis.ai_provider.in?(["openai","claude"]) && parsed[:sections].present? %>
+      <!-- Version structurée : cartes non cliquables -->
+<div class="feedback-grid-premium">
+  <% order = [
+    [:resume,      ["Résumé global", "fa-file-lines",   "",       "feedback-span-2"]],
+    [:security,    ["Sécurité",      "fa-shield-halved","sec",    ""]],
+    [:performance, ["Performance",   "fa-gauge-high",   "perf",   ""]],
+    [:readability, ["Lisibilité",    "fa-bezier-curve", "read",   ""]],
+    [:tests,       ["Tests",         "fa-flask-vial",   "tests",  ""]]
+  ] %>
+
+  <% order.each do |key, (label, icon, tone, extra_class)| %>
+    <% next unless parsed[:sections][key] %>
+    <% body   = parsed[:sections][key][:body] %>
+    <% score  = parsed[:sections][key][:score] %>
+    <% score ||= @scores[:security]    if key == :security %>
+    <% score ||= @scores[:performance] if key == :performance %>
+    <% score ||= @scores[:readability] if key == :readability %>
+    <% score ||= @scores[:testing]     if key == :tests %>
+
+    <% card_classes = ["feedback-card-premium"] %>
+    <% card_classes << extra_class if extra_class.present? %>
+
+    <div class="<%= card_classes.join(' ') %>">
+      <div class="feedback-card-header">
+        <span class="feedback-title-left">
+          <i class="fa-solid <%= icon %> feedback-icon <%= tone %>"></i>
+          <span><%= label %></span>
+        </span>
+        <% if score.present? %>
+          <span class="feedback-score-chip"><%= score %>/10</span>
+        <% end %>
+      </div>
+      <div class="feedback-body-premium">
+        <%= simple_format(body, {}, wrapper_tag: "div") %>
+      </div>
+    </div>
+  <% end %>
+</div>
 
     <% else %>
-      <!-- Error Section -->
-      <div class="error-section-premium">
-        <div class="error-content-premium">
-          <h3 class="error-title-premium">⚠️ Analyse échouée</h3>
-          <p>L'analyse IA n'a pas pu être effectuée. Cela peut être dû à :</p>
-          <ul>
-            <li>Fichier trop volumineux (> 1000 lignes)</li>
-            <li>Problème de connexion à l'API</li>
-            <li>Timeout de l'API</li>
-            <li>Code dans un format non reconnu</li>
-          </ul>
-          <p><strong>Solution :</strong> Essayez avec un fichier plus petit ou collez directement le code.</p>
+      <!-- Fallback non structuré (inchangé) -->
+      <div class="feedback-content-premium">
+        <%= simple_format(@analysis.ai_feedback.to_s.strip, {}, wrapper_tag: "div") %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Correction Section (Rapide/Expert uniquement) -->
+  <% if @analysis.ai_provider.in?(["openai","claude"]) %>
+    <% correction_text =
+        if parsed[:correction].present?
+          parsed[:correction]
+        else
+          (@analysis.ai_feedback.match(/^[^\S\r\n]*[🔧🛠].*$/m)&.to_s || "").strip
+        end
+    %>
+    <% if correction_text.present? %>
+      <div class="correction-section-premium">
+        <h3 class="correction-title-premium">🛠 Proposition de correction</h3>
+        <div class="correction-content-premium">
+          <%= simple_format(correction_text, {}, wrapper_tag: "div") %>
+          <button class="btn-apply-fix" disabled title="Bientôt disponible">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            Appliquer la correction automatiquement
+          </button>
         </div>
       </div>
     <% end %>
+  <% end %>
+<% else %>
+
+  <!-- Error Section -->
+  <div class="error-section-premium">
+    <div class="error-content-premium">
+      <h3 class="error-title-premium">⚠️ Analyse échouée</h3>
+      <p>L'analyse IA n'a pas pu être effectuée. Cela peut être dû à :</p>
+      <ul>
+        <li>Fichier trop volumineux (> 1000 lignes)</li>
+        <li>Problème de connexion à l'API</li>
+        <li>Timeout de l'API</li>
+        <li>Code dans un format non reconnu</li>
+      </ul>
+      <p><strong>Solution :</strong> Essayez avec un fichier plus petit ou collez directement le code.</p>
+    </div>
+  </div>
+<% end %>
+
 
     <!-- Navigation Buttons -->
     <div class="navigation-premium">
