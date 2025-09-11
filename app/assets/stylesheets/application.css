@@ -339,3 +339,75 @@ html { scroll-padding-top: 80px; }
   .ring-progress, .stack-bar-fill { transition: none; }
 }
 
+/* ===== Tests auto: mise en forme dédiée ===== */
+.tests-wrap-premium{
+  background:#f8fafc;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:1.25rem;
+}
+
+.tests-chips{
+  display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1rem;
+}
+.chip{
+  display:inline-flex; align-items:center; gap:.375rem;
+  font-size:.875rem; font-weight:600;
+  border-radius:999px; padding:.35rem .65rem; border:1px solid transparent;
+}
+.chip-soft-green{ background:#ecfdf5; color:#065f46; border-color:#a7f3d0; }
+.chip-soft-violet{ background:#f3e8ff; color:#5b21b6; border-color:#d8b4fe; }
+
+.tests-intro{ color:#334155; line-height:1.7; margin-bottom:1rem; }
+
+.tests-block{ margin:1.25rem 0; }
+.tests-block-title{
+  font-weight:700; color:#1f2937; margin-bottom:.5rem;
+}
+
+.tests-list{
+  list-style:none; padding-left:0; margin:0;
+}
+.tests-list li{
+  position:relative; padding-left:1.5rem; margin:.5rem 0; color:#374151;
+}
+.tests-list li::before{
+  content:"✅"; position:absolute; left:0; top:0;
+}
+
+.tests-details{
+  border:1px dashed #cbd5e1; border-radius:10px;
+  padding:.75rem 1rem; background:#fff;
+}
+.tests-details > summary{
+  cursor:pointer; font-weight:700; color:#1f2937; outline:none;
+}
+.tests-details-body{ margin-top:.5rem; color:#334155; }
+
+.tests-note{
+  display:flex; gap:.75rem; margin-top:1rem;
+  background:#f1f5f9; border:1px solid #e2e8f0; border-left:4px solid #64748b;
+  border-radius:10px; padding:.75rem 1rem;
+}
+.tests-note-icon{ font-size:1.25rem; }
+.tests-note-body{ color:#374151; }
+
+/* Tweaks – tests auto */
+.tests-details > summary { list-style: none; }
+.tests-details > summary::-webkit-details-marker { display: none; }
+
+.tests-list li { line-height: 1.6; }
+
+.tests-wrap-premium .code-block {
+  margin: .5rem 0 0;
+  border: 1px solid #334155;
+}
+
+.chip { transition: background .15s ease, border-color .15s ease; }
+.chip-soft-green:hover { background:#dcfce7; border-color:#86efac; }
+.chip-soft-violet:hover{ background:#ede9fe; border-color:#c4b5fd; }
+
+.tests-block + .tests-block { margin-top: 1.5rem; }
+.tests-details { margin-top: 1rem; }
+.tests-note { margin-top: 1rem; }
+

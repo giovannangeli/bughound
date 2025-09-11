@@ -1,50 +1,59 @@
 <div style="font-family: Arial, sans-serif; padding: 20px;">
-  <h1 style="color: #2d3748; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
-  BugHound - Rapport d'Analyse
-</h1>
-  
+  <!-- En-tête -->
+  <h1 style="color: #2d3748; border-bottom: 2px solid #667eea; padding-bottom: 10px; margin-top: 0;">
+    BugHound - Rapport d'Analyse
+  </h1>
+
+  <!-- Informations -->
   <div style="margin: 20px 0;">
-    <h3>Informations</h3>
-    <p><strong>Titre:</strong> <%= @analysis.title.present? ? @analysis.title : "Analyse sans titre" %></p>
-    <p><strong>Langage:</strong> <%= @analysis.language %></p>
-    <p><strong>Date d'analyse:</strong> <%= @analysis.created_at.strftime("%d/%m/%Y à %H:%M") %></p>
-    <p><strong>Généré le:</strong> <%= Time.now.in_time_zone("Europe/Paris").strftime("%d/%m/%Y à %H:%M") %></p>
+    <h3 style="margin: 0 0 8px 0; color:#111827;">Informations</h3>
+    <p style="margin: 4px 0;"><strong>Titre :</strong> <%= @analysis.title.present? ? @analysis.title : "Analyse sans titre" %></p>
+    <p style="margin: 4px 0;"><strong>Langage :</strong> <%= @analysis.language %></p>
+    <p style="margin: 4px 0;"><strong>Date d'analyse :</strong> <%= @analysis.created_at.strftime("%d/%m/%Y à %H:%M") %></p>
+    <p style="margin: 4px 0;"><strong>Généré le :</strong> <%= Time.now.in_time_zone("Europe/Paris").strftime("%d/%m/%Y à %H:%M") %></p>
   </div>
 
-  <% if @score %>
-  <div style="margin: 20px 0; text-align: center;">
-    <h3>Score Global</h3>
-    <div style="font-size: 48px; font-weight: bold; color: <%= @score >= 8 ? '#059669' : @score >= 6 ? '#f59e0b' : '#dc2626' %>;">
-      <%= @score %>/10
+  <!-- Score global (masqué automatiquement pour les tests si @score = nil dans le contrôleur) -->
+  <% if @score.present? %>
+    <div style="margin: 24px 0; text-align: center;">
+      <h3 style="margin: 0 0 8px 0; color:#111827;">Score global</h3>
+      <div style="font-size: 44px; font-weight: bold; color: <%= @score >= 8 ? '#059669' : (@score >= 6 ? '#f59e0b' : '#dc2626') %>;">
+        <%= @score %>/10
+      </div>
     </div>
-  </div>
   <% end %>
 
-  <div style="margin: 20px 0;">
-    <h3>Code analysé</h3>
-    <pre style="background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-wrap: break-word;"><%= @analysis.code %></pre>
+  <!-- Code analysé -->
+  <div style="margin: 24px 0;">
+    <h3 style="margin: 0 0 8px 0; color:#111827;">Code analysé</h3>
+    <pre style="
+      background: #f8f9fa;
+      padding: 14px 16px;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: Consolas, 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      margin: 0;
+    "><%= @analysis.code %></pre>
   </div>
 
+  <!-- Analyse (contenu nettoyé côté contrôleur via helpers.clean_feedback_for_pdf) -->
   <% if @analysis.ai_feedback.present? %>
-<div style="margin: 20px 0;">
-  <h3>Analyse</h3>
-  <div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #667eea;">
-    <%
-      # Nettoyer les emojis pour le PDF
-      clean_feedback = @analysis.ai_feedback.to_s
-      clean_feedback = clean_feedback.gsub(/📊/, '')
-      clean_feedback = clean_feedback.gsub(/🛡️/, '')
-      clean_feedback = clean_feedback.gsub(/⚙️/, '')
-      clean_feedback = clean_feedback.gsub(/📐/, '')
-      clean_feedback = clean_feedback.gsub(/🧪/, '')
-      clean_feedback = clean_feedback.gsub(/🔧/, '')
-      clean_feedback = clean_feedback.gsub(/🧾/, '')
-      clean_feedback = clean_feedback.gsub(/👃/, '')
-      clean_feedback = clean_feedback.gsub(/✨/, '')
-      clean_feedback = clean_feedback.strip
-    %>
-    <%= simple_format(@clean_feedback) %>
-  </div>
-</div>
-<% end %>
+    <div style="margin: 24px 0;">
+      <h3 style="margin: 0 0 8px 0; color:#111827;">Analyse</h3>
+      <div style="
+        background: #f8f9fa;
+        padding: 14px 16px;
+        border-left: 4px solid #667eea;
+        border: 1px solid #e5e7eb;
+        border-left-color: #667eea;
+        border-radius: 6px;
+      ">
+        <%= simple_format(@clean_feedback) %>
+      </div>
+    </div>
+  <% end %>
 </div>

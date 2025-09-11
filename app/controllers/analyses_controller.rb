@@ -94,6 +94,23 @@ end
     testing_match = @analysis.ai_feedback.match(/🧪.*?test.*?(\d{1,2})\/10/mi)
     @scores[:testing] = testing_match[1].to_i if testing_match
 
+    # Parse unique pour réconcilier les scores (et dispo pour la vue)
+@parsed = helpers.parse_ai_feedback(@analysis.ai_feedback)
+
+# Remplir les trous éventuels des regex avec les scores trouvés par le helper
+@scores[:security]    ||= @parsed[:sections].dig(:security,    :score)
+@scores[:performance] ||= @parsed[:sections].dig(:performance, :score)
+@scores[:readability] ||= @parsed[:sections].dig(:readability, :score)
+@scores[:testing]     ||= @parsed[:sections].dig(:tests,       :score)
+
+# (optionnel mais conseillé) – si le score global n'a pas été trouvé par la regex,
+# on le calcule à partir des sous-scores disponibles.
+if @score.nil?
+  vals = @scores.values.compact
+  @score = (vals.sum.to_f / vals.length).round if vals.any?
+end
+
+
 
   end
 
@@ -132,51 +149,36 @@ end
 def download_pdf
   @analysis = find_user_analysis(params[:id])
   return unless @analysis
-  
-  # Calcul des scores pour le PDF (comme dans show)
+
   if @analysis.ai_feedback.present?
+    # Scores (comme show), mais on neutralise le score global pour les tests auto
     global_match = @analysis.ai_feedback.match(/.*?Score.*?(\d{1,2})\/10/mi)
     @score = global_match ? global_match[1].to_i : nil
-    
+
     @scores = {}
-    security_match = @analysis.ai_feedback.match(/.*?Sécurité.*?(\d{1,2})\/10/mi)
-    @scores[:security] = security_match[1].to_i if security_match
-    
-    performance_match = @analysis.ai_feedback.match(/.*?Performance.*?(\d{1,2})\/10/mi)
-    @scores[:performance] = performance_match[1].to_i if performance_match
-    
-    readability_match = @analysis.ai_feedback.match(/.*?Lisibilité.*?(\d{1,2})\/10/mi)
-    @scores[:readability] = readability_match[1].to_i if readability_match
-    
-    testing_match = @analysis.ai_feedback.match(/.*?test.*?(\d{1,2})\/10/mi)
-    @scores[:testing] = testing_match[1].to_i if testing_match
-    
-# NOUVEAU : Nettoyer TOUS les emojis pour le PDF
-@clean_feedback = @analysis.ai_feedback.to_s
-@clean_feedback = @clean_feedback.gsub(/📊/, '')
-@clean_feedback = @clean_feedback.gsub(/🛡️/, '')
-@clean_feedback = @clean_feedback.gsub(/⚙️/, '')
-@clean_feedback = @clean_feedback.gsub(/📐/, '')
-@clean_feedback = @clean_feedback.gsub(/🧪/, '')
-@clean_feedback = @clean_feedback.gsub(/🔧/, '')
-@clean_feedback = @clean_feedback.gsub(/🧾/, '')
-@clean_feedback = @clean_feedback.gsub(/👃/, '')
-@clean_feedback = @clean_feedback.gsub(/✨/, '')
-@clean_feedback = @clean_feedback.gsub(/📋/, '')
-@clean_feedback = @clean_feedback.gsub(/🎯/, '')
-@clean_feedback = @clean_feedback.gsub(/💻/, '')
-@clean_feedback = @clean_feedback.gsub(/📚/, '')
-@clean_feedback = @clean_feedback.gsub(/🔴/, '')
-@clean_feedback = @clean_feedback.gsub(/🟡/, '')
-@clean_feedback = @clean_feedback.gsub(/🔍/, '')
-@clean_feedback = @clean_feedback.gsub(/🔢/, '')
-@clean_feedback = @clean_feedback.gsub(/📝/, '')
-@clean_feedback = @clean_feedback.gsub(/🌀/, '')
-@clean_feedback = @clean_feedback.gsub(/🎓/, '')
-@clean_feedback = @clean_feedback.gsub(/🚀/, '')
-@clean_feedback = @clean_feedback.strip
+    if (m = @analysis.ai_feedback.match(/.*?Sécurité.*?(\d{1,2})\/10/mi))
+      @scores[:security] = m[1].to_i
+    end
+    if (m = @analysis.ai_feedback.match(/.*?Performance.*?(\d{1,2})\/10/mi))
+      @scores[:performance] = m[1].to_i
+    end
+    if (m = @analysis.ai_feedback.match(/.*?Lisibilité.*?(\d{1,2})\/10/mi))
+      @scores[:readability] = m[1].to_i
+    end
+    if (m = @analysis.ai_feedback.match(/.*?test.*?(\d{1,2})\/10/mi))
+      @scores[:testing] = m[1].to_i
+    end
+
+    # Nettoyage unifié pour le PDF (gère aussi le cas "tests")
+    @clean_feedback = helpers.clean_feedback_for_pdf(
+      @analysis.ai_feedback,
+      provider: @analysis.ai_provider
+    )
+
+    # Pas de score global affiché pour les tests auto
+    @score = nil if @analysis.ai_provider == "tests"
   end
-  
+
   respond_to do |format|
     format.html { redirect_to analysis_path(@analysis) }
     format.pdf do
@@ -187,6 +189,7 @@ def download_pdf
     end
   end
 end
+
 
 private
 
