@@ -140,7 +140,7 @@ end
     instructions = t[/(?:📚\s*)?Instructions d'exécution\s*:?\s*(.*?)(?=\n\s*Notes|$\z)/mi, 1]
 
     # Notes importantes
-    notes = t[/Notes\s+importantes\s*:?\s*(.*)\z/mi, 1]
+    notes = t[/[ℹ️]?\s*Notes\s+importantes\s*:?\s*((?:.|\n)*)\z/mi, 1]
 
     {
       intro:          intro&.strip,

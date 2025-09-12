@@ -54,9 +54,9 @@
                else              'bad'
                end
         grad = case tier
-               when 'good' then { start: '#34d399', stop: '#10b981' }  # emerald 400→500
-               when 'ok'   then { start: '#fbbf24', stop: '#f59e0b' }  # amber 400→500
-               else              { start: '#f87171', stop: '#ef4444' } # red 400→500
+               when 'good' then { start: '#34d399', stop: '#10b981' }
+               when 'ok'   then { start: '#fbbf24', stop: '#f59e0b' }
+               else              { start: '#f87171', stop: '#ef4444' }
                end
       %>
 
@@ -65,7 +65,6 @@
           <div class="ring-premium" role="img" aria-label="Score global <%= score.to_i %> sur 10">
             <svg viewBox="0 0 120 120" width="120" height="120" class="ring-svg" aria-hidden="true">
               <defs>
-                <!-- ID unique par analyse pour éviter les collisions -->
                 <linearGradient id="ringGrad-<%= @analysis.id %>" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%"   stop-color="<%= grad[:start] %>" />
                   <stop offset="100%" stop-color="<%= grad[:stop] %>" />
@@ -82,7 +81,7 @@
                 style="stroke-dasharray:<%= ring_c %>px; stroke-dashoffset:<%= ring_offset %>px;"
               />
 
-              <!-- “sheen” gradient animé discret -->
+              <!-- sheen -->
               <circle
                 class="ring-sheen"
                 cx="60" cy="60" r="<%= ring_r %>"
@@ -101,7 +100,7 @@
             <div class="score-meta-title">Score global</div>
             <div class="score-meta-text">
               <%= case score
-                  when 8..10 then "Code excellent, très peu d’actions requises."
+                  when 8..10 then "Code excellent, très peu d'actions requises."
                   when 6..7  then "Ton code est globalement bon, quelques améliorations possibles."
                   when 4..5  then "Code correct mais perfectible — prioriser quelques corrections."
                   else             "Attention : plusieurs améliorations importantes sont nécessaires."
@@ -136,8 +135,6 @@
                 </div>
                 <div class="stack-bar" role="progressbar"
      aria-valuenow="<%= s.to_i %>" aria-valuemin="0" aria-valuemax="10">
-
-                  <!-- Couleur de la barre selon le score -->
                   <span class="stack-bar-fill stack-tier-<%= tier_s %>" style="width:<%= pct %>%"></span>
                 </div>
                 <div class="stack-value" aria-label="<%= h[:label] %> <%= s.to_i %> sur 10">
@@ -158,174 +155,202 @@
         <i class="fas fa-chevron-down code-chevron"></i>
       </button>
       <div class="code-content-premium" style="display: none;">
-        <pre class="code-block"><code class="language-<%= @analysis.language.downcase %>"><%= @analysis.code %></code></pre>
+        <pre class="code-block line-numbers">
+<code class="language-<%= @analysis.language.downcase %>"><%= @analysis.code %></code></pre>
       </div>
     </div>
 
- <!-- Feedback Section -->
-<!-- Feedback Section -->
-<% if @analysis.ai_feedback.present? %>
-  <% parsed = @parsed || parse_ai_feedback(@analysis.ai_feedback) %>
+    <!-- Feedback Section -->
+    <% if @analysis.ai_feedback.present? %>
+      <% parsed = @parsed || parse_ai_feedback(@analysis.ai_feedback) %>
 
-  <div class="feedback-section-premium">
-    <h3 class="feedback-title-premium">
-      <% if @analysis.ai_provider == "tests" %>
-        🧪 Tests générés automatiquement
-      <% elsif @analysis.ai_provider == "improve" %>
-        ✨ Code amélioré automatiquement
-      <% elsif @analysis.ai_provider == "smells" %>
-        👃 Code Smells détectés
-      <% else %>
-        🤖 Retour de l'agent QA
-      <% end %>
-    </h3>
+      <div class="feedback-section-premium">
+        <% unless @analysis.ai_provider == "tests" %>
+          <h3 class="feedback-title-premium">
+            <% if @analysis.ai_provider == "improve" %>
+              ✨ Code amélioré automatiquement
+            <% elsif @analysis.ai_provider == "smells" %>
+              👃 Code Smells détectés
+            <% else %>
+              🤖 Retour de l'agent QA
+            <% end %>
+          </h3>
+        <% end %>
 
-<% if @analysis.ai_provider == "tests" %>
-  <% tf = parse_tests_feedback(@analysis.ai_feedback) %>
-  <% reco_score = extract_reco_score(tf[:recommendations]) %>
+        <% if @analysis.ai_provider == "tests" %>
+          <% tf = parse_tests_feedback(@analysis.ai_feedback) %>
 
-  <div class="tests-wrap-premium">
-    <div class="tests-chips">
-      <% if reco_score.present? %>
-        <span class="chip chip-soft-green">🧪 Recommandations : <strong><%= reco_score %>/10</strong></span>
-      <% end %>
-      <% if tf[:framework].present? %>
-        <span class="chip chip-soft-violet">🔧 Framework : <strong><%= tf[:framework] %></strong></span>
-      <% end %>
-    </div>
+          <div class="tests-wrap-premium">
+            <!-- Chip Framework -->
+            <% if tf[:framework].present? %>
+              <div class="tests-chips">
+                <span class="chip chip-soft-violet">
+                  <i class="fa-solid fa-wrench"></i>
+                  <strong>Framework :</strong>&nbsp;<%= tf[:framework] %>
+                </span>
+              </div>
+            <% end %>
 
-    <% if tf[:intro].present? %>
-      <p class="tests-intro"><%= tf[:intro] %></p>
-    <% end %>
+            <!-- Grid 2 colonnes : Scénarios + Instructions -->
+            <div class="tests-info-grid">
+              <!-- Scénarios testés -->
+              <% if tf[:scenarios].present? %>
+                <div class="tests-block">
+                  <div class="tests-block-title">🎯 Scénarios testés</div>
+                  <ul class="tests-list">
+                    <% tf[:scenarios].to_s.lines.each do |line| %>
+                      <% item = line.strip.sub(/^\-+\s*/, '') %>
+                      <% next if item.blank? %>
+                      <li>
+                        <i class="fa-regular fa-square-check"></i>
+                        <span><%= item %></span>
+                      </li>
+                    <% end %>
+                  </ul>
+                </div>
+              <% end %>
 
-    <% if tf[:scenarios].present? %>
-      <div class="tests-block">
-        <div class="tests-block-title">🎯 Scénarios testés</div>
-        <ul class="tests-list">
-          <% tf[:scenarios].to_s.lines.each do |line| %>
-            <% item = line.strip.sub(/^\-+\s*/, '') %>
-            <% next if item.blank? %>
-            <li><%= item %></li>
-          <% end %>
-        </ul>
-      </div>
-    <% end %>
-
-    <% if tf[:code].present? %>
-      <div class="tests-block">
-        <div class="tests-block-title">💻 Code des tests</div>
-        <pre class="code-block"><code class="language-<%= @analysis.language.downcase %>"><%= tf[:code] %></code></pre>
-      </div>
-    <% end %>
-
-    <% if tf[:instructions].present? %>
-      <details class="tests-details">
-        <summary>📚 Instructions d'exécution</summary>
-        <div class="tests-details-body">
-          <%= simple_format(tf[:instructions], {}, wrapper_tag: "div") %>
-        </div>
-      </details>
-    <% end %>
-
-    <% if tf[:notes].present? %>
-      <div class="tests-note">
-        <div class="tests-note-icon">ℹ️</div>
-        <div class="tests-note-body">
-          <%= simple_format(tf[:notes], {}, wrapper_tag: "div") %>
-        </div>
-      </div>
-    <% end %>
-  </div>
-<% elsif @analysis.ai_provider.in?(["openai","claude"]) && parsed[:sections].present? %>
-
-
-      <!-- Version structurée : cartes non cliquables -->
-      <div class="feedback-grid-premium">
-        <% order = [
-          [:resume,      ["Résumé global", "fa-file-lines",   "",       "feedback-span-2"]],
-          [:security,    ["Sécurité",      "fa-shield-halved","sec",    ""]],
-          [:performance, ["Performance",   "fa-gauge-high",   "perf",   ""]],
-          [:readability, ["Lisibilité",    "fa-bezier-curve", "read",   ""]],
-          [:tests,       ["Tests",         "fa-flask-vial",   "tests",  ""]]
-        ] %>
-
-        <% order.each do |key, (label, icon, tone, extra_class)| %>
-          <% next unless parsed[:sections][key] %>
-          <% body   = parsed[:sections][key][:body] %>
-          <% score  = parsed[:sections][key][:score] %>
-          <% score ||= @scores[:security]    if key == :security %>
-          <% score ||= @scores[:performance] if key == :performance %>
-          <% score ||= @scores[:readability] if key == :readability %>
-          <% score ||= @scores[:testing]     if key == :tests %>
-
-          <% card_classes = ["feedback-card-premium"] %>
-          <% card_classes << extra_class if extra_class.present? %>
-
-          <div class="<%= card_classes.join(' ') %>">
-            <div class="feedback-card-header">
-              <span class="feedback-title-left">
-                <i class="fa-solid <%= icon %> feedback-icon <%= tone %>"></i>
-                <span><%= label %></span>
-              </span>
-              <% if score.present? %>
-                <span class="feedback-score-chip"><%= score %>/10</span>
+              <!-- Instructions d'exécution -->
+              <% if tf[:instructions].present? %>
+                <div class="tests-block">
+                  <div class="tests-block-title">📚 Instructions d'exécution</div>
+                  <div class="tests-instructions-body exec-steps">
+                    <%= markdown(tf[:instructions]) %>
+                  </div>
+                </div>
               <% end %>
             </div>
-            <div class="feedback-body-premium">
-              <%= simple_format(body, {}, wrapper_tag: "div") %>
-            </div>
+
+            <!-- Code des tests - Pleine largeur en dessous -->
+            <% if tf[:code].present? %>
+              <% lang_for_tests = case tf[:framework].to_s.downcase
+                                  when /rspec/ then 'ruby'
+                                  when /pytest/ then 'python'
+                                  when /jest/ then 'javascript'
+                                  else @analysis.language.downcase
+                                  end %>
+              <div class="tests-code-block">
+                <div class="tests-block-title">💻 Code des tests</div>
+                <pre class="code-block line-numbers">
+<code class="language-<%= lang_for_tests %>"><%= tf[:code] %></code></pre>
+              </div>
+            <% end %>
+
+            <!-- Notes importantes -->
+            <% if tf[:notes].present? %>
+              <div class="tests-note">
+                <div class="tests-note-icon">ℹ️</div>
+                <div class="tests-note-body">
+                  <%= markdown(tf[:notes]) %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+        <% elsif @analysis.ai_provider.in?(["openai","claude"]) && parsed[:sections].present? %>
+          <!-- Version structurée : cartes non cliquables -->
+          <div class="feedback-grid-premium">
+            <% order = [
+              [:resume,      ["Résumé global", "fa-file-lines",   "",       "feedback-span-2"]],
+              [:security,    ["Sécurité",      "fa-shield-halved","sec",    ""]],
+              [:performance, ["Performance",   "fa-gauge-high",   "perf",   ""]],
+              [:readability, ["Lisibilité",    "fa-bezier-curve", "read",   ""]],
+              [:tests,       ["Tests",         "fa-flask-vial",   "tests",  ""]]
+            ] %>
+
+            <% order.each do |key, (label, icon, tone, extra_class)| %>
+              <% next unless parsed[:sections][key] %>
+              <% body   = parsed[:sections][key][:body] %>
+              <% score  = parsed[:sections][key][:score] %>
+              <% score ||= @scores[:security]    if key == :security %>
+              <% score ||= @scores[:performance] if key == :performance %>
+              <% score ||= @scores[:readability] if key == :readability %>
+              <% score ||= @scores[:testing]     if key == :tests %>
+
+              <% card_classes = ["feedback-card-premium"] %>
+              <% card_classes << extra_class if extra_class.present? %>
+
+              <div class="<%= card_classes.join(' ') %>">
+                <div class="feedback-card-header">
+                  <span class="feedback-title-left">
+                    <i class="fa-solid <%= icon %> feedback-icon <%= tone %>"></i>
+                    <span><%= label %></span>
+                  </span>
+                  <% if score.present? %>
+                    <span class="feedback-score-chip"><%= score %>/10</span>
+                  <% end %>
+                </div>
+                <div class="feedback-body-premium">
+                  <%= simple_format(body, {}, wrapper_tag: "div") %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+        <% else %>
+          <!-- Fallback non structuré -->
+          <div class="feedback-content-premium">
+            <%= simple_format(@analysis.ai_feedback.to_s.strip, {}, wrapper_tag: "div") %>
           </div>
         <% end %>
       </div>
 
-    <% else %>
-      <!-- Fallback non structuré -->
-      <div class="feedback-content-premium">
-        <%= simple_format(@analysis.ai_feedback.to_s.strip, {}, wrapper_tag: "div") %>
-      </div>
-    <% end %>
-  </div>
+      <!-- Correction Section (Rapide/Expert uniquement) -->
+      <% if @analysis.ai_provider.in?(["openai","claude"]) %>
+        <% correction_text =
+            if parsed[:correction].present?
+              parsed[:correction]
+            else
+              (@analysis.ai_feedback.match(/^[^\S\r\n]*[🔧🛠].*$/m)&.to_s || "").strip
+            end
+        %>
+        <% if correction_text.present? %>
+          <div class="correction-section-premium">
+            <h3 class="correction-title-premium">🛠 Proposition de correction</h3>
+            <div class="correction-content-premium">
+              <!-- On passe par markdown pour respecter les ```lang``` et laisser Prism colorer -->
+              <div class="code-card">
+                <%= markdown(correction_text) %>
+              </div>
+              <button class="btn-apply-fix" disabled title="Bientôt disponible">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                Appliquer la correction automatiquement
+              </button>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
 
-  <!-- Correction Section (Rapide/Expert uniquement) -->
-  <% if @analysis.ai_provider.in?(["openai","claude"]) %>
-    <% correction_text =
-        if parsed[:correction].present?
-          parsed[:correction]
-        else
-          (@analysis.ai_feedback.match(/^[^\S\r\n]*[🔧🛠].*$/m)&.to_s || "").strip
-        end
-    %>
-    <% if correction_text.present? %>
-      <div class="correction-section-premium">
-        <h3 class="correction-title-premium">🛠 Proposition de correction</h3>
-        <div class="correction-content-premium">
-          <%= simple_format(correction_text, {}, wrapper_tag: "div") %>
-          <button class="btn-apply-fix" disabled title="Bientôt disponible">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-            Appliquer la correction automatiquement
-          </button>
+      <!-- Card "Code refactorisé" (mode improve) -->
+      <% if @analysis.ai_provider == "improve" %>
+        <% ref_lang = (@analysis.ai_feedback[/```([a-zA-Z]+)/, 1] || @analysis.language).downcase %>
+        <% ref_code = @analysis.ai_feedback[/```[a-zA-Z]*\n(.*?)```/m, 1] %>
+        <% if ref_code.present? %>
+          <div class="correction-section-premium">
+            <h3 class="correction-title-premium">💻 Code refactorisé</h3>
+            <div class="code-card">
+              <pre class="code-block line-numbers"><code class="language-<%= ref_lang %>"><%= ref_code %></code></pre>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+
+    <% else %>
+      <!-- Error Section -->
+      <div class="error-section-premium">
+        <div class="error-content-premium">
+          <h3 class="error-title-premium">⚠️ Analyse échouée</h3>
+          <p>L'analyse IA n'a pas pu être effectuée. Cela peut être dû à :</p>
+          <ul>
+            <li>Fichier trop volumineux (> 1000 lignes)</li>
+            <li>Problème de connexion à l'API</li>
+            <li>Timeout de l'API</li>
+            <li>Code dans un format non reconnu</li>
+          </ul>
+          <p><strong>Solution :</strong> Essayez avec un fichier plus petit ou collez directement le code.</p>
         </div>
       </div>
     <% end %>
-  <% end %>
-<% else %>
-  <!-- Error Section -->
-  <div class="error-section-premium">
-    <div class="error-content-premium">
-      <h3 class="error-title-premium">⚠️ Analyse échouée</h3>
-      <p>L'analyse IA n'a pas pu être effectuée. Cela peut être dû à :</p>
-      <ul>
-        <li>Fichier trop volumineux (> 1000 lignes)</li>
-        <li>Problème de connexion à l'API</li>
-        <li>Timeout de l'API</li>
-        <li>Code dans un format non reconnu</li>
-      </ul>
-      <p><strong>Solution :</strong> Essayez avec un fichier plus petit ou collez directement le code.</p>
-    </div>
-  </div>
-<% end %>
-
-
 
     <!-- Navigation Buttons -->
     <div class="navigation-premium">
