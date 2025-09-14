@@ -411,4 +411,103 @@ function downloadAnalysisPDF() {
 document.addEventListener('DOMContentLoaded', function() {
   if (window.Prism) Prism.highlightAll();
 });
+
+// Boutons copy personnalisés pour tests et code refactorisé
+document.addEventListener('DOMContentLoaded', function() {
+  
+  function createCustomCopyButtons() {
+    // Supprimer les anciens boutons personnalisés
+    document.querySelectorAll('.custom-copy-btn').forEach(btn => btn.remove());
+    
+    // Stratégies pour trouver les blocs de code appropriés
+    const strategies = [
+      () => document.querySelectorAll('.tests-code-block .code-block, .code-card .code-block'),
+      () => document.querySelectorAll('.code-block:not(.code-content-premium .code-block)'),
+      () => {
+        const blocks = [];
+        document.querySelectorAll('.tests-code-block, .code-card').forEach(container => {
+          const codeBlock = container.querySelector('.code-block');
+          if (codeBlock) blocks.push(codeBlock);
+        });
+        return blocks;
+      }
+    ];
+    
+    // Utiliser la première stratégie qui trouve des éléments
+    for (const strategy of strategies) {
+      const blocks = strategy();
+      if (blocks.length > 0) {
+        Array.from(blocks).forEach(codeBlock => {
+          // Éviter les doublons
+          if (codeBlock.querySelector('.custom-copy-btn')) return;
+          
+          // Créer le bouton
+          const copyBtn = document.createElement('button');
+          copyBtn.className = 'custom-copy-btn';
+          copyBtn.textContent = 'Copier';
+          copyBtn.setAttribute('type', 'button');
+          copyBtn.style.cssText = `
+            position: absolute !important;
+            top: 1rem !important;
+            right: 1rem !important;
+            z-index: 20 !important;
+            background: #374151 !important;
+            color: #f8fafc !important;
+            border: 1px solid #4b5563 !important;
+            border-radius: 8px !important;
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.875rem !important;
+            cursor: pointer !important;
+          `;
+          
+          // Événement de copie
+          copyBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const codeElement = codeBlock.querySelector('code');
+            if (codeElement) {
+              const textToCopy = codeElement.textContent || codeElement.innerText;
+              
+              if (navigator.clipboard) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                  showCopiedState(copyBtn);
+                });
+              } else {
+                fallbackCopy(textToCopy);
+                showCopiedState(copyBtn);
+              }
+            }
+          });
+          
+          codeBlock.appendChild(copyBtn);
+        });
+        break; // Arrêter après la première stratégie réussie
+      }
+    }
+  }
+  
+  function showCopiedState(button) {
+    button.textContent = 'Copié!';
+    button.style.background = '#10b981 !important';
+    setTimeout(() => {
+      button.textContent = 'Copier';
+      button.style.background = '#374151 !important';
+    }, 2000);
+  }
+  
+  function fallbackCopy(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+  }
+  
+  // Initialiser les boutons après chargement
+  setTimeout(createCustomCopyButtons, 100);
+  setTimeout(createCustomCopyButtons, 500);
+  setTimeout(createCustomCopyButtons, 1000);
+});
 </script>

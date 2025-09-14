@@ -359,6 +359,9 @@ html { scroll-padding-top: 80px; }
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 1.25rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Grid pour scénarios + instructions côte à côte */
@@ -430,7 +433,7 @@ html { scroll-padding-top: 80px; }
 .tests-instructions-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 .tests-instructions-body::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-/* Code des tests - PLEINE LARGEUR */
+/* Code des tests - PLEINE LARGEUR - FIX ALIGNEMENT */
 .tests-code-block {
   background: #fff;
   border: 1px solid #e5e7eb;
@@ -440,6 +443,9 @@ html { scroll-padding-top: 80px; }
   margin-top: 1.25rem;
   grid-column: 1 / -1;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  position: relative;
 }
 .tests-code-block .tests-block-title { margin-bottom: 1rem; }
 .tests-code-block .code-block {
@@ -451,6 +457,9 @@ html { scroll-padding-top: 80px; }
   border: 1px solid #334155;
   min-height: 300px;
   margin-bottom: 0;
+  position: relative;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Chip framework */
@@ -532,3 +541,77 @@ pre { border-bottom: 0 !important; }
 /* Petit ajustement line-numbers Prism */
 pre.line-numbers { position: relative; }
 
+/* ===== BOUTONS COPY PERSONNALISÉS ===== */
+
+/* Masquer le bouton copy UNIQUEMENT dans le bloc "Code analysé" */
+.code-content-premium .copy-to-clipboard-button,
+.code-content-premium [class*="copy"],
+.code-content-premium .toolbar .toolbar-item,
+.code-content-premium .toolbar {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Masquer les boutons copy originaux de Prism dans tests et code refactorisé */
+.tests-code-block .copy-to-clipboard-button,
+.code-card .copy-to-clipboard-button {
+  display: none !important;
+}
+
+/* Assurer que les conteneurs ont position relative */
+.tests-code-block,
+.code-card {
+  position: relative !important;
+}
+
+.tests-code-block .code-block,
+.code-card .code-block {
+  position: relative !important;
+}
+
+/* Style pour nos boutons copy personnalisés */
+.custom-copy-btn {
+  position: absolute !important;
+  top: 1rem !important;
+  right: 1rem !important;
+  z-index: 20 !important;
+  
+  /* Style du bouton */
+  background: #374151 !important;
+  color: #f8fafc !important;
+  border: 1px solid #4b5563 !important;
+  border-radius: 8px !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif !important;
+  
+  /* Transitions */
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.custom-copy-btn:hover {
+  background: #4b5563 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+}
+
+/* Style pour l'état "Copié!" */
+.custom-copy-btn.copied {
+  background: #10b981 !important;
+  color: white !important;
+  border-color: #059669 !important;
+}
+
+/* ===== RESPONSIVE POUR TESTS ===== */
+@media (max-width: 768px) {
+  .tests-wrap-premium {
+    padding: 1rem;
+  }
+  
+  .tests-code-block {
+    padding: 1rem;
+  }
+}
