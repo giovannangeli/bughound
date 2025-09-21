@@ -170,7 +170,7 @@
             <% if @analysis.ai_provider == "improve" %>
               ✨ Code amélioré automatiquement
             <% elsif @analysis.ai_provider == "smells" %>
-              👃 Code Smells détectés
+              🤖 Retour de l'agent QA
             <% else %>
               🤖 Retour de l'agent QA
             <% end %>
@@ -247,7 +247,7 @@
             <% end %>
           </div>
 
-        <% elsif @analysis.ai_provider.in?(["openai","claude"]) && parsed[:sections].present? %>
+        <% elsif @analysis.ai_provider.in?(["openai","claude","smells"]) && parsed[:sections].present? %>
           <!-- Version structurée : cartes non cliquables -->
           <div class="feedback-grid-premium">
             <% order = [
@@ -260,6 +260,7 @@
 
             <% order.each do |key, (label, icon, tone, extra_class)| %>
               <% next unless parsed[:sections][key] %>
+              <% next if key == :resume && @analysis.ai_provider == "smells" %>
               <% body   = parsed[:sections][key][:body] %>
               <% score  = parsed[:sections][key][:score] %>
               <% score ||= @scores[:security]    if key == :security %>
@@ -286,6 +287,26 @@
               </div>
             <% end %>
           </div>
+
+          <!-- Section dédiée Code Smells - Détails complets -->
+          <% if @analysis.ai_provider == "smells" %>
+            <div style="margin-top: 2rem;">
+              <div class="feedback-content-premium">
+                <% 
+                  # Afficher seulement la partie détails des code smells
+                  smells_details = @analysis.ai_feedback.dup
+                  # Garder seulement à partir de "Code Smells détectés"
+                  if match = smells_details.match(/(👃.*?Code Smells détectés.*)/mi)
+                    smells_content = match[1]
+                    # Enlever les redondances en début mais garder tous les détails
+                    smells_content.gsub!(/^📊\s*Score\s*[:：].*?\n/mi, "")
+                    smells_content.gsub!(/^\[.*?\]\s*\n/mi, "")
+                %>
+                <%= simple_format(smells_content, {}, wrapper_tag: "div") %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
 
         <% else %>
           <!-- Fallback non structuré -->

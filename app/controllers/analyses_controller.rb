@@ -549,6 +549,18 @@ def build_smells_prompt(language, code)
     📊 Score : X/10
     [Synthèse basée sur le nombre et gravité des smells]
 
+    🛡️ Sécurité : X/10
+    [Impact des smells sur la sécurité]
+
+    ⚙️ Performance : X/10
+    [Impact des smells sur la performance]
+
+    📐 Lisibilité : X/10
+    [Impact des smells sur la lisibilité]
+
+    🧪 Tests : X/10
+    [Impact des smells sur la testabilité]
+
     👃 Code Smells détectés
 
     🎯 Nombre de smells trouvés : X
@@ -571,8 +583,7 @@ def build_smells_prompt(language, code)
 
     CODE À ANALYSER :
     ```#{language.downcase}
-    #{code}
-    ```
+    #{code}```
 
     IMPORTANT :
     - NE PAS corriger le code
@@ -580,7 +591,8 @@ def build_smells_prompt(language, code)
     - Expliquer l'impact de chaque problème
     - Conseils pédagogiques pour comprendre
     - Score 10/10 = code parfait, 1/10 = code très problématique
-  PROMPT
+  
+    PROMPT
 end
 
 def get_smell_patterns(language)
