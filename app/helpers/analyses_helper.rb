@@ -231,4 +231,25 @@ module AnalysesHelper
     
     body
   end
+
+# Méthode pour nettoyer le feedback du mode improve
+def clean_improve_feedback(feedback)
+  return "" if feedback.blank?
+  
+  text = feedback.dup
+  
+  # Supprimer tous les blocs de code ```...```
+  text.gsub!(/```[a-zA-Z]*\n.*?```/m, '')
+  
+  # Supprimer la ligne "Code refactorisé :"
+  text.gsub!(/^.*Code refactorisé\s*:.*$/i, '')
+  
+  # Supprimer la ligne "Code amélioré automatiquement"
+  text.gsub!(/^.*Code amélioré automatiquement.*$/i, '')
+  
+  # Nettoyer les doubles sauts de ligne
+  text.gsub!(/\n{3,}/, "\n\n")
+  
+  text.strip
+end
 end

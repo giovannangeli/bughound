@@ -168,7 +168,7 @@
         <% unless @analysis.ai_provider == "tests" %>
           <h3 class="feedback-title-premium">
             <% if @analysis.ai_provider == "improve" %>
-              ✨ Code amélioré automatiquement
+              🤖 Retour de l'agent QA
             <% elsif @analysis.ai_provider == "smells" %>
               🤖 Retour de l'agent QA
             <% else %>
@@ -247,7 +247,7 @@
             <% end %>
           </div>
 
-        <% elsif @analysis.ai_provider.in?(["openai","claude","smells"]) && parsed[:sections].present? %>
+        <% elsif @analysis.ai_provider.in?(["openai","claude","smells","improve"]) && parsed[:sections].present? %>
           <!-- Version structurée : cartes avec traitement spécial code smells -->
           <div class="feedback-grid-premium">
             <% order = [
@@ -265,9 +265,11 @@
               <% body = parsed[:sections][key][:body] %>
               <% score = parsed[:sections][key][:score] %>
               
-              <%# TRAITEMENT SPÉCIAL POUR CODE SMELLS %>
+              <%# TRAITEMENT SPÉCIAL POUR CODE SMELLS ET IMPROVE %>
               <% if @analysis.ai_provider == "smells" %>
                 <% body = process_smells_content(body, key) %>
+              <% elsif @analysis.ai_provider == "improve" %>
+                <% body = clean_improve_feedback(body) %>
               <% end %>
               
               <% score ||= @scores[:security]    if key == :security %>
@@ -318,10 +320,13 @@
         <% else %>
           <!-- Fallback non structuré -->
           <div class="feedback-content-premium">
-            <%= simple_format(@analysis.ai_feedback.to_s.strip, {}, wrapper_tag: "div") %>
-          </div>
-        <% end %>
-      </div>
+    <% content = @analysis.ai_feedback.to_s.strip %>
+    <% if @analysis.ai_provider == "improve" %>
+      <% content = clean_improve_feedback(content) %>
+    <% end %>
+    <%= simple_format(content, {}, wrapper_tag: "div") %>
+  </div>
+<% end %>
 
       <!-- Correction Section (Rapide/Expert uniquement) -->
       <% if @analysis.ai_provider.in?(["openai","claude"]) %>
@@ -537,77 +542,5 @@ document.addEventListener('DOMContentLoaded', function() {
   setTimeout(createCustomCopyButtons, 100);
   setTimeout(createCustomCopyButtons, 500);
   setTimeout(createCustomCopyButtons, 1000);
-});
-
-// Ajoute cette fonction dans le script de ton show.html.erb
-
-function styleCodeSmells() {
-  // Ne s'exécute que pour les analyses de type "smells"
-  const container = document.querySelector('[data-provider="smells"] .feedback-content-premium');
-  if (!container) return;
-
-  // Récupère tout le contenu
-  const content = container.innerHTML;
-  
-  // Définit les patterns et leurs classes CSS correspondantes
-  const sectionPatterns = [
-    { 
-      pattern: /\*\*Synthèse\*\*/g, 
-      replacement: '<div class="smells-section-title">Synthèse</div><div class="smells-synthese">',
-      closeDiv: true
-    },
-    { 
-      pattern: /\*\*Critiques \(🔴\)\*\*/g, 
-      replacement: '</div><div class="smells-section-title">Critiques 🔴</div><div class="smells-critiques">',
-      closeDiv: false
-    },
-    { 
-      pattern: /\*\*Modérés \(🟡\)\*\*/g, 
-      replacement: '</div><div class="smells-section-title">Modérés 🟡</div><div class="smells-moderes">',
-      closeDiv: false
-    },
-    { 
-      pattern: /\*\*Détail par catégories\*\*/g, 
-      replacement: '</div><div class="smells-section-title">Détail par catégories</div><div class="smells-detail">',
-      closeDiv: false
-    },
-    { 
-      pattern: /\*\*Plan d'action\*\*/g, 
-      replacement: '</div><div class="smells-section-title">Plan d\'action</div><div class="smells-plan">',
-      closeDiv: false
-    },
-    { 
-      pattern: /\*\*Impact pédagogique\*\*/g, 
-      replacement: '</div><div class="smells-section-title">Impact pédagogique</div><div class="smells-impact">',
-      closeDiv: false
-    }
-  ];
-
-  let styledContent = content;
-
-  // Applique chaque transformation
-  sectionPatterns.forEach(({ pattern, replacement }) => {
-    styledContent = styledContent.replace(pattern, replacement);
-  });
-
-  // Ferme la dernière div ouverte
-  styledContent += '</div>';
-
-  // Nettoie les autres étoiles résiduelles autour des mots
-  styledContent = styledContent.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-
-  // Applique le contenu stylisé
-  container.innerHTML = styledContent;
-}
-
-// Appelle la fonction après le chargement de la page
-document.addEventListener('DOMContentLoaded', function() {
-  // Délai pour s'assurer que le contenu est rendu
-  setTimeout(styleCodeSmells, 100);
-});
-
-// Appelle aussi sur les events Turbo si tu utilises Turbo
-document.addEventListener('turbo:load', function() {
-  setTimeout(styleCodeSmells, 100);
 });
 </script>
