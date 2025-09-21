@@ -615,3 +615,162 @@ pre.line-numbers { position: relative; }
     padding: 1rem;
   }
 }
+
+/* Ajoute ce CSS à la fin de ton fichier application.css */
+
+/* Uniformisation hauteur des cards pour les code smells */
+.analysis-card-premium[data-provider="smells"] .feedback-card-premium {
+  min-height: 140px; /* Force une hauteur uniforme */
+  display: flex;
+  flex-direction: column;
+}
+
+.analysis-card-premium[data-provider="smells"] .feedback-body-premium {
+  flex: 1; /* Prend l'espace restant */
+  display: flex;
+  align-items: flex-start; /* Contenu aligné en haut */
+}
+
+/* Titre principal Code Smells plus gros et en gras */
+.analysis-card-premium[data-provider="smells"] .feedback-content-premium > div:first-child {
+  font-weight: 700;
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Responsive : réduire la hauteur sur mobile */
+@media (max-width: 768px) {
+  .analysis-card-premium[data-provider="smells"] .feedback-card-premium {
+    min-height: auto; /* Hauteur naturelle sur mobile */
+  }
+}
+
+/* Ajoute ce CSS à la fin de ton fichier application.css */
+
+/* Ajoute ce CSS à la fin de ton fichier application.css */
+
+/* Stylisation spéciale pour les code smells */
+.analysis-card-premium[data-provider="smells"] .feedback-content-premium {
+  line-height: 1.6;
+}
+
+/* Titres des sections code smells */
+.smells-section-title {
+  font-weight: 700 !important;
+  font-size: 1.1rem !important;
+  color: #1f2937 !important;
+  margin: 1.5rem 0 0.75rem 0 !important;
+  padding: 0.5rem 0 !important;
+  border-bottom: 2px solid #e5e7eb !important;
+  display: block !important;
+}
+
+.smells-section-title:first-child {
+  margin-top: 0 !important;
+}
+
+/* Synthèse avec accent bleu */
+.smells-synthese {
+  background: transparent !important;
+  border: none !important;
+  border-left: 4px solid #0ea5e9 !important;
+  border-radius: 0 !important;
+  padding: 1rem 1.25rem !important;
+  margin: 1rem 0 !important;
+}
+
+/* Critiques avec accent rouge */
+.smells-critiques {
+  background: transparent !important;
+  border: none !important;
+  border-left: 4px solid #ef4444 !important;
+  border-radius: 0 !important;
+  padding: 1rem 1.25rem !important;
+  margin: 1rem 0 !important;
+}
+
+/* Modérés avec accent orange */
+.smells-moderes {
+  background: transparent !important;
+  border: none !important;
+  border-left: 4px solid #f59e0b !important;
+  border-radius: 0 !important;
+  padding: 1rem 1.25rem !important;
+  margin: 1rem 0 !important;
+}
+
+/* Plan d'action avec accent vert */
+.smells-plan {
+  background: transparent !important;
+  border: none !important;
+  border-left: 4px solid #22c55e !important;
+  border-radius: 0 !important;
+  padding: 1rem 1.25rem !important;
+  margin: 1rem 0 !important;
+}
+
+/* Impact pédagogique avec accent violet */
+.smells-impact {
+  background: transparent !important;
+  border: none !important;
+  border-left: 4px solid #a855f7 !important;
+  border-radius: 0 !important;
+  padding: 1rem 1.25rem !important;
+  margin: 1rem 0 !important;
+}
+
+/* Détail par catégories avec accent gris */
+.smells-detail {
+  background: transparent !important;
+  border: none !important;
+  border-left: 4px solid #64748b !important;
+  border-radius: 0 !important;
+  padding: 1rem 1.25rem !important;
+  margin: 1rem 0 !important;
+}
+
+/* Listes dans les code smells */
+.smells-synthese ul, .smells-critiques ul, .smells-moderes ul, .smells-detail ul, .smells-plan ul, .smells-impact ul {
+  margin: 0.5rem 0 !important;
+  padding-left: 1.25rem !important;
+}
+
+.smells-synthese li, .smells-critiques li, .smells-moderes li, .smells-detail li, .smells-plan li, .smells-impact li {
+  margin: 0.25rem 0 !important;
+  color: #374151 !important;
+}
+
+/* Numérotation des listes */
+.smells-synthese ol, .smells-critiques ol, .smells-moderes ol {
+  counter-reset: item !important;
+  padding-left: 0 !important;
+}
+
+.smells-synthese ol li, .smells-critiques ol li, .smells-moderes ol li {
+  display: block !important;
+  margin: 0.5rem 0 !important;
+  padding-left: 2rem !important;
+  position: relative !important;
+}
+
+.smells-synthese ol li:before, .smells-critiques ol li:before, .smells-moderes ol li:before {
+  content: counter(item) "." !important;
+  counter-increment: item !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  font-weight: 700 !important;
+  color: #1f2937 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .smells-synthese, .smells-critiques, .smells-moderes, .smells-detail, .smells-plan, .smells-impact {
+    padding: 0.75rem 1rem !important;
+    margin: 0.75rem 0 !important;
+  }
+  
+  .smells-section-title {
+    font-size: 1rem !important;
+  }
+}

@@ -544,7 +544,7 @@ def build_smells_prompt(language, code)
     • God Class : Classe avec trop de responsabilités
     • Dead Code : Code non utilisé ou inaccessible
 
-    FORMAT OBLIGATOIRE :
+    FORMAT OBLIGATOIRE (respecter exactement cette structure) :
 
     📊 Score : X/10
     [Synthèse basée sur le nombre et gravité des smells]
@@ -563,36 +563,49 @@ def build_smells_prompt(language, code)
 
     👃 Code Smells détectés
 
-    🎯 Nombre de smells trouvés : X
+    **Synthèse**
+    - 🎯 Nombre total : X smells
+    - 🔝 Top 3 risques :
+      1. [Intitulé court] — ligne X (Type, Xmin)
+      2. [Intitulé court] — ligne X (Type, Xmin)
+      3. [Intitulé court] — ligne X (Type, Xmin)
 
-    🔴 Problèmes critiques :
-    [Liste des smells majeurs avec localisation]
+    **Critiques (🔴)**
+    1. [Intitulé actionnable] — ligne X (Xmin)
+    2. [Intitulé actionnable] — ligne X (Xmin)
 
-    🟡 Problèmes modérés :
-    [Liste des smells mineurs]
+    **Modérés (🟡)**
+    1. [Intitulé actionnable] — ligne X (Xmin)
+    2. [Intitulé actionnable] — ligne X (Xmin)
 
-    📊 Détail par catégorie :
-    • 🔍 **Long Methods** : [Nombre + détail]
-    • 🔢 **Magic Numbers** : [Nombre + détail]
-    • 📝 **Bad Naming** : [Nombre + détail]
-    • 📋 **Duplicate Code** : [Nombre + détail]
-    • 🌀 **Complex Logic** : [Nombre + détail]
+    **Détail par catégories**
+    - 🔍 Long Methods (X) : [Liste très brève des méthodes]
+    - 🔢 Magic Numbers (X) : [Exemples clés avec valeurs]
+    - 📝 Bad Naming (X) : [Variables problématiques]
+    - 📋 Duplicate Code (X) : [Blocs dupliqués]
+    - 🌀 Complex Logic (X) : [Méthodes complexes]
 
-    🎓 Impact pédagogique :
-    [Explication pour développeur junior : pourquoi c'est problématique]
+    **Plan d'action**
+    - Now (≤15 min) : [3-4 correctifs critiques rapides séparés par " ; "]
+    - Next (≤1 h) : [Correctifs moyens]
+    - Later (½-1 j) : [Refactoring plus lourd]
+
+    **Impact pédagogique**
+    - [2-3 points max sur sécurité, performance, maintenance]
 
     CODE À ANALYSER :
     ```#{language.downcase}
-    #{code}```
+    #{code}
+    ```
 
-    IMPORTANT :
-    - NE PAS corriger le code
-    - Localiser précisément chaque smell
-    - Expliquer l'impact de chaque problème
-    - Conseils pédagogiques pour comprendre
-    - Score 10/10 = code parfait, 1/10 = code très problématique
-  
-    PROMPT
+    CONTRAINTES ABSOLUES :
+    - Localiser précisément chaque smell avec numéro de ligne
+    - Donner des estimations de temps réalistes (5min, 10min, 30min, etc.)
+    - Prioriser par impact business (sécurité > performance > maintenance)
+    - Garder les intitulés courts et actionnables
+    - Ne pas inventer de smells inexistants
+    - Utiliser exactement les emojis et la structure demandée
+  PROMPT
 end
 
 def get_smell_patterns(language)
