@@ -237,6 +237,14 @@ def clean_improve_feedback(feedback)
   return "" if feedback.blank?
   
   text = feedback.dup
+
+# Supprimer TOUS les emojis parasites isoles
+  text.gsub!(/^🎯\s*/, '')
+  text.gsub!(/^\s*🎯\s*$/, '')
+  text.gsub!(/^📝\s*/, '')
+  text.gsub!(/^\s*📝\s*$/, '')
+  text.gsub!(/^🚀\s*/, '')
+  text.gsub!(/^\s*🚀\s*$/, '')
   
   # Supprimer tous les blocs de code ```...```
   text.gsub!(/```[a-zA-Z]*\n.*?```/m, '')
