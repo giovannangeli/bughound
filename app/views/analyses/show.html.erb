@@ -269,7 +269,7 @@
               <% if @analysis.ai_provider == "smells" %>
                 <% body = process_smells_content(body, key) %>
               <% elsif @analysis.ai_provider == "improve" %>
-                <% body = clean_improve_feedback(body) %>
+                <% body = body %>
               <% end %>
               
               <% score ||= @scores[:security]    if key == :security %>
@@ -606,15 +606,12 @@ function styleCodeSmells() {
 function styleImproveContent() {
   const container = document.querySelector('[data-provider="improve"] .feedback-content-premium');
   if (!container) {
-    console.log("Container non trouvé");
     return;
   }
 
-  console.log("Contenu original:", container.innerHTML);
-  
   let content = container.innerHTML;
   
-  // Test avec des patterns plus larges
+  // Transformations
   if (content.includes("Améliorations apportées")) {
     content = content.replace(/Améliorations apportées.*?:/g, '<div class="improve-section-title">🎯 Améliorations apportées</div><div class="improve-ameliorations">');
   }
@@ -629,10 +626,9 @@ function styleImproveContent() {
   
   content += '</div>';
   
-  console.log("Contenu modifié:", content);
   container.innerHTML = content;
 }
-
+  
 // Pour les mises à jour AJAX classiques
 document.addEventListener('DOMContentLoaded', function() {
   setTimeout(styleCodeSmells, 100);

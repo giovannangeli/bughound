@@ -508,6 +508,7 @@ def build_improve_prompt(language, code)
     - Amélioration significative de la qualité
     - Documentation complète ajoutée
     - Gestion d'erreurs robuste
+    - IMPORTANT : Ne pas ajouter de phrase d'introduction, commencer directement par les sections
   PROMPT
 end
 

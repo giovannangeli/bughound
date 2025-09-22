@@ -669,65 +669,41 @@ pre.line-numbers { position: relative; }
   margin-top: 0 !important;
 }
 
-/* Synthèse avec accent bleu */
-.smells-synthese {
-  background: transparent !important;
-  border: none !important;
-  border-left: 4px solid #0ea5e9 !important;
-  border-radius: 0 !important;
-  padding: 1rem 1.25rem !important;
-  margin: 1rem 0 !important;
-}
-
-/* Critiques avec accent rouge */
-.smells-critiques {
-  background: transparent !important;
-  border: none !important;
-  border-left: 4px solid #ef4444 !important;
-  border-radius: 0 !important;
-  padding: 1rem 1.25rem !important;
-  margin: 1rem 0 !important;
-}
-
-/* Modérés avec accent orange */
-.smells-moderes {
-  background: transparent !important;
-  border: none !important;
-  border-left: 4px solid #f59e0b !important;
-  border-radius: 0 !important;
-  padding: 1rem 1.25rem !important;
-  margin: 1rem 0 !important;
-}
-
-/* Plan d'action avec accent vert */
-.smells-plan {
-  background: transparent !important;
-  border: none !important;
-  border-left: 4px solid #22c55e !important;
-  border-radius: 0 !important;
-  padding: 1rem 1.25rem !important;
-  margin: 1rem 0 !important;
-}
-
-/* Impact pédagogique avec accent violet */
-.smells-impact {
-  background: transparent !important;
-  border: none !important;
-  border-left: 4px solid #a855f7 !important;
-  border-radius: 0 !important;
-  padding: 1rem 1.25rem !important;
-  margin: 1rem 0 !important;
-}
-
-/* Détail par catégories avec accent gris */
+/* Code smells - même système que improve */
+.smells-synthese,
+.smells-critiques,
+.smells-moderes,
+.smells-plan,
+.smells-impact,
 .smells-detail {
+  position: relative;
+  padding-left: 1.5rem;
+  margin: 1rem 0;
   background: transparent !important;
   border: none !important;
-  border-left: 4px solid #64748b !important;
-  border-radius: 0 !important;
-  padding: 1rem 1.25rem !important;
-  margin: 1rem 0 !important;
 }
+
+.smells-synthese::before,
+.smells-critiques::before,
+.smells-moderes::before,
+.smells-plan::before,
+.smells-impact::before,
+.smells-detail::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 2px;
+}
+
+.smells-synthese::before { background: #0ea5e9; }
+.smells-critiques::before { background: #ef4444; }
+.smells-moderes::before { background: #f59e0b; }
+.smells-plan::before { background: #22c55e; }
+.smells-impact::before { background: #a855f7; }
+.smells-detail::before { background: #64748b; }
 
 /* Listes dans les code smells */
 .smells-synthese ul, .smells-critiques ul, .smells-moderes ul, .smells-detail ul, .smells-plan ul, .smells-impact ul {
@@ -795,32 +771,35 @@ pre.line-numbers { position: relative; }
   margin-top: 0 !important;
 }
 
-/* Améliorations avec accent vert */
-.improve-ameliorations {
-  background: transparent !important;
-  border: none !important;
-  border-left: 4px solid #10b981 !important;
-  border-radius: 0 !important;
-  padding: 1rem 1.25rem !important;
-  margin: 1rem 0 !important;
-}
-
-/* Explications avec accent bleu */
-.improve-explications {
-  background: transparent !important;
-  border: none !important;
-  border-left: 4px solid #3b82f6 !important;
-  border-radius: 0 !important;
-  padding: 1rem 1.25rem !important;
-  margin: 1rem 0 !important;
-}
-
-/* Bénéfices avec accent rose */
+/* Correction pour les barres colorées des sections improve */
+.improve-ameliorations,
+.improve-explications,
 .improve-benefices {
-  background: transparent !important;
-  border: none !important;
-  border-left: 4px solid #ec4899 !important;
-  border-radius: 0 !important;
-  padding: 1rem 1.25rem !important;
-  margin: 1rem 0 !important;
+  position: relative;
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+}
+
+.improve-ameliorations::before,
+.improve-explications::before,
+.improve-benefices::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 2px;
+}
+
+.improve-ameliorations::before {
+  background: linear-gradient(135deg, #10b981, #34d399);
+}
+
+.improve-explications::before {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+}
+
+.improve-benefices::before {
+  background: linear-gradient(135deg, #ec4899, #f472b6);
 }
