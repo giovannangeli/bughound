@@ -543,4 +543,107 @@ document.addEventListener('DOMContentLoaded', function() {
   setTimeout(createCustomCopyButtons, 500);
   setTimeout(createCustomCopyButtons, 1000);
 });
+
+function styleCodeSmells() {
+  // Ne s'exécute que pour les analyses de type "smells"
+  const container = document.querySelector('[data-provider="smells"] .feedback-content-premium');
+  if (!container) return;
+
+  // Récupère tout le contenu
+  const content = container.innerHTML;
+  
+  // Définit les patterns et leurs classes CSS correspondantes
+  const sectionPatterns = [
+    { 
+      pattern: /\*\*Synthèse\*\*/g, 
+      replacement: '<div class="smells-section-title">Synthèse</div><div class="smells-synthese">',
+      closeDiv: true
+    },
+    { 
+      pattern: /\*\*Critiques \(🔴\)\*\*/g, 
+      replacement: '</div><div class="smells-section-title">Critiques 🔴</div><div class="smells-critiques">',
+      closeDiv: false
+    },
+    { 
+      pattern: /\*\*Modérés \(🟡\)\*\*/g, 
+      replacement: '</div><div class="smells-section-title">Modérés 🟡</div><div class="smells-moderes">',
+      closeDiv: false
+    },
+    { 
+      pattern: /\*\*Détail par catégories\*\*/g, 
+      replacement: '</div><div class="smells-section-title">Détail par catégories</div><div class="smells-detail">',
+      closeDiv: false
+    },
+    { 
+      pattern: /\*\*Plan d'action\*\*/g, 
+      replacement: '</div><div class="smells-section-title">Plan d\'action</div><div class="smells-plan">',
+      closeDiv: false
+    },
+    { 
+      pattern: /\*\*Impact pédagogique\*\*/g, 
+      replacement: '</div><div class="smells-section-title">Impact pédagogique</div><div class="smells-impact">',
+      closeDiv: false
+    }
+  ];
+
+  let styledContent = content;
+
+  // Applique chaque transformation
+  sectionPatterns.forEach(({ pattern, replacement }) => {
+    styledContent = styledContent.replace(pattern, replacement);
+  });
+
+  // Ferme la dernière div ouverte
+  styledContent += '</div>';
+
+  // Nettoie les autres étoiles résiduelles autour des mots
+  styledContent = styledContent.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+  // Applique le contenu stylisé
+  container.innerHTML = styledContent;
+}
+
+function styleImproveContent() {
+  const container = document.querySelector('[data-provider="improve"] .feedback-content-premium');
+  if (!container) {
+    console.log("Container non trouvé");
+    return;
+  }
+
+  console.log("Contenu original:", container.innerHTML);
+  
+  let content = container.innerHTML;
+  
+  // Test avec des patterns plus larges
+  if (content.includes("Améliorations apportées")) {
+    content = content.replace(/Améliorations apportées.*?:/g, '<div class="improve-section-title">🎯 Améliorations apportées</div><div class="improve-ameliorations">');
+  }
+  
+  if (content.includes("Explications détaillées")) {
+    content = content.replace(/Explications détaillées.*?:/g, '</div><div class="improve-section-title">📝 Explications détaillées</div><div class="improve-explications">');
+  }
+  
+  if (content.includes("Bénéfices obtenus")) {
+    content = content.replace(/Bénéfices obtenus.*?:/g, '</div><div class="improve-section-title">🚀 Bénéfices obtenus</div><div class="improve-benefices">');
+  }
+  
+  content += '</div>';
+  
+  console.log("Contenu modifié:", content);
+  container.innerHTML = content;
+}
+
+// Pour les mises à jour AJAX classiques
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(styleCodeSmells, 100);
+  setTimeout(styleImproveContent, 100);
+  
+  // Observer les changements dans le DOM
+  const observer = new MutationObserver(function() {
+    setTimeout(styleCodeSmells, 100);
+    setTimeout(styleImproveContent, 100);
+  });
+  
+  observer.observe(document.body, { childList: true, subtree: true });
+});
 </script>

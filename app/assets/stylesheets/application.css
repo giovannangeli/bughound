@@ -774,3 +774,53 @@ pre.line-numbers { position: relative; }
     font-size: 1rem !important;
   }
 }
+
+/* Styling pour les sections improve */
+.analysis-card-premium[data-provider="improve"] .feedback-content-premium {
+  line-height: 1.6;
+}
+
+/* Titres des sections improve */
+.improve-section-title {
+  font-weight: 700 !important;
+  font-size: 1.25rem !important;
+  color: #1f2937 !important;
+  margin: 1.5rem 0 0.75rem 0 !important;
+  padding: 0.5rem 0 !important;
+  border-bottom: 2px solid #e5e7eb !important;
+  display: block !important;
+}
+
+.improve-section-title:first-child {
+  margin-top: 0 !important;
+}
+
+/* Améliorations avec accent vert */
+.improve-ameliorations {
+  background: transparent !important;
+  border: none !important;
+  border-left: 4px solid #10b981 !important;
+  border-radius: 0 !important;
+  padding: 1rem 1.25rem !important;
+  margin: 1rem 0 !important;
+}
+
+/* Explications avec accent bleu */
+.improve-explications {
+  background: transparent !important;
+  border: none !important;
+  border-left: 4px solid #3b82f6 !important;
+  border-radius: 0 !important;
+  padding: 1rem 1.25rem !important;
+  margin: 1rem 0 !important;
+}
+
+/* Bénéfices avec accent rose */
+.improve-benefices {
+  background: transparent !important;
+  border: none !important;
+  border-left: 4px solid #ec4899 !important;
+  border-radius: 0 !important;
+  padding: 1rem 1.25rem !important;
+  margin: 1rem 0 !important;
+}
