@@ -229,7 +229,7 @@ html { scroll-padding-top: 80px; }
 
 /* ========== FEEDBACK / CORRECTION ========== */
 .feedback-section-premium { padding: 2rem 2rem 1rem; border-bottom: 1px solid #f1f5f9; }
-.correction-section-premium { padding: 1rem 2rem 2rem; border-bottom: 1px solid #f1f5f9; }
+.correction-section-premium { padding: 1rem 0 2rem; border-bottom: 1px solid #f1f5f9; }
 .feedback-title-premium, .correction-title-premium { font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 1rem; }
 
 .feedback-content-premium {
@@ -296,13 +296,13 @@ html { scroll-padding-top: 80px; }
   background:#0b1220; /* très sombre pour contraste VS Code-like */
   border:1px solid #0f1a2d;
   border-radius:12px;
-  padding: 12px;
+  padding: 1.5rem;
   box-shadow: 0 6px 24px rgba(2,6,23,.08);
 }
 .code-card pre{
   background: transparent !important;
   margin: 0;
-  padding: 12px;
+  padding: 0;
   border-radius: 10px;
   overflow-x: auto;
 }
