@@ -263,6 +263,9 @@
               <% next if key == :resume && @analysis.ai_provider == "smells" %>
               
               <% body = parsed[:sections][key][:body] %>
+              <% if key == :tests && @analysis.ai_provider.in?(["openai", "claude"]) %>
+  <% body = body.gsub(/🎯\s*Pistes d'amélioration.*$/mi, '').strip %>
+<% end %>
               <% score = parsed[:sections][key][:score] %>
               
               <%# TRAITEMENT SPÉCIAL POUR CODE SMELLS ET IMPROVE %>
@@ -320,35 +323,84 @@
         <% else %>
           <!-- Fallback non structuré -->
           <div class="feedback-content-premium">
-    <% content = @analysis.ai_feedback.to_s.strip %>
-    <% if @analysis.ai_provider == "improve" %>
-      <% content = clean_improve_feedback(content) %>
-    <% end %>
-    <%= simple_format(content, {}, wrapper_tag: "div") %>
-  </div>
-<% end %>
+            <% content = @analysis.ai_feedback.to_s.strip %>
+            <% if @analysis.ai_provider == "improve" %>
+              <% content = clean_improve_feedback(content) %>
+            <% end %>
+            <%= simple_format(content, {}, wrapper_tag: "div") %>
+          </div>
+        <% end %>
+      </div>
 
-      <!-- Correction Section (Rapide/Expert uniquement) -->
+      <!-- Section Pistes d'amélioration (Rapide/Expert uniquement) - SÉPARÉE -->
       <% if @analysis.ai_provider.in?(["openai","claude"]) %>
-        <% correction_text =
-            if parsed[:correction].present?
-              parsed[:correction]
-            else
-              (@analysis.ai_feedback.match(/^[^\S\r\n]*[🔧🛠].*$/m)&.to_s || "").strip
-            end
+        <% 
+       # Extraction des pistes d'amélioration - VERSION ROBUSTE
+pistes_match = @analysis.ai_feedback.match(/🎯\s*Pistes d'amélioration\s*:?\s*((?:(?!⏱️).)*)⏱️/mi)
+pistes_text = pistes_match ? pistes_match[1].strip : nil
+
+# Si pas trouvé avec ⏱️, essayer sans
+if pistes_text.blank?
+  pistes_match = @analysis.ai_feedback.match(/🎯\s*Pistes d'amélioration\s*:?\s*(.*?)$/mi)
+  pistes_text = pistes_match ? pistes_match[1].strip : nil
+end
+          
+          # Extraction du temps estimé
+          temps_match = @analysis.ai_feedback.match(/⏱️\s*\*?\*?Temps estimé.*?\*?\*?\s*:?\s*([^\n]+)/i)
+          temps_estime = temps_match ? temps_match[1].strip : nil
         %>
-        <% if correction_text.present? %>
+        
+        <% if pistes_text.present? %>
           <div class="correction-section-premium">
-            <h3 class="correction-title-premium">🛠 Proposition de correction</h3>
-            <div class="correction-content-premium">
-              <!-- On passe par markdown pour respecter les ```lang``` et laisser Prism colorer -->
-              <div class="code-card">
-                <%= markdown(correction_text) %>
-              </div>
-              <button class="btn-apply-fix" disabled title="Bientôt disponible">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                Appliquer la correction automatiquement
-              </button>
+            <h3 class="correction-title-premium">🎯 Pistes d'amélioration</h3>
+            
+            <div class="pistes-content-premium">
+              <% 
+                # Parser le contenu pour identifier les sections
+                sections = []
+                
+                # Chercher "Points critiques"
+                if pistes_text.match(/\*\*Points critiques\*\*(.+?)(?=\*\*|⏱️|$)/mi)
+                  sections << {
+                    title: "Points critiques",
+                    content: $1.strip,
+                    css_class: "pistes-critiques"
+                  }
+                end
+                
+                # Chercher "Améliorations recommandées" ou "Améliorations rapides"
+                if pistes_text.match(/\*\*Améliorations?\s+(?:recommandées|rapides)?\*\*(.+?)(?=\*\*|⏱️|$)/mi)
+                  sections << {
+                    title: "Améliorations recommandées",
+                    content: $1.strip,
+                    css_class: "pistes-importantes"
+                  }
+                end
+                
+                # Si pas de sections trouvées, traiter tout comme une liste
+                if sections.empty?
+                  sections << {
+                    title: nil,
+                    content: pistes_text,
+                    css_class: "pistes-conseils"
+                  }
+                end
+              %>
+              
+              <% sections.each do |section| %>
+                <% if section[:title].present? %>
+                  <div class="pistes-section-title"><%= section[:title] %></div>
+                <% end %>
+                <div class="<%= section[:css_class] %>">
+                  <%= simple_format(section[:content], {}, wrapper_tag: "div") %>
+                </div>
+              <% end %>
+              
+              <% if temps_estime.present? %>
+                <div class="pistes-temps">
+                  <strong>⏱️ Temps estimé :</strong> <%= temps_estime %>
+                </div>
+              <% end %>
             </div>
           </div>
         <% end %>

@@ -270,8 +270,22 @@ end
       🧪 Recommandations de tests : X/10
       [Tests manquants + justification]
 
-      🔧 Proposition de correction :
-      [Code amélioré OU "Code satisfaisant"]
+      🎯 Pistes d'amélioration :
+      
+      **Points critiques** (si sécurité < 7 ou performance < 6)
+      [Liste numérotée de 2-3 problèmes majeurs avec explication pédagogique]
+      • Problème identifié
+      • POURQUOI c'est important (impact business)
+      • Alternative recommandée
+      • Mini-exemple (1-3 lignes max) si pertinent
+
+      **Améliorations recommandées**
+      [Liste numérotée de 2-3 améliorations pour la maintenabilité]
+      • Point d'amélioration
+      • Bonne pratique associée
+      • Bénéfice attendu
+
+      ⏱️ **Temps estimé pour corrections** : [15-30 min pour corrections mineures, 1-2h pour refactoring important]
 
       CODE :
       ```#{language.downcase}
@@ -282,7 +296,9 @@ end
       - TOUS les scores doivent être des NOMBRES ENTIERS (1, 2, 3... 10)
       - JAMAIS de décimales (8.75, 7.5, etc.)
       - Score global = moyenne arrondie des 4 catégories
-      - Exemple : (10+7+9+9)/4 = 8.75 → Score global = 9/10
+      - Ne PAS générer de refactoring complet
+      - Maximum 5-6 pistes d'amélioration au total
+      - Être pédagogique : expliquer le POURQUOI avant le COMMENT
     PROMPT
   end
 
@@ -324,7 +340,7 @@ def generate_tests(language, code)
     messages: [
       {
         role: "user",
-        content: prompt
+          content: prompt
       }
     ]
   )
@@ -659,16 +675,22 @@ def build_openai_improved_prompt(language, code)
     ⚙️ Performance : X/10
     [Évaluation généreuse pour code fonctionnel]
 
-
-
     📐 Lisibilité et qualité du code : X/10
     [Critiques constructives mais encourageantes]
 
     🧪 Recommandations de tests : X/10
     [Suggestions simples]
 
-    🔧 Proposition de correction :
-    [Amélioration légère OU "Code fonctionnel - Quelques suggestions optionnelles"]
+    🎯 Pistes d'amélioration :
+    [3-4 points MAXIMUM, format court et direct]
+    1. **Problème** : [Description claire]
+       **Solution** : [Action immédiate]
+    2. **Problème** : [Description claire]
+       **Solution** : [Action immédiate]
+    3. **Problème** : [Description claire]
+       **Solution** : [Action immédiate]
+
+    ⏱️ **Temps estimé** : ~15-20 minutes
 
     CODE :
     ```#{language.downcase}
@@ -677,8 +699,9 @@ def build_openai_improved_prompt(language, code)
 
     RÈGLES pour ANALYSE RAPIDE :
     - Scores généreux pour code fonctionnel (7-8/10 minimum)
-    - Être encourageant et positif dans les commentaires
-    - Se concentrer sur l'essentiel, éviter les détails mineurs
+    - Maximum 200 mots pour les pistes d'amélioration
+    - Pas de blocs de code complets, juste des snippets inline avec `backticks`
+    - Prioriser par criticité (sécurité > performance > lisibilité)
     - Toujours finir par quelque chose de positif
   PROMPT
 end

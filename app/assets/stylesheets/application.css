@@ -803,3 +803,132 @@ pre.line-numbers { position: relative; }
 .improve-benefices::before {
   background: linear-gradient(135deg, #ec4899, #f472b6);
 }
+
+/* ===== PISTES D'AMÉLIORATION - Analyse rapide & expert ===== */
+.pistes-content-premium {
+  line-height: 1.6;
+}
+
+/* Titres des sections pistes */
+.pistes-section-title {
+  font-weight: 700 !important;
+  font-size: 1.1rem !important;
+  color: #1f2937 !important;
+  margin: 1.5rem 0 0.75rem 0 !important;
+  padding: 0.5rem 0 !important;
+  border-bottom: 2px solid #e5e7eb !important;
+  display: block !important;
+}
+
+.pistes-section-title:first-child {
+  margin-top: 0 !important;
+}
+
+/* Sections avec barres colorées - même système que improve/smells */
+.pistes-critiques,
+.pistes-importantes,
+.pistes-conseils,
+.pistes-temps {
+  position: relative;
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+  background: transparent !important;
+  border: none !important;
+}
+
+.pistes-critiques::before,
+.pistes-importantes::before,
+.pistes-conseils::before,
+.pistes-temps::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 2px;
+}
+
+/* Couleurs des barres */
+.pistes-critiques::before { 
+  background: #dc2626; /* Rouge - Sécurité/Critique */
+}
+
+.pistes-importantes::before { 
+  background: #f59e0b; /* Orange - Améliorations importantes */
+}
+
+.pistes-conseils::before { 
+  background: #3b82f6; /* Bleu - Bonnes pratiques */
+}
+
+.pistes-temps::before { 
+  background: #10b981; /* Vert - Temps estimé */
+}
+
+/* Styles pour les listes dans les pistes */
+.pistes-critiques ol,
+.pistes-importantes ol,
+.pistes-conseils ol {
+  counter-reset: item !important;
+  padding-left: 0 !important;
+  margin: 0.5rem 0 !important;
+}
+
+.pistes-critiques ol li,
+.pistes-importantes ol li,
+.pistes-conseils ol li {
+  display: block !important;
+  margin: 0.75rem 0 !important;
+  padding-left: 2rem !important;
+  position: relative !important;
+  color: #374151 !important;
+  line-height: 1.6 !important;
+}
+
+.pistes-critiques ol li:before,
+.pistes-importantes ol li:before,
+.pistes-conseils ol li:before {
+  content: counter(item) "." !important;
+  counter-increment: item !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  font-weight: 700 !important;
+  color: #1f2937 !important;
+}
+
+/* Style spécial pour le temps estimé */
+.pistes-temps {
+  margin-top: 1.5rem !important;
+  padding: 0.75rem 1.5rem !important;
+  background: #f0fdf4 !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  color: #166534 !important;
+}
+
+/* Code inline dans les pistes */
+.pistes-content-premium code {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pistes-critiques,
+  .pistes-importantes,
+  .pistes-conseils,
+  .pistes-temps {
+    padding: 0.75rem 1rem !important;
+    margin: 0.75rem 0 !important;
+  }
+  
+  .pistes-section-title {
+    font-size: 1rem !important;
+  }
+}
