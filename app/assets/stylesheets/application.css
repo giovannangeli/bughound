@@ -540,6 +540,12 @@ pre { border-bottom: 0 !important; }
 
 /* Petit ajustement line-numbers Prism */
 pre.line-numbers { position: relative; }
+/* ===== Dropdowns (Analyses index) — cliquabilité fiable, scope strict ===== */
+.analyses-container .dropdown-menu { pointer-events: none; }
+.analyses-container [data-dropdown].open .dropdown-menu {
+  pointer-events: auto;
+  z-index: 1200;
+}
 
 /* ===== BOUTONS COPY PERSONNALISÉS ===== */
 
@@ -932,3 +938,4 @@ pre.line-numbers { position: relative; }
     font-size: 1rem !important;
   }
 }
+

@@ -975,4 +975,7 @@ function downloadAnalysisPDF() {
     }, 2000);
   }
 }
+document.addEventListener('turbo:before-cache', () => { document.querySelectorAll('[data-dropdown]').forEach(d => d.classList.remove('open')); });
+document.addEventListener('turbo:load',        () => { document.querySelectorAll('[data-dropdown]').forEach(d => d.classList.remove('open')); });
+document.addEventListener('turbo:render',      () => { document.querySelectorAll('[data-dropdown]').forEach(d => d.classList.remove('open')); });
 </script>

@@ -70,38 +70,60 @@
       </div>
 
       <!-- Zone d'upload -->
-      <div id="file-mode" class="file-upload-section" style="display: none;">
-        <div id="drop-zone" class="drop-zone">
-          <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-          </svg>
-          <p class="upload-title">Glissez-déposez votre fichier ici</p>
-          <p class="upload-subtitle">ou <span class="upload-link">parcourir</span></p>
-          <p class="upload-formats">Formats acceptés: .rb, .py, .js, .ts, .cpp, .java, .php, .go, .rs, .sql, .html, .css, .sh, .bash</p>
-        </div>
+<div id="file-mode" 
+     class="file-upload-section" 
+     style="display: none;" 
+     data-controller="file-upload">
+  
+  <div id="drop-zone" 
+       class="drop-zone"
+       data-file-upload-target="dropZone"
+       data-action="click->file-upload#openFileSelector
+                    drop->file-upload#handleDrop
+                    dragover->file-upload#handleDragOver
+                    dragleave->file-upload#handleDragLeave">
+    <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+    </svg>
+    <p class="upload-title">Glissez-déposez votre fichier ici</p>
+    <p class="upload-subtitle">ou <span class="upload-link" data-action="click->file-upload#openFileSelector">parcourir</span></p>
+    <p class="upload-formats">Formats acceptés: .rb, .py, .js, .ts, .cpp, .java, .php, .go, .rs, .sql, .html, .css, .sh, .bash</p>
+  </div>
 
-        <%= form.file_field :uploaded_file,
-              accept: ".rb,.py,.js,.ts,.cpp,.c,.java,.php,.go,.rs,.sql,.html,.css,.sh,.bash",
-              style: "display: none;",
-              id: "file-input" %>
+  <%= form.file_field :uploaded_file,
+        accept: ".rb,.py,.js,.ts,.cpp,.c,.java,.php,.go,.rs,.sql,.html,.css,.sh,.bash",
+        style: "display: none;",
+        id: "file-input",
+        data: { 
+          file_upload_target: "fileInput",
+          action: "change->file-upload#handleFileChange"
+        } %>
 
-        <div id="file-preview" class="file-preview">
-          <div class="file-preview-content">
-            <svg class="file-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            <div class="file-info-wrapper">
-              <p class="file-name" id="file-info"></p>
-              <p class="file-status">Prêt pour l'analyse</p>
-            </div>
-            <button type="button" id="remove-file" class="remove-file-btn" aria-label="Supprimer le fichier">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
-          </div>
-        </div>
+  <div id="file-preview" 
+       class="file-preview"
+       data-file-upload-target="filePreview">
+    <div class="file-preview-content">
+      <svg class="file-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+      <div class="file-info-wrapper">
+        <p class="file-name" 
+           id="file-info"
+           data-file-upload-target="fileInfo"></p>
+        <p class="file-status">Prêt pour l'analyse</p>
       </div>
+      <button type="button" 
+              id="remove-file" 
+              class="remove-file-btn" 
+              aria-label="Supprimer le fichier"
+              data-action="click->file-upload#removeFile">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
 
       <!-- Actions -->
       <div class="actions-section">
@@ -261,38 +283,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Inter',sa
 </style>
 
 <script>
-(function initAnalysisPageSetup(){
+(function() {
   function initAnalysisPage(){
-    const form         = document.querySelector("form");
-    const codeField    = document.querySelector("textarea#analysis_code");
-    const fileInput    = document.querySelector("#file-input");
-    const warning      = document.querySelector("#code-warning");
-    const languageSelect = document.querySelector("select#analysis_language");
-    const charCounter  = document.querySelector("#char-count");
-
-    // Tabs
+    // Juste les fonctionnalités de base sans l'upload
+    const form = document.querySelector("form");
+    const codeField = document.querySelector("textarea#analysis_code");
+    const charCounter = document.querySelector("#char-count");
     const textTab = document.querySelector("#text-tab");
     const fileTab = document.querySelector("#file-tab");
     const textMode = document.querySelector("#text-mode");
     const fileMode = document.querySelector("#file-mode");
+    const actionButtons = document.querySelectorAll('.action-button');
 
-    // Drag & Drop
-    const dropZone     = document.querySelector("#drop-zone");
-    const filePreview  = document.querySelector("#file-preview");
-    const fileInfo     = document.querySelector("#file-info");
-    const removeFileBtn= document.querySelector("#remove-file");
-
-    // Boutons d'action
-    const actionButtons= document.querySelectorAll('.action-button, input[type="submit"]');
-
-    // Hover color
-    actionButtons.forEach(button=>{
+    // Hover colors
+    actionButtons.forEach(button => {
       const color = button.dataset?.color;
       if(!color) return;
       button.addEventListener('mouseenter', function(){
         this.style.borderColor = color;
         this.style.color = color;
-        this.style.setProperty('--button-color', color);
       });
       button.addEventListener('mouseleave', function(){
         this.style.borderColor = '#e2e8f0';
@@ -300,118 +309,56 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Inter',sa
       });
     });
 
-    // Compteur
+    // Character counter
     if(codeField && charCounter){
       codeField.addEventListener('input', function(){
         const count = this.value.length;
         charCounter.textContent = `${count} caractères`;
-        if(count>0 && count<10)      charCounter.style.color = '#ef4444';
-        else if(count>=10)           charCounter.style.color = '#10b981';
-        else                         charCounter.style.color = '#94a3b8';
+        if(count > 0 && count < 10) charCounter.style.color = '#ef4444';
+        else if(count >= 10) charCounter.style.color = '#10b981';
+        else charCounter.style.color = '#94a3b8';
       });
     }
 
-    // Tabs logic
+    // Tabs
     if(textTab && fileTab){
-      textTab.addEventListener("click", ()=>activateTab("text"));
-      fileTab.addEventListener("click", ()=>activateTab("file"));
-    }
-    function activateTab(tab){
-      if(tab==="text"){
-        textTab.classList.add("active"); fileTab.classList.remove("active");
-        textMode.style.display="block"; fileMode.style.display="none";
-        if(fileInput) fileInput.value=""; hideFilePreview();
-      }else{
-        fileTab.classList.add("active"); textTab.classList.remove("active");
-        textMode.style.display="none"; fileMode.style.display="block";
-        if(codeField) codeField.value=""; if(charCounter) charCounter.textContent="0 caractères";
-      }
-      toggleSubmitButton();
-    }
-
-    // Drag & Drop handlers
-    if(dropZone){
-      dropZone.addEventListener("click", ()=> fileInput && fileInput.click());
-      dropZone.addEventListener("dragover", e=>{e.preventDefault(); dropZone.classList.add("drag-over");});
-      dropZone.addEventListener("dragleave", e=>{e.preventDefault(); dropZone.classList.remove("drag-over");});
-      dropZone.addEventListener("drop", e=>{
-        e.preventDefault(); dropZone.classList.remove("drag-over");
-        const files = e.dataTransfer.files; if(files.length>0) handleFileSelection(files[0]);
+      textTab.addEventListener("click", () => {
+        textTab.classList.add("active");
+        fileTab.classList.remove("active");
+        textMode.style.display = "block";
+        fileMode.style.display = "none";
       });
-    }
-    if(fileInput){
-      fileInput.addEventListener("change", e=>{
-        if(e.target.files.length>0) handleFileSelection(e.target.files[0]);
-      });
-    }
-    if(removeFileBtn){
-      removeFileBtn.addEventListener("click", ()=>{
-        if(fileInput) fileInput.value="";
-        hideFilePreview(); toggleSubmitButton();
+      
+      fileTab.addEventListener("click", () => {
+        fileTab.classList.add("active");
+        textTab.classList.remove("active");
+        textMode.style.display = "none";
+        fileMode.style.display = "block";
       });
     }
 
-    function handleFileSelection(file){
-      if(file.size > 1024*1024){ alert("Le fichier est trop volumineux (max 1MB)"); return; }
-      const ext = file.name.split('.').pop().toLowerCase();
-      const map = {'rb':'Ruby','py':'Python','js':'JavaScript','ts':'TypeScript','cpp':'C++','c':'C++','java':'Java','php':'PHP','go':'Go','rs':'Rust','sql':'SQL','html':'HTML','css':'CSS','sh':'Bash','bash':'Bash'};
-      if(map[ext] && languageSelect) languageSelect.value = map[ext];
-      const size = (file.size/1024).toFixed(1)+' KB';
-      if(fileInfo) fileInfo.textContent = `${file.name} (${size})`;
-      showFilePreview(); toggleSubmitButton();
-    }
-    function showFilePreview(){ if(!filePreview) return; filePreview.style.display="block"; filePreview.style.opacity="0"; setTimeout(()=>{ filePreview.style.transition="opacity .3s ease"; filePreview.style.opacity="1"; },10); }
-    function hideFilePreview(){ if(filePreview) filePreview.style.display="none"; }
-
-    // Validation
-    function toggleSubmitButton(){
-      const textModeActive = textMode && textMode.style.display!=="none";
-      const hasContent = textModeActive ? (codeField && codeField.value.trim().length>=10) : (fileInput && fileInput.files.length>0);
-      actionButtons.forEach(btn=>{
-        if(!hasContent){ btn.style.pointerEvents='none'; btn.style.opacity='0.5'; btn.style.cursor='not-allowed'; }
-        else{ btn.style.pointerEvents='auto'; btn.style.opacity='1'; btn.style.cursor='pointer'; }
-      });
-      if(textModeActive && warning) warning.style.display = hasContent ? "none" : "flex";
-    }
-    if(codeField) codeField.addEventListener("input", toggleSubmitButton);
-    toggleSubmitButton();
-
-    // Loader (indéterminé) + anti double submit
-    let submitting=false;
+    // Loader
     if(form){
       form.addEventListener('submit', function(e){
-        if(submitting){ e.preventDefault(); return; }
-        submitting=true;
-
-        const old=document.getElementById('loading-overlay'); if(old) old.remove();
-
-        const overlay=document.createElement('div');
-        overlay.id='loading-overlay';
-        overlay.className='loading-overlay';
+        const overlay = document.createElement('div');
+        overlay.className = 'loading-overlay';
         overlay.innerHTML = `
-  <div class="loading-content" role="status" aria-live="polite" aria-busy="true">
-    <div class="loading-card">
-      <h2 class="loading-title">Analyse en cours…</h2>
-      <p class="loading-subcopy">BugHound prépare votre rapport (sécurité, performance, lisibilité).</p>
-
-      <div class="loading-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuetext="En cours">
-        <div class="loading-progress-bar"></div>
-      </div>
-    </div>
-  </div>`;
-        overlay.style.display='flex';
+          <div class="loading-content">
+            <div class="loading-card">
+              <h2 class="loading-title">Analyse en cours…</h2>
+              <p class="loading-subcopy">BugHound prépare votre rapport.</p>
+              <div class="loading-progress-track">
+                <div class="loading-progress-bar"></div>
+              </div>
+            </div>
+          </div>`;
+        overlay.style.display = 'flex';
         document.body.appendChild(overlay);
-        // Aucun timer/ETA/JS de progression : animation pure CSS
       });
     }
   }
 
-  document.addEventListener("turbo:load", initAnalysisPage);
   document.addEventListener("DOMContentLoaded", initAnalysisPage);
-  // Nettoyage avant mise en cache Turbo
-  document.addEventListener("turbo:before-cache", () => {
-    const old = document.getElementById('loading-overlay');
-    if (old) old.remove();
-    });
+  document.addEventListener("turbo:load", initAnalysisPage);
 })();
 </script>
