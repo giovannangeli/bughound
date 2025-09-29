@@ -2,6 +2,7 @@
 
 <style>
   body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     background: #f8f9fa;
     min-height: 100vh;
     padding: 2rem;
@@ -40,6 +41,13 @@
   .logo span {
     font-size: 2.5rem;
   }
+
+  .logo-img {
+  width: 60px;  /* Ajuste selon ton logo */
+  height: 60px;
+  margin-bottom: 1rem;
+  object-fit: contain;
+}
 
   .form-title {
     text-align: center;
@@ -81,7 +89,7 @@
 .btn-primary {
   width: 100%;
   padding: 1rem;  /* Changé de 0.875rem à 1rem */
-  background: linear-gradient(45deg, #ff6b35, #f7931e);
+  background: linear-gradient(135deg, #635bff, #4b45d1);
   color: white;
   border: none;
   border-radius: 8px;
@@ -96,7 +104,7 @@
 
   .btn-primary:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+    box-shadow: 0 4px 20px rgba(99, 91, 255, 0.3);
   }
 
 .auth-links {
@@ -185,7 +193,7 @@ input[type="password"] {
 <div class="auth-wrapper">
   <div class="auth-container">
     <div class="logo">
-      <span>🐣</span>
+      <%= image_tag "logo.png", alt: "BugHound", class: "logo-img" %>
       <h1>BugHound</h1>
     </div>
 
