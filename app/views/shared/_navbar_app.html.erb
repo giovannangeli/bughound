@@ -1,0 +1,423 @@
+<!-- app/views/shared/_navbar_app.html.erb -->
+
+<nav class="navbar-app" id="navbarApp">
+  <div class="navbar-app-content">
+    <!-- Partie gauche : Logo + Navigation -->
+    <div class="nav-app-left">
+      <%= link_to root_path, class: "logo-app" do %>
+        <%= image_tag "logo.png", alt: "BugHound Logo", class: "logo-app-image" %>
+        <span>BugHound</span>
+      <% end %>
+    </div>
+    
+    <!-- Centre : Historique -->
+    <div class="nav-app-center">
+      <%= link_to "Historique", analyses_path, class: "nav-app-link" %>
+    </div>
+
+    <!-- Partie droite : User + Actions -->
+    <div class="nav-app-right">
+      <% if user_signed_in? %>
+        <div class="user-dropdown-app">
+          <button
+            id="userMenuBtnApp"
+            class="user-btn-app"
+            type="button"
+            aria-haspopup="menu"
+            aria-expanded="false">
+            <div class="user-avatar-app">
+              <% if current_user.first_name.present? && current_user.last_name.present? %>
+                <%= current_user.first_name.first.upcase %><%= current_user.last_name.first.upcase %>
+              <% else %>
+                <%= current_user.email.split('@').first[0..1].upcase %>
+              <% end %>
+            </div>
+          </button>
+
+          <div id="userMenuApp" class="dropdown-menu-app">
+            <div class="user-info-app">
+              <strong>
+                <% if current_user.first_name.present? && current_user.last_name.present? %>
+                  <%= "#{current_user.first_name.upcase} #{current_user.last_name.upcase}" %>
+                <% else %>
+                  <%= current_user.email.split('@').first.upcase %>
+                <% end %>
+              </strong>
+              <small><%= current_user.email %></small>
+            </div>
+            <hr class="dropdown-divider">
+            <%= link_to "Se déconnecter",
+                        destroy_user_session_path,
+                        data: { "turbo-method": :delete },
+                        class: "dropdown-item-app" %>
+          </div>
+        </div>
+      <% else %>
+        <%= link_to "Se connecter", new_user_session_path, class: "nav-app-link" %>
+      <% end %>
+
+      <%= link_to new_analysis_path, class: "btn-analyze-app" do %>
+        <svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" style="margin-right: 6px;">
+          <path d="M156.6 384.9L125.7 354c-8.5-8.5-11.5-20.8-7.7-32.2c3-8.9 7-20.5 11.8-33.8L24 288c-8.6 0-16.6-4.6-20.9-12.1s-4.2-16.7.2-24.1l52.5-88.5c13-21.9 36.5-35.3 61.9-35.3l82.3 0c2.4-4 4.8-7.7 7.2-11.3C289.1-4.1 411.1-8.1 483.9 5.3c11.6 2.1 20.6 11.2 22.8 22.8c13.4 72.9 9.3 194.8-111.4 276.7c-3.5 2.4-7.3 4.8-11.3 7.2v82.3c0 25.4-13.4 49-35.3 61.9l-88.5 52.5c-7.4 4.4-16.6 4.5-24.1.2s-12.1-12.2-12.1-20.9V380.8c-14.1 4.9-26.4 8.9-35.7 11.9c-11.2 3.6-23.4.5-31.8-7.8zM384 168a40 40 0 1 0 0-80 40 40 0 1 0 0 80z"/>
+        </svg>
+        Nouvelle analyse
+      <% end %>
+    </div>
+
+    <!-- Menu mobile -->
+    <div class="mobile-nav-app">
+      <button class="mobile-menu-btn-app" id="mobileMenuBtnApp">☰</button>
+    </div>
+  </div>
+
+  <!-- Dropdown mobile -->
+  <div class="mobile-menu-app" id="mobileMenuApp">
+    <div class="mobile-menu-links-app">
+      <%= link_to "Historique", analyses_path, class: "mobile-menu-link-app" %>
+      <%= link_to "Nouvelle analyse", new_analysis_path, class: "mobile-menu-link-app" %>
+      <% if user_signed_in? %>
+        <%= link_to "Se déconnecter", destroy_user_session_path, 
+                    data: { "turbo-method": :delete }, 
+                    class: "mobile-menu-link-app" %>
+      <% else %>
+        <%= link_to "Se connecter", new_user_session_path, class: "mobile-menu-link-app" %>
+      <% end %>
+    </div>
+  </div>
+</nav>
+
+<style>
+/* ===== NAVBAR APP - Version compacte et centrée ===== */
+.navbar-app {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 56px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.navbar-app-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+/* Partie gauche - juste le logo */
+.nav-app-left {
+  display: flex;
+  align-items: center;
+}
+
+/* Centre - Historique positionné absolument */
+.nav-app-center {
+  position: absolute;
+  left: 68%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+}
+
+.logo-app {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  color: #2d3748;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: color 0.2s ease;
+}
+
+.logo-app:hover {
+  color: #667eea;
+}
+
+.logo-app-image {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.nav-app-link {
+  color: #6a7280;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.nav-app-link:hover {
+  color: #2d3748;
+  background: rgba(102, 126, 234, 0.08);
+}
+
+/* Partie droite */
+.nav-app-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.5rem; /* Plus d'espace entre avatar et bouton */
+}
+
+/* Avatar utilisateur */
+.user-dropdown-app {
+  position: relative;
+}
+
+.user-btn-app {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.user-avatar-app {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  font-size: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.15s ease;
+}
+
+.user-avatar-app:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Dropdown menu */
+.dropdown-menu-app {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  min-width: 180px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.2s ease;
+  z-index: 1001;
+}
+
+.dropdown-menu-app.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.user-info-app {
+  padding: 0.75rem 1rem;
+}
+
+.user-info-app strong {
+  display: block;
+  font-size: 0.875rem;
+  color: #2d3748;
+  margin-bottom: 0.25rem;
+}
+
+.user-info-app small {
+  display: block;
+  font-size: 0.75rem;
+  color: #6a7280;
+}
+
+.dropdown-divider {
+  margin: 0.5rem 0;
+  border: none;
+  border-top: 1px solid #e5e7eb;
+}
+
+.dropdown-item-app {
+  display: block;
+  padding: 0.625rem 1rem;
+  color: #374151;
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: background 0.2s ease;
+}
+
+.dropdown-item-app:hover {
+  background: #f8fafc;
+  color: #1f2937;
+}
+
+/* Bouton Analyser avec dégradé violet */
+.btn-analyze-app {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.825rem;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-analyze-app:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+}
+
+/* Menu mobile */
+.mobile-nav-app {
+  display: none;
+}
+
+.mobile-menu-btn-app {
+  background: none;
+  border: none;
+  color: #2d3748;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.mobile-menu-app {
+  display: none;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+}
+
+.mobile-menu-app.open {
+  display: block;
+}
+
+.mobile-menu-links-app {
+  padding: 1rem;
+}
+
+.mobile-menu-link-app {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: #6a7280;
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-link-app:hover {
+  background: rgba(102, 126, 234, 0.08);
+  color: #2d3748;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nav-app-left {
+    flex: 1;
+  }
+  
+  .nav-app-link:not(.logo-app) {
+    display: none;
+  }
+  
+  .nav-app-right {
+    display: none;
+  }
+  
+  .mobile-nav-app {
+    display: block;
+  }
+}
+
+/* Compensation du fixed navbar dans le contenu */
+body {
+  padding-top: 56px;
+}
+
+/* Pour les pages avec container */
+.analysis-container,
+.analyses-container,
+.analysis-container-premium {
+  padding-top: calc(56px + 2rem) !important; /* navbar + padding naturel */
+}
+</style>
+
+<script>
+// Script navbar app
+document.addEventListener('DOMContentLoaded', function() {
+  initNavbarApp();
+});
+
+document.addEventListener('turbo:load', function() {
+  initNavbarApp();
+});
+
+function initNavbarApp() {
+  // Menu utilisateur desktop
+  const userBtn = document.getElementById('userMenuBtnApp');
+  const userMenu = document.getElementById('userMenuApp');
+  
+  if (userBtn && userMenu) {
+    userBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      userMenu.classList.toggle('show');
+    });
+    
+    // Fermer si clic ailleurs
+    document.addEventListener('click', function(e) {
+      if (!userMenu.contains(e.target) && !userBtn.contains(e.target)) {
+        userMenu.classList.remove('show');
+      }
+    });
+  }
+  
+  // Menu mobile
+  const mobileBtn = document.getElementById('mobileMenuBtnApp');
+  const mobileMenu = document.getElementById('mobileMenuApp');
+  
+  if (mobileBtn && mobileMenu) {
+    mobileBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      mobileMenu.classList.toggle('open');
+    });
+    
+    // Fermer le menu mobile sur clic d'un lien
+    mobileMenu.querySelectorAll('.mobile-menu-link-app').forEach(link => {
+      link.addEventListener('click', function() {
+        mobileMenu.classList.remove('open');
+      });
+    });
+  }
+}
+
+// Cleanup avant cache Turbo
+document.addEventListener('turbo:before-cache', function() {
+  const userMenu = document.getElementById('userMenuApp');
+  const mobileMenu = document.getElementById('mobileMenuApp');
+  
+  if (userMenu) userMenu.classList.remove('show');
+  if (mobileMenu) mobileMenu.classList.remove('open');
+});
+</script>
