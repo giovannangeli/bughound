@@ -19,7 +19,7 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            padding: 0.75rem 2rem;
+            padding: 0.75rem 0;
             transition: all 0.3s ease;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -30,7 +30,7 @@
             background: #ffffff !important;
             box-shadow: 0 2px 20px rgba(0,0,0,0.1);
             border-bottom: 1px solid rgba(0,0,0,0.05);
-            padding: 0.75rem 2rem;
+            padding: 0.75rem 0;
         }
 
         .navbar.scrolled .logo {
@@ -47,24 +47,32 @@
         }
 
         .navbar-content {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
             align-items: center;
-            padding: 0 2rem;
+            gap: 2rem;
+        }
+
+        .nav-left {
+            display: flex;
+            justify-content: flex-start;
         }
 
         .nav-center {
             display: flex;
             gap: 2rem;
             align-items: center;
+            justify-content: center;
         }
 
         .nav-right {
             display: flex;
             gap: 1.5rem;
             align-items: center;
+            justify-content: flex-end;
         }
 
         .logo {
@@ -119,30 +127,54 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
         }
 
-        .nav-cta {
-            background: #1f2937;
-            color: white !important;
-            padding: 0.6rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            box-shadow: none;
-            transition: all 0.2s ease;
-        }
-
-        .nav-cta:hover {
-            background: #374151;
-            transform: none;
-            box-shadow: none;
-        }
-
         /* Mobile menu */
         .mobile-menu-btn {
             display: none;
             background: none;
             border: none;
-            color: white;
+            color: #2d3748;
             font-size: 1.5rem;
             cursor: pointer;
+        }
+
+        .mobile-nav-group {
+            display: none;
+        }
+
+        /* Menu mobile dropdown */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+        }
+
+        .mobile-menu-open {
+            display: block !important;
+        }
+
+        .mobile-menu-links {
+            padding: 1rem;
+        }
+
+        .mobile-menu-link {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: #6a7280;
+            text-decoration: none;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .mobile-menu-link:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #2d3748;
         }
 
         body {
@@ -152,22 +184,7 @@
             overflow-x: hidden;
         }
 
-        /* Hero Section Animations */
-        @keyframes heroFloat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-        
-        @keyframes heroFloatSlow {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-30px) rotate(5deg); }
-        }
-        
-        @keyframes heroPulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
-        }
-        
+        /* Hero Section Animations - ONLY KEEPING SLIDE ANIMATIONS */
         @keyframes heroSlideInLeft {
             from {
                 opacity: 0;
@@ -196,30 +213,6 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-        }
-        
-        .hero-code-snippet {
-            animation: heroFloat 6s ease-in-out infinite;
-        }
-        
-        .hero-code-snippet:nth-child(2) {
-            animation-delay: 1s;
-        }
-        
-        .hero-code-snippet:nth-child(3) {
-            animation-delay: 2s;
-        }
-        
-        .hero-floating-shape {
-            animation: heroFloatSlow 8s ease-in-out infinite;
-        }
-        
-        .hero-floating-shape:nth-child(2) {
-            animation-delay: 2s;
-        }
-        
-        .hero-floating-shape:nth-child(3) {
-            animation-delay: 4s;
         }
         
         .hero-content-animated {
@@ -736,9 +729,19 @@
 
         /* Responsive */
         @media (max-width: 768px) {
+            .nav-left {
+                display: flex !important;
+            }
+            
             .nav-center,
             .nav-right {
                 display: none;
+            }
+
+            .mobile-nav-group {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
             }
 
             .mobile-menu-btn {
@@ -747,7 +750,19 @@
             }
 
             .navbar {
-                padding: 1rem;
+                padding: 1rem 0;
+            }
+            
+            .navbar-content {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .nav-cta.mobile-visible {
+                display: inline-block !important;
+                padding: 0.5rem 1rem !important;
+                font-size: 0.9rem !important;
             }
 
             .demo-container {
@@ -800,23 +815,76 @@
                 font-size: 16px !important;
             }
         }
+
+        /* Fix pour le bouton Analyser dans la navbar - VERSION FINALE */
+.nav-cta {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    padding: 0.6rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+    transition: transform 0.2s ease !important;
+    border: none !important;
+}
+
+.nav-cta:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+    color: white !important;
+}
+
+/* État après scroll */
+.navbar.scrolled .nav-cta {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+}
+
+.navbar.scrolled .nav-cta:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+    color: white !important;
+}
+
+/* Version mobile */
+.nav-cta.mobile-visible {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.9rem !important;
+}
+
+.nav-cta.mobile-visible:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+}
+
     </style>
 </head>
 <body>
-    <!-- Navbar -->
+<!-- Navbar -->
     <nav class="navbar" id="navbar">
         <div class="navbar-content">
-            <%= link_to root_path, class: "logo" do %>
-                <%= image_tag "logo.png", alt: "BugHound Logo", class: "logo-image" %>
-                <span>BugHound</span>
-            <% end %>
+            <!-- Version Desktop -->
+            <!-- Gauche : Logo -->
+            <div class="nav-left">
+                <%= link_to root_path, class: "logo" do %>
+                    <%= image_tag "logo.png", alt: "BugHound Logo", class: "logo-image" %>
+                    <span>BugHound</span>
+                <% end %>
+            </div>
 
+            <!-- Centre : Navigation -->
             <div class="nav-center">
                 <a href="#features" class="nav-link">Features</a>
                 <a href="#demo" class="nav-link">Démo</a>
                 <%= link_to "Historique", analyses_path, class: "nav-link" %>
             </div>
 
+            <!-- Droite : Boutons d'action -->
             <div class="nav-right">
                 <% if user_signed_in? %>
                     <div class="user-dropdown">
@@ -861,11 +929,34 @@
                 <% end %>
 
                 <%= link_to new_analysis_path, class: "nav-link nav-cta" do %>
-                    Analyser
-                <% end %>
+    <svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" style="margin-right: 6px;">
+        <path d="M156.6 384.9L125.7 354c-8.5-8.5-11.5-20.8-7.7-32.2c3-8.9 7-20.5 11.8-33.8L24 288c-8.6 0-16.6-4.6-20.9-12.1s-4.2-16.7.2-24.1l52.5-88.5c13-21.9 36.5-35.3 61.9-35.3l82.3 0c2.4-4 4.8-7.7 7.2-11.3C289.1-4.1 411.1-8.1 483.9 5.3c11.6 2.1 20.6 11.2 22.8 22.8c13.4 72.9 9.3 194.8-111.4 276.7c-3.5 2.4-7.3 4.8-11.3 7.2v82.3c0 25.4-13.4 49-35.3 61.9l-88.5 52.5c-7.4 4.4-16.6 4.5-24.1.2s-12.1-12.2-12.1-20.9V380.8c-14.1 4.9-26.4 8.9-35.7 11.9c-11.2 3.6-23.4.5-31.8-7.8zM384 168a40 40 0 1 0 0-80 40 40 0 1 0 0 80z"/>
+    </svg>
+    Analyser
+<% end %>
             </div>
 
-            <button class="mobile-menu-btn">☰</button>
+            <!-- Version Mobile -->
+            <div class="mobile-nav-group">
+                <%= link_to "Analyser", new_analysis_path, class: "nav-link nav-cta mobile-visible", style: "display: none;" %>
+                <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+            </div>
+        </div>
+
+        <!-- Menu Mobile Dropdown -->
+        <div class="mobile-menu" id="mobileMenu">
+            <div class="mobile-menu-links">
+                <a href="#features" class="mobile-menu-link">Features</a>
+                <a href="#demo" class="mobile-menu-link">Démo</a>
+                <%= link_to "Historique", analyses_path, class: "mobile-menu-link" %>
+                <% if user_signed_in? %>
+                    <%= link_to "Se déconnecter", destroy_user_session_path, 
+                                data: { "turbo-method": :delete }, 
+                                class: "mobile-menu-link" %>
+                <% else %>
+                    <%= link_to "Se connecter", new_user_session_path, class: "mobile-menu-link" %>
+                <% end %>
+            </div>
         </div>
     </nav>
 
@@ -905,11 +996,9 @@
                     <!-- CTA Buttons -->
                     <div id="hero-cta-buttons" style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
                         <%= link_to new_analysis_path, class: "hero-btn-primary", style: "display: inline-flex; align-items: center; gap: 8px; padding: 16px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);" do %>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                            </svg>
+                            <svg width="20" height="20" viewBox="0 0 512 512" fill="currentColor">
+    <path d="M156.6 384.9L125.7 354c-8.5-8.5-11.5-20.8-7.7-32.2c3-8.9 7-20.5 11.8-33.8L24 288c-8.6 0-16.6-4.6-20.9-12.1s-4.2-16.7.2-24.1l52.5-88.5c13-21.9 36.5-35.3 61.9-35.3l82.3 0c2.4-4 4.8-7.7 7.2-11.3C289.1-4.1 411.1-8.1 483.9 5.3c11.6 2.1 20.6 11.2 22.8 22.8c13.4 72.9 9.3 194.8-111.4 276.7c-3.5 2.4-7.3 4.8-11.3 7.2v82.3c0 25.4-13.4 49-35.3 61.9l-88.5 52.5c-7.4 4.4-16.6 4.5-24.1.2s-12.1-12.2-12.1-20.9V380.8c-14.1 4.9-26.4 8.9-35.7 11.9c-11.2 3.6-23.4.5-31.8-7.8zM384 168a40 40 0 1 0 0-80 40 40 0 1 0 0 80z"/>
+</svg>
                             Analyser mon code
                         <% end %>
                         
@@ -1216,9 +1305,42 @@
                 updateArrows();
             }
 
+            // Menu mobile
+            initMobileMenu() {
+                const btn = document.getElementById('mobileMenuBtn');
+                const menu = document.getElementById('mobileMenu');
+                if (!btn || !menu) return;
+
+                const controller = new AbortController();
+                this.controllers.set('mobileMenu', controller);
+                const { signal } = controller;
+
+                // Toggle menu
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    menu.classList.toggle('mobile-menu-open');
+                }, { signal });
+
+                // Fermer sur clic d'un lien
+                menu.querySelectorAll('.mobile-menu-link').forEach(link => {
+                    link.addEventListener('click', () => {
+                        menu.classList.remove('mobile-menu-open');
+                    }, { signal });
+                });
+
+                // Fermer sur clic extérieur
+                document.addEventListener('click', (e) => {
+                    if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                        menu.classList.remove('mobile-menu-open');
+                    }
+                }, { signal });
+            }
+
             init() {
                 this.initNavbar();
                 this.initUserMenu();
+                this.initMobileMenu();
                 this.initSmoothScrolling();
                 this.initScrollAnimations();
                 this.initModesCarousel();
@@ -1376,9 +1498,15 @@
                 // Reset états visuels
                 const menu = document.getElementById("userMenu");
                 const btn = document.getElementById("userMenuBtn");
+                const mobileMenu = document.getElementById("mobileMenu");
+                
                 if (menu && btn) {
                     menu.classList.remove("show");
                     btn.setAttribute("aria-expanded", "false");
+                }
+                
+                if (mobileMenu) {
+                    mobileMenu.classList.remove("mobile-menu-open");
                 }
             }
         });
