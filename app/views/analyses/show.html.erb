@@ -392,9 +392,9 @@ end
                 <% if section[:title].present? %>
                   <div class="pistes-section-title"><%= section[:title] %></div>
                 <% end %>
-                <div class="<%= section[:css_class] %>">
-                  <%= simple_format(section[:content], {}, wrapper_tag: "div") %>
-                </div>
+             <div class="<%= section[:css_class] %>">
+  <%= markdown(section[:content]) %>
+</div>
               <% end %>
               
               <% if temps_estime.present? %>
