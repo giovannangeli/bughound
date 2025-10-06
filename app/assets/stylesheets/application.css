@@ -229,9 +229,9 @@ html { scroll-padding-top: 80px; }
 
 /* ========== FEEDBACK / CORRECTION ========== */
 .feedback-section-premium { padding: 2rem 2rem 1rem; border-bottom: 1px solid #f1f5f9; }
-.correction-section-premium { padding: 1rem 0 2rem; border-bottom: 1px solid #f1f5f9; }
+.correction-section-premium { padding: 1rem 2rem 2rem; border-bottom: 1px solid #f1f5f9; }
 .feedback-title-premium, .correction-title-premium { font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 1rem; }
-
+.correction-title-premium { margin-left: 0; padding-left: 0; }
 .feedback-content-premium {
   background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; line-height: 1.7;
 }
