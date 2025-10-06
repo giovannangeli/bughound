@@ -264,8 +264,8 @@
               <% next if key == :resume && @analysis.ai_provider == "smells" %>
               
               <% body = parsed[:sections][key][:body] %>
-              <% if key == :tests && @analysis.ai_provider.in?(["openai", "claude"]) %>
-  <% body = body.gsub(/🎯\s*Pistes d'amélioration.*$/mi, '').strip %>
+    <% if key == :tests && @analysis.ai_provider.in?(["openai", "claude"]) %>
+  <% body = body.gsub(/🎯\s*Pistes d'amélioration[\s\S]*$/mi, '').strip %>
 <% end %>
               <% score = parsed[:sections][key][:score] %>
               

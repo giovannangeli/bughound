@@ -650,59 +650,85 @@ def build_openai_improved_prompt(language, code)
     • Lisibilité : Code compréhensible = 7-8/10, Variables a,b,c = 5-6/10, Très clair = 9-10/10
     • Tests : Code sans tests = 5-6/10, Quelques tests = 7-8/10, Tests complets = 9-10/10
 
-    ADAPTATION - ANALYSE RAPIDE :
-    - Être constructif et encourageant
-    - Se concentrer sur les points les plus importants
-    - Éviter les critiques mineures pour du code fonctionnel
-    - Donner des scores généreux si pas de problème majeur
+   RÈGLE D'OR - ANALYSE RAPIDE :
+    - Pour du code CRUD basique bien écrit : MAXIMUM 1-2 suggestions réelles
+    - Si le code suit les conventions du framework : NE PAS suggérer de "renommage de variables"
+    - Si aucun N+1 visible : NE JAMAIS suggérer "ajouter includes"
+    - Si le code est simple et clair : NE PAS demander de commentaires
+    - PRÉFÉRER dire "Peu d'améliorations nécessaires" plutôt que forcer des suggestions
 
     ⚠️ Pour code mathématique simple : Ne pas inventer de problèmes inexistants
 
     SPÉCIFICITÉS #{language.upcase} :
     #{get_compact_language_rules(language)}
 
-    FORMAT OBLIGATOIRE :
+FORMAT OBLIGATOIRE :
 
     📊 Score qualité globale : X/10
-    [Justification encourageante]
+    [Justification honnête]
 
     🧾 Résumé global :
-    [2-3 phrases positives sur l'objectif]
+    [2-3 phrases objectives sur le code]
 
     🛡️ Sécurité : X/10
-    [Analyse bienveillante - pas d'invention de failles]
+    [Analyse factuelle - AUCUNE invention de failles]
 
     ⚙️ Performance : X/10
-    [Évaluation généreuse pour code fonctionnel]
+    [Évaluation basée sur ce qui EST dans le code, pas sur ce qui pourrait être]
 
     📐 Lisibilité et qualité du code : X/10
-    [Critiques constructives mais encourageantes]
+    [Évaluation objective]
 
     🧪 Recommandations de tests : X/10
-    [Suggestions simples]
+    [Suggestions réalistes]
 
     🎯 Pistes d'amélioration :
-    [3-4 points MAXIMUM, format court et direct]
-    1. **Problème** : [Description claire]
-       **Solution** : [Action immédiate]
-    2. **Problème** : [Description claire]
-       **Solution** : [Action immédiate]
-    3. **Problème** : [Description claire]
-       **Solution** : [Action immédiate]
 
-    ⏱️ **Temps estimé** : ~15-20 minutes
+    EXEMPLE pour du code avec nombreux problèmes :
+1. **Typo dans le nom de classe** : Renommer `Usre` en `User`
+2. **Variable non initialisée** : Corriger `@nme` en `@name` 
+3. **Faille de sécurité critique** : Remplacer `eval(ENV["USER_INPUT"])` par une validation
+4. **Division par zéro** : Ajouter une vérification `if b != 0`
+[etc.]
+    
+    INSTRUCTION CRITIQUE : Analyser le code RÉELLEMENT présent.
+    - Pour un controller CRUD Rails standard sans associations : NE PAS suggérer includes/N+1
+    - Pour des variables @task/@tasks dans Rails : NE PAS suggérer de renommage (c'est la convention)
+    - Pour du code simple : NE PAS forcer de commentaires
+    
+    Si VRAIMENT 0-1 améliorations majeures : Écrire "Code bien structuré. Amélioration recommandée :" puis lister UNIQUEMENT le point critique.
+
+Ne PAS ajouter de suggestions "nice-to-have" ou "best practices générales" juste pour avoir 2-3 points.
+
+[Pour du code avec nombreux problèmes : Lister chaque problème individuellement, pas en catégories génériques]
+[Format :]
+1. **Titre précis** : Description factuelle + solution concrète
+2. **Titre précis** : Description factuelle + solution concrète
+[etc. - pas de limite si nombreux problèmes réels]
+
+[Si aucun problème majeur détecté, écrire : "Aucune amélioration critique nécessaire."]
+
+    ⏱️ **Temps estimé** : [0-5min si aucun problème, 10-20min si 1-2 points, 30min+ si problèmes réels]
 
     CODE :
     ```#{language.downcase}
     #{code}
     ```
-
-    RÈGLES pour ANALYSE RAPIDE :
-    - Scores généreux pour code fonctionnel (7-8/10 minimum)
-    - Maximum 200 mots pour les pistes d'amélioration
-    - Pas de blocs de code complets, juste des snippets inline avec `backticks`
-    - Prioriser par criticité (sécurité > performance > lisibilité)
-    - Toujours finir par quelque chose de positif
+RÈGLES STRICTES pour ANALYSE RAPIDE :
+- ADAPTATION selon la qualité du code :
+  * Code propre fonctionnel : Maximum 1-2 suggestions, être généreux (7-8/10 minimum)
+  * Code avec 3-5 problèmes : Lister chaque problème (3-5 points)
+  * Code catastrophique (6+ problèmes) : Lister TOUS les problèmes sans limite
+- Maximum 150 mots pour code propre, AUCUNE limite si 6+ problèmes critiques
+- INTERDICTION de suggérer :
+  * "includes" s'il n'y a pas d'associations chargées dans des boucles
+  * Renommer des variables qui suivent les conventions du framework
+  * Ajouter des commentaires sur du code auto-explicite
+  * Optimisations théoriques sans problème réel
+- SI le code est bon : L'ADMETTRE clairement
+- SI le code a de NOMBREUX vrais problèmes : Les LISTER INDIVIDUELLEMENT (pas en catégories génériques)
+- Pas de blocs de code, juste des snippets inline avec `backticks`
+- Prioriser par criticité RÉELLE (sécurité > syntaxe > logique > performance)
   PROMPT
 end
 end
