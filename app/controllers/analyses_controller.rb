@@ -239,66 +239,77 @@ end
 
   def build_ultimate_prompt(language, code)
     <<~PROMPT
-      Tu es un expert QA senior. Analyse ce code #{language} avec rigueur professionnelle.
+      Tu es un expert QA senior. Analyse ce code #{language} avec rigueur professionnelle MAXIMALE.
+
+      RÈGLE ABSOLUE : Analyse UNIQUEMENT ce qui est PRÉSENT dans le code. Liste CHAQUE problème individuellement, PAS en catégories génériques.
 
       BARÈMES STRICTS :
-      • Sécurité : Failles critiques=1-3/10, Modérées=4-6/10, Bonnes pratiques=7-8/10, Exemplaire=9-10/10
-      • Performance : Catastrophique=1-3/10, Correct=6-7/10, Optimisé=8-10/10
-      • Lisibilité : Variables a,b,c=MAX 4/10, Code clair=6-7/10, Exemplaire=8-10/10
-      • Tests : Non testable=1-3/10, Basique=4-6/10, Complet=8-10/10
+    • Sécurité : Failles critiques=1-3/10, Modérées=4-6/10, Bonnes pratiques=7-8/10, Exemplaire=9-10/10
+    • Performance : Catastrophique=1-3/10, Correct=6-7/10, Optimisé=8-10/10
+    • Lisibilité : Variables a,b,c=MAX 4/10, Code clair=6-7/10, Exemplaire=8-10/10
+    • Tests : Non testable=1-3/10, Basique=4-6/10, Complet=8-10/10
 
-      SPÉCIFICITÉS #{language.upcase} :
-      #{get_compact_language_rules(language)}
+    SPÉCIFICITÉS #{language.upcase} :
+    #{get_compact_language_rules(language)}
 
-      FORMAT OBLIGATOIRE (RESPECTER EXACTEMENT) :
+      FORMAT OBLIGATOIRE :
 
-      📊 Score qualité globale : X/10
-      [Justification courte]
+    📊 Score qualité globale : X/10
+    [Justification basée sur ce qui EST dans le code]
 
-      🧾 Résumé global :
-      [2-3 phrases sur l'objectif et structure]
+    🧾 Résumé global :
+    [2-3 phrases : type de code, objectif, structure]
 
-      🛡️ Sécurité : X/10
-      [Problèmes détectés + justification]
+    🛡️ Sécurité : X/10
+    [Problèmes RÉELS détectés dans CE code]
 
-      ⚙️ Performance : X/10
-      [Analyse performance + justification]
+    ⚙️ Performance : X/10
+    [Problèmes RÉELS de performance dans CE code]
 
-      📐 Lisibilité et qualité du code : X/10
-      [Conventions, nommage + justification]
+    📐 Lisibilité et qualité du code : X/10
+    [Analyse du code PRÉSENT]
 
-      🧪 Recommandations de tests : X/10
-      [Tests manquants + justification]
+    🧪 Recommandations de tests : X/10
+    [Tests manquants SPÉCIFIQUES à ce code]
 
-      🎯 Pistes d'amélioration :
-      
-      **Points critiques** (si sécurité < 7 ou performance < 6)
-      [Liste numérotée de 2-3 problèmes majeurs avec explication pédagogique]
-      • Problème identifié
-      • POURQUOI c'est important (impact business)
-      • Alternative recommandée
-      • Mini-exemple (1-3 lignes max) si pertinent
+    IMPORTANT : Tu DOIS obligatoirement écrire "🎯 Pistes d'amélioration :" avec l'emoji avant de commencer les points critiques.
 
-      **Améliorations recommandées**
-      [Liste numérotée de 2-3 améliorations pour la maintenabilité]
-      • Point d'amélioration
-      • Bonne pratique associée
-      • Bénéfice attendu
+    🎯 Pistes d'amélioration :
 
-      ⏱️ **Temps estimé pour corrections** : [15-30 min pour corrections mineures, 1-2h pour refactoring important]
+**Points critiques**
+[Liste EXHAUSTIVE de CHAQUE bug détecté, ligne par lignel
+[Si 8 bugs détectés - 8 points listés ici, si 10 bugs → 10 points]
 
+INSTRUCTION : Chaque ligne avec un bug = 1 point distinct
+Format : "**Bug précis ligne X** : Problème exact + Solution concrète"
+
+EXEMPLES :
+- **Bug TypeError ligne 23** : Addition String + Integer dans sum → Crash garanti → Convertir en Integer
+- **Bug affectation ligne 15** : Utilise = au lieu de = - Modifie la variable - Remplacer par ==
+- **Bug mauvaise clé ligne 26** : :retry au lieu de :retries → Retourne nil → Corriger la clé
+
+1. **Bug précis ligne X** : Problème exact + Solution concrète
+2. **Bug précis ligne Y** : Problème exact + Solution concrète [Continue jusqu'au dernier bug - NE PAS regrouper]
+
+**Améliorations recommandées**
+[Maximum 3-4 suggestions générales de bonnes pratiques]
+1. **Amélioration structurelle** : Bénéfice concret
+2. **Tests unitaires** : Coverage suggérée
+3. **Documentation** : Clarifications nécessaires
+
+**Temps estimé pour corrections** : [Calculer : 10min par bug simple, 15-20min par bug complexe]
       CODE :
       ```#{language.downcase}
       #{code}
       ```
 
       CONTRAINTES ABSOLUES :
-      - TOUS les scores doivent être des NOMBRES ENTIERS (1, 2, 3... 10)
-      - JAMAIS de décimales (8.75, 7.5, etc.)
-      - Score global = moyenne arrondie des 4 catégories
-      - Ne PAS générer de refactoring complet
-      - Maximum 5-6 pistes d'amélioration au total
-      - Être pédagogique : expliquer le POURQUOI avant le COMMENT
+    - Scores = NOMBRES ENTIERS uniquement (1-10)
+    - COMPTER précisément le nombre de bugs ligne par ligne
+    - LISTER chaque bug séparément dans Points critiques (pas de regroupement)
+    - Les "Améliorations recommandées" sont DIFFÉRENTES des bugs (bonnes pratiques, tests, doc)
+    - Si 10 lignes ont des bugs → 10 points critiques distincts
+    - Être exhaustif : Ne jamais regrouper plusieurs bugs en 1 seul point
     PROMPT
   end
 

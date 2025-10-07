@@ -190,13 +190,13 @@ module AnalysesHelper
       /mx,
 
       tests: /
-        [🧪🔬]\s*
-        (?:Recommandations?\sde\stests|Tests|Test\srecommendations?)
-        \s*:?
-        \s*
-        (.*?)
-        (?=\n[ \t]*[📊🔧🛠]|\z)
-      /mx
+  [🧪🔬]\s*
+  (?:Recommandations?\sde\stests|Tests|Test\srecommendations?)
+  \s*:?
+  \s*
+  (.*?)
+  (?=\n[ \t]*\*\*Points\scritiques|\n[ \t]*[📊🔧🛠]|\z)
+/mx,
     }
 
     sections = {}
