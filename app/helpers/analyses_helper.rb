@@ -103,7 +103,7 @@ module AnalysesHelper
     t.strip
   end
 
-  def parse_tests_feedback(text)
+def parse_tests_feedback(text)
     return {} if text.blank?
     t = text.dup
 
@@ -115,11 +115,14 @@ module AnalysesHelper
 
     scenarios_blk = t[/Scénarios\s+testés\s*:?\s*(.*?)(?=\n\s*💻|^\s*Code des tests|^\s*📚|^\s*Instructions|^\s*Notes|$\z)/mi, 1]
 
-    code = t[/```[a-zA-Z]*\n(.*?)```/m, 1] || t[/^\s*💻.*?\n(.*)/m, 1]
+    code = t[/[a-zA-Z]*\n(.*?)/m, 1] || t[/^\s*💻.*?\n(.*)/m, 1]
 
-    instructions = t[/(?:📚\s*)?Instructions d'exécution\s*:?\s*(.*?)(?=\n\s*Notes|$\z)/mi, 1]
+    # MODIFICATION: Extraire instructions SANS les notes
+  instructions = t[/(?:📚\s*)?Instructions d'exécution\s*:?\s*(.*?)(?=\n\s*[ℹ️]?\s*Notes\s+importantes|$\z)/mi, 1]
 
-    notes = t[/[ℹ️]?\s*Notes\s+importantes\s*:?\s*((?:.|\n)*)\z/mi, 1]
+  # MODIFICATION: Extraire notes ET nettoyer les **
+  notes = t[/[ℹ️]?\s*Notes\s+importantes\s*:?\s*((?:.|\n)*)\z/mi, 1]
+  notes = notes&.gsub(/\*\*/, '') if notes.present?  # Nettoyer les **
 
     {
       intro:          intro&.strip,
@@ -138,20 +141,17 @@ module AnalysesHelper
     m ? m[1].to_i : nil
   end
 
-  # GARDE LA VERSION ORIGINALE ROBUSTE
   def parse_ai_feedback(feedback)
     return { sections: {}, correction: nil } if feedback.blank?
 
     text = feedback.to_s.dup
     text.gsub!("\r\n", "\n")
 
-    # Correction (tout ce qui suit un titre 🔧/🛠 "Proposition/Correction")
     correction_match = text.match(
       /^[^\S\r\n]*[🔧🛠]\s*(?:Proposition.*|Correction.*)\s*:?\s*\n([\s\S]*?)\z/m
     )
     correction = correction_match ? correction_match[1].strip : nil
 
-    # Sections principales avec patterns robustes
     patterns = {
       resume: /
         [🧾📄]\s*
@@ -190,20 +190,19 @@ module AnalysesHelper
       /mx,
 
       tests: /
-  [🧪🔬]\s*
-  (?:Recommandations?\sde\stests|Tests|Test\srecommendations?)
-  \s*:?
-  \s*
-  (.*?)
-  (?=\n[ \t]*\*\*Points\scritiques|\n[ \t]*[📊🔧🛠]|\z)
-/mx,
+        [🧪🔬]\s*
+        (?:Recommandations?\sde\stests|Tests|Test\srecommendations?)
+        \s*:?
+        \s*
+        (.*?)
+        (?=\n[ \t]*\*\*Points\scritiques|\n[ \t]*[📊🔧🛠]|\z)
+      /mx,
     }
 
     sections = {}
     patterns.each do |key, rx|
       if (m = text.match(rx))
         body = m[1].strip
-        # Extraire le score
         raw_score = body[/\b(\d{1,2})\s*\/\s*10\b/, 1]
         score = raw_score&.to_i
         score = nil unless score&.between?(0, 10)
@@ -215,49 +214,35 @@ module AnalysesHelper
     { sections: sections, correction: correction }
   end
 
-  # NOUVELLE MÉTHODE pour traitement spécial code smells
   def process_smells_content(body, section_key)
-    # Enlever les crochets
     body = body.gsub(/^\[|\]$/, '').strip
     
-    # Traitement spécial pour la section Tests
     if section_key == :tests
-      # Arrêter avant les détails code smells
       body = body.split(/👃.*?Code Smells/i).first&.strip || body
       body = body.split(/🎯.*?Nombre/i).first&.strip || body
-      # Garder seulement la première phrase/ligne
       body = body.split(/\n/).first&.strip || body
     end
     
     body
   end
 
-# Méthode pour nettoyer le feedback du mode improve
-def clean_improve_feedback(feedback)
-  return "" if feedback.blank?
-  
-  text = feedback.dup
+  def clean_improve_feedback(feedback)
+    return "" if feedback.blank?
+    
+    text = feedback.dup
 
-# Supprimer TOUS les emojis parasites isoles
-  text.gsub!(/^🎯\s*/, '')
-  text.gsub!(/^\s*🎯\s*$/, '')
-  text.gsub!(/^📝\s*/, '')
-  text.gsub!(/^\s*📝\s*$/, '')
-  text.gsub!(/^🚀\s*/, '')
-  text.gsub!(/^\s*🚀\s*$/, '')
-  
-  # Supprimer tous les blocs de code ```...```
-  text.gsub!(/```[a-zA-Z]*\n.*?```/m, '')
-  
-  # Supprimer la ligne "Code refactorisé :"
-  text.gsub!(/^.*Code refactorisé\s*:.*$/i, '')
-  
-  # Supprimer la ligne "Code amélioré automatiquement"
-  text.gsub!(/^.*Code amélioré automatiquement.*$/i, '')
-  
-  # Nettoyer les doubles sauts de ligne
-  text.gsub!(/\n{3,}/, "\n\n")
-  
-  text.strip
-end
+    text.gsub!(/^🎯\s*/, '')
+    text.gsub!(/^\s*🎯\s*$/, '')
+    text.gsub!(/^📝\s*/, '')
+    text.gsub!(/^\s*📝\s*$/, '')
+    text.gsub!(/^🚀\s*/, '')
+    text.gsub!(/^\s*🚀\s*$/, '')
+    
+    text.gsub!(/```[a-zA-Z]*\n.*?```/m, '')
+    text.gsub!(/^.*Code refactorisé\s*:.*$/i, '')
+    text.gsub!(/^.*Code amélioré automatiquement.*$/i, '')
+    text.gsub!(/\n{3,}/, "\n\n")
+    
+    text.strip
+  end
 end
