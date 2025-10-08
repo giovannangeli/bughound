@@ -322,7 +322,7 @@ def send_to_claude(language, code)
 
 
     response = client.messages.create(
-      model: "claude-3-5-sonnet-20241022",
+      model: "claude-sonnet-4-20250514",
       max_tokens: 2000,
       messages: [
         {
@@ -346,7 +346,7 @@ def generate_tests(language, code)
   prompt = build_tests_prompt(language, code)
 
   response = client.messages.create(
-    model: "claude-3-5-sonnet-20241022",
+    model: "claude-sonnet-4-20250514",
     max_tokens: 2000,
     messages: [
       {
@@ -367,7 +367,7 @@ def improve_code(language, code)
   prompt = build_improve_prompt(language, code)
 
   response = client.messages.create(
-    model: "claude-3-5-sonnet-20241022",
+    model: "claude-sonnet-4-20250514",
     max_tokens: 2000,
     messages: [
       {
@@ -388,7 +388,7 @@ def detect_code_smells(language, code)
   prompt = build_smells_prompt(language, code)
 
   response = client.messages.create(
-    model: "claude-3-5-sonnet-20241022",
+    model: "claude-sonnet-4-20250514",
     max_tokens: 2000,
     messages: [
       {
