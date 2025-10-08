@@ -295,7 +295,7 @@
                   <% end %>
                 </div>
                 <div class="feedback-body-premium">
-                  <%= simple_format(body, {}, wrapper_tag: "div") %>
+                  <%= simple_format(body.gsub(/\*\*/, ''), {}, wrapper_tag: "div") %>
                 </div>
               </div>
             <% end %>
@@ -357,55 +357,54 @@ temps_estime = temps_match ? temps_match[1].strip : nil
     
     <div class="pistes-content-premium">
       <% 
-        # Parser le contenu pour identifier les sections
         sections = []
         
-        # Chercher "Points critiques" - CAPTURE JUSQU'À "Améliorations recommandées"
-        if pistes_text.match(/\*\*Points critiques\*\*\s*(.*?)(?=\*\*Améliorations recommandées|$)/m)
+        # Chercher "Points critiques"
+        if match = pistes_text.match(/\*\*Points critiques\*\*[^\n]*\n(.+?)(?=\n\s*\*\*Améliorations)/m)
           sections << {
             title: "Points critiques",
-            content: $1.strip,
+            content: match[1].strip,
             css_class: "pistes-critiques"
           }
         end
         
-        # Chercher "Améliorations recommandées" - CAPTURE TOUT JUSQU'À LA FIN
-        if pistes_text.match(/\*\*Améliorations recommandées\*\*\s*(.*)$/m)
+        # Chercher "Améliorations recommandées"
+        if match = pistes_text.match(/\*\*Améliorations recommandées\*\*[^\n]*\n(.*)$/m)
           sections << {
             title: "Améliorations recommandées",
-            content: $1.strip,
+            content: match[1].strip,
             css_class: "pistes-importantes"
           }
         end
                 
-                # Si pas de sections trouvées, traiter tout comme une liste
-                if sections.empty?
-                  sections << {
-                    title: nil,
-                    content: pistes_text,
-                    css_class: "pistes-conseils"
-                  }
-                end
-              %>
-              
-              <% sections.each do |section| %>
-                <% if section[:title].present? %>
-                  <div class="pistes-section-title"><%= section[:title] %></div>
-                <% end %>
-             <div class="<%= section[:css_class] %>">
-  <%= markdown(section[:content]) %>
-</div>
-              <% end %>
-              
-              <% if temps_estime.present? %>
-                <div class="pistes-temps">
-                  <strong>⏱️ Temps estimé :</strong> <%= temps_estime %>
-                </div>
-              <% end %>
-            </div>
-          </div>
+        # Fallback
+        if sections.empty?
+          sections << {
+            title: nil,
+            content: pistes_text,
+            css_class: "pistes-conseils"
+          }
+        end
+      %>
+      
+      <% sections.each do |section| %>
+        <% if section[:title].present? %>
+          <div class="pistes-section-title"><%= section[:title] %></div>
         <% end %>
+        <div class="<%= section[:css_class] %>">
+          <%= markdown(section[:content]) %>
+        </div>
       <% end %>
+      
+      <% if temps_estime.present? %>
+        <div class="pistes-temps">
+          <strong>⏱️ Temps estimé :</strong> <%= temps_estime %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+<% end %>
 
       <!-- Card "Code refactorisé" (mode improve) -->
       <% if @analysis.ai_provider == "improve" %>
