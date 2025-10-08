@@ -407,18 +407,18 @@ temps_estime = temps_match ? temps_match[1].strip : nil
 <% end %>
 
       <!-- Card "Code refactorisé" (mode improve) -->
-      <% if @analysis.ai_provider == "improve" %>
-        <% ref_lang = (@analysis.ai_feedback[/```([a-zA-Z]+)/, 1] || @analysis.language).downcase %>
-        <% ref_code = @analysis.ai_feedback[/```[a-zA-Z]*\n(.*?)```/m, 1] %>
-        <% if ref_code.present? %>
-          <div class="correction-section-premium">
-            <h3 class="correction-title-premium">💻 Code refactorisé</h3>
-            <div class="code-card">
-              <pre class="code-block line-numbers"><code class="language-<%= ref_lang %>"><%= ref_code %></code></pre>
-            </div>
-          </div>
-        <% end %>
-      <% end %>
+<% if @analysis.ai_provider == "improve" %>
+  <% ref_lang = (@analysis.ai_feedback[/```([a-zA-Z]+)/, 1] || @analysis.language).downcase %>
+  <% ref_code = @analysis.ai_feedback[/💻.*?Code refactorisé.*?```[a-zA-Z]*\n(.*?)(?:```|\z)/m, 1] %>  <%# CHANGE ICI %>
+  <% if ref_code.present? %>
+    <div class="correction-section-premium">
+      <h3 class="correction-title-premium">💻 Code refactorisé</h3>
+      <div class="code-card">
+        <pre class="code-block line-numbers"><code class="language-<%= ref_lang %>"><%= ref_code %></code></pre>
+      </div>
+    </div>
+  <% end %>
+<% end %>
 
     <% else %>
       <!-- Error Section -->
@@ -662,6 +662,9 @@ function styleImproveContent() {
   }
 
   let content = container.innerHTML;
+
+   // NETTOYER LES ** AVANT TRANSFORMATIONS
+  content = content.replace(/\*\*/g, '');
   
   // Transformations
   if (content.includes("Améliorations apportées")) {
