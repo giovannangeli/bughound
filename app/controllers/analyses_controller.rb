@@ -1,4 +1,5 @@
 require "openai"
+require "json"
 
 class AnalysesController < ApplicationController
 def index
@@ -342,24 +343,22 @@ end
 
 def generate_tests(language, code)
   client = Anthropic::Client.new
-
-  prompt = build_tests_prompt(language, code)
+  # On utilise le nouveau prompt qui demande un JSON
+  prompt = build_tests_prompt_json(language, code)
 
   response = client.messages.create(
     model: "claude-sonnet-4-20250514",
     max_tokens: 8192,
-    messages: [
-      {
-        role: "user",
-          content: prompt
-      }
-    ]
+    messages: [{ role: "user", content: prompt }]
   )
 
   response.content[0].text
 rescue => e
-  "Erreur lors de la génération de tests : #{e.message}"
+  # En cas d'erreur (API, timeout...), on retourne un JSON d'erreur.
+  # La vue saura l'interpréter et afficher un message propre.
+  { "error": "Erreur lors de la génération de tests : #{e.message}" }.to_json
 end
+
 
 def improve_code(language, code)
   client = Anthropic::Client.new
@@ -470,6 +469,57 @@ end
     - Commentaires pour chaque test
   PROMPT
 end
+
+def build_tests_prompt_json(language, code)
+  test_framework = get_test_framework(language)
+  lang_code = language.downcase.strip
+
+  <<~PROMPT
+  Tu es un expert en tests automatisés. Génère des tests unitaires complets et prêts à l'emploi pour le code #{language} fourni.
+
+  FRAMEWORK REQUIS : #{test_framework}
+
+  OBJECTIFS :
+  - Tests 100% fonctionnels et exécutables.
+  - Couverture complète des cas d'usage (happy path, edge cases, erreurs).
+  - Noms de tests explicites et commentaires si nécessaire.
+
+  FORMAT DE SORTIE OBLIGATOIRE :
+  Tu DOIS répondre avec un objet JSON valide, et RIEN d'autre. N'ajoute pas de texte avant ou après le JSON, et ne l'entoure pas de \`\`\`json.
+  La structure du JSON doit être la suivante :
+  {
+    "framework": "#{test_framework}",
+    "scenarios": [
+      "Un résumé court du premier scénario testé",
+      "Un résumé court du deuxième scénario testé",
+      "etc."
+    ],
+    "testCode": "LE CODE COMPLET DES TESTS ICI, EN UNE SEULE CHAÎNE DE CARACTÈRES. LES RETOURS À LA LIGNE DOIVENT ÊTRE ÉCHAPPÉS AVEC \\n.",
+    "executionInstructions": "Les commandes pour lancer les tests, formatées en Markdown simple (par exemple : `rspec path/to/spec.rb`). Sépare les commandes par des retours à la ligne (\\n).",
+    "prerequisites": [
+      "Prérequis 1 (ex: Gem rspec-rails installée)",
+      "Prérequis 2 (ex: Modèle Task existant)",
+      "etc."
+    ],
+    "importantNotes": [
+      "Note importante 1",
+      "Note importante 2",
+      "etc."
+    ]
+  }
+
+  INSTRUCTIONS IMPORTANTES POUR LE JSON :
+  1.  Pour la clé "testCode", tout le code doit être une seule chaîne de caractères. Assure-toi d'échapper correctement les caractères spéciaux comme les guillemets (en utilisant \\") et les retours à la ligne (en utilisant \\n).
+  2.  Si tu n'as pas de notes importantes ou de prérequis, retourne un tableau vide `[]`.
+  3.  Génère des tests de haute qualité, comme tu le faisais avant. La seule chose qui change est le format de ta réponse.
+
+  CODE À TESTER :
+  ```#{lang_code}
+  #{code}
+  ```
+PROMPT
+end
+
 
 def get_test_framework(language)
   case language.downcase.strip

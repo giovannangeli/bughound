@@ -182,75 +182,113 @@
           </h3>
         <% end %>
 
-        <% if @analysis.ai_provider == "tests" %>
-          <% tf = parse_tests_feedback(@analysis.ai_feedback) %>
+<% if @analysis.ai_provider == "tests" %>
+  <%
+    # On parse le JSON stocké dans ai_feedback.
+    # Le 'rescue' est notre filet de sécurité : si le JSON est malformé, la page ne crashe pas.
+    begin
+      tf = JSON.parse(@analysis.ai_feedback)
+    rescue JSON::ParserError
+      # Si le parsing échoue, on crée un objet d'erreur pour l'afficher proprement.
+      tf = { 
+        "error" => "Le retour de l'IA n'est pas un JSON valide.", 
+        "raw_feedback" => @analysis.ai_feedback 
+      }
+    end
+  %>
 
-          <div class="tests-wrap-premium">
-            <!-- Chip Framework -->
-            <% if tf[:framework].present? %>
-              <div class="tests-chips">
-                <span class="chip chip-soft-violet">
-                  <i class="fa-solid fa-wrench"></i>
-                  <strong>Framework :</strong>&nbsp;<%= tf[:framework] %>
-                </span>
-              </div>
-            <% end %>
+  <%# CAS 1 : On a une erreur (soit du contrôleur, soit du parsing) %>
+  <% if tf['error'] %>
+    <div class="error-section-premium" style="padding:0; border:none;">
+      <div class="error-content-premium">
+        <h3 class="error-title-premium">⚠️ Erreur lors de l'analyse des tests</h3>
+        <p><%= tf['error'] %></p>
+        <% if tf['raw_feedback'] %>
+          <p><strong>Retour brut de l'IA :</strong></p>
+          <pre><code><%= tf['raw_feedback'] %></code></pre>
+        <% end %>
+      </div>
+    </div>
 
-            <!-- Grid 2 colonnes : Scénarios + Instructions -->
-            <div class="tests-info-grid">
-              <!-- Scénarios testés -->
-              <% if tf[:scenarios].present? %>
-                <div class="tests-block">
-                  <div class="tests-block-title">🎯 Scénarios testés</div>
-                  <ul class="tests-list">
-                    <% tf[:scenarios].to_s.lines.each do |line| %>
-                      <% item = line.strip.sub(/^\-+\s*/, '') %>
-                      <% next if item.blank? %>
-                      <li>
-                        <i class="fa-regular fa-square-check"></i>
-                        <span><%= item %></span>
-                      </li>
-                    <% end %>
-                  </ul>
-                </div>
+  <%# CAS 2 : Tout va bien, on affiche les données du JSON de manière fiable %>
+  <% else %>
+    <div class="tests-wrap-premium">
+      <!-- Chip Framework -->
+      <% if tf['framework'].present? %>
+        <div class="tests-chips">
+          <span class="chip chip-soft-violet">
+            <i class="fa-solid fa-wrench"></i>
+            <strong>Framework :</strong>&nbsp;<%= tf['framework'] %>
+          </span>
+        </div>
+      <% end %>
+
+      <!-- Grid 2 colonnes : Scénarios + Instructions/Prérequis -->
+      <div class="tests-info-grid">
+        <!-- Colonne 1: Scénarios testés -->
+        <% if tf['scenarios'].present? && tf['scenarios'].any? %>
+          <div class="tests-block">
+            <div class="tests-block-title">🎯 Scénarios testés</div>
+            <ul class="tests-list">
+              <% tf['scenarios'].each do |scenario| %>
+                <li>
+                  <i class="fa-regular fa-square-check"></i>
+                  <span><%= scenario %></span>
+                </li>
               <% end %>
-
-              <!-- Instructions d'exécution -->
-              <% if tf[:instructions].present? %>
-                <div class="tests-block">
-                  <div class="tests-block-title">📚 Instructions d'exécution</div>
-                  <div class="tests-instructions-body exec-steps">
-                    <%= markdown(tf[:instructions]) %>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-
-            <!-- Code des tests - Pleine largeur en dessous -->
-            <% if tf[:code].present? %>
-              <% lang_for_tests = case tf[:framework].to_s.downcase
-                                  when /rspec/ then 'ruby'
-                                  when /pytest/ then 'python'
-                                  when /jest/ then 'javascript'
-                                  else @analysis.language.downcase
-                                  end %>
-              <div class="tests-code-block">
-                <div class="tests-block-title">💻 Code des tests</div>
-                <pre class="code-block line-numbers">
-<code class="language-<%= lang_for_tests %>"><%= tf[:code] %></code></pre>
-              </div>
-            <% end %>
-
-            <!-- Notes importantes -->
-            <% if tf[:notes].present? %>
-              <div class="tests-note">
-                <div class="tests-note-icon">ℹ️</div>
-                <div class="tests-note-body">
-                  <%= markdown(tf[:notes]) %>
-                </div>
-              </div>
-            <% end %>
+            </ul>
           </div>
+        <% end %>
+
+        <!-- Colonne 2: Instructions & Prérequis -->
+        <div class="tests-block">
+          <% if tf['executionInstructions'].present? %>
+            <div class="tests-block-title">📚 Instructions d'exécution</div>
+            <div class="tests-instructions-body exec-steps">
+              <%= markdown(tf['executionInstructions']) %>
+            </div>
+          <% end %>
+          <% if tf['prerequisites'].present? && tf['prerequisites'].any? %>
+            <div class="tests-block-title" style="margin-top: 1.5rem;">⚙️ Prérequis</div>
+            <ul class="tests-list" style="gap: 0.25rem;">
+              <% tf['prerequisites'].each do |prereq| %>
+                <li>
+                  <i class="fa-solid fa-check-double" style="font-size: 0.8em;"></i>
+                  <span><%= prereq %></span>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+        </div>
+      </div>
+
+      <!-- Code des tests - Pleine largeur en dessous -->
+      <% if tf['testCode'].present? %>
+        <% lang_for_tests = @analysis.language.downcase %>
+        <div class="tests-code-block">
+          <div class="tests-block-title">💻 Code des tests</div>
+          <pre class="code-block line-numbers"><code class="language-<%= lang_for_tests %>"><%= tf['testCode'] %></code></pre>
+        </div>
+      <% end %>
+
+      <!-- Notes importantes (un seul endroit, en bas) -->
+      <% if tf['importantNotes'].present? && tf['importantNotes'].any? %>
+        <div class="tests-note">
+          <div class="tests-note-icon">ℹ️</div>
+          <div class="tests-note-body">
+            <ul style="margin:0; padding-left: 1.25rem;">
+              <% tf['importantNotes'].each do |note| %>
+                <li><%= note %></li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+
 
         <% elsif @analysis.ai_provider.in?(["openai","claude","smells","improve"]) && parsed[:sections].present? %>
           <!-- Version structurée : cartes avec traitement spécial code smells -->
