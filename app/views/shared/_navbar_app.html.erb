@@ -18,10 +18,14 @@
     <!-- Partie droite : User + Actions -->
     <div class="nav-app-right">
       <% if user_signed_in? %>
-        <div class="user-dropdown-app">
+        <div class="user-dropdown-app"
+             data-controller="user-menu"
+             data-action="click@window->user-menu#close keydown@window->user-menu#closeOnEscape">
           <button
             id="userMenuBtnApp"
             class="user-btn-app"
+            data-user-menu-target="button"
+            data-action="click->user-menu#toggle"
             type="button"
             aria-haspopup="menu"
             aria-expanded="false">
@@ -34,7 +38,9 @@
             </div>
           </button>
 
-          <div id="userMenuApp" class="dropdown-menu-app">
+          <div id="userMenuApp" 
+               class="dropdown-menu-app"
+               data-user-menu-target="menu">
             <div class="user-info-app">
               <strong>
                 <% if current_user.first_name.present? && current_user.last_name.present? %>
@@ -65,22 +71,33 @@
     </div>
 
     <!-- Menu mobile -->
-    <div class="mobile-nav-app">
-      <button class="mobile-menu-btn-app" id="mobileMenuBtnApp">☰</button>
+    <div class="mobile-nav-app"
+         data-controller="mobile-menu">
+      <button class="mobile-menu-btn-app" 
+              id="mobileMenuBtnApp"
+              data-mobile-menu-target="button"
+              data-action="click->mobile-menu#toggle">☰</button>
     </div>
   </div>
 
   <!-- Dropdown mobile -->
-  <div class="mobile-menu-app" id="mobileMenuApp">
+  <div class="mobile-menu-app" 
+       id="mobileMenuApp"
+       data-mobile-menu-target="menu">
     <div class="mobile-menu-links-app">
-      <%= link_to "Historique", analyses_path, class: "mobile-menu-link-app" %>
-      <%= link_to "Nouvelle analyse", new_analysis_path, class: "mobile-menu-link-app" %>
+      <%= link_to "Historique", analyses_path, 
+                  class: "mobile-menu-link-app",
+                  data: { action: "click->mobile-menu#closeOnLink" } %>
+      <%= link_to "Nouvelle analyse", new_analysis_path, 
+                  class: "mobile-menu-link-app",
+                  data: { action: "click->mobile-menu#closeOnLink" } %>
       <% if user_signed_in? %>
         <%= link_to "Se déconnecter", destroy_user_session_path, 
                     data: { "turbo-method": :delete }, 
                     class: "mobile-menu-link-app" %>
       <% else %>
-        <%= link_to "Se connecter", new_user_session_path, class: "mobile-menu-link-app" %>
+        <%= link_to "Se connecter", new_user_session_path, 
+                    class: "mobile-menu-link-app" %>
       <% end %>
     </div>
   </div>
@@ -168,7 +185,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 1.5rem; /* Plus d'espace entre avatar et bouton */
+  gap: 1.5rem;
 }
 
 /* Avatar utilisateur */
@@ -310,7 +327,7 @@
   z-index: 999;
 }
 
-.mobile-menu-app.open {
+.mobile-menu-app.mobile-menu-open {
   display: block;
 }
 
@@ -361,64 +378,6 @@ body {
 .analysis-container,
 .analyses-container,
 .analysis-container-premium {
-  padding-top: calc(56px + 2rem) !important; /* navbar + padding naturel */
+  padding-top: calc(56px + 2rem) !important;
 }
 </style>
-
-<script>
-// Script navbar app
-document.addEventListener('DOMContentLoaded', function() {
-  initNavbarApp();
-});
-
-document.addEventListener('turbo:load', function() {
-  initNavbarApp();
-});
-
-function initNavbarApp() {
-  // Menu utilisateur desktop
-  const userBtn = document.getElementById('userMenuBtnApp');
-  const userMenu = document.getElementById('userMenuApp');
-  
-  if (userBtn && userMenu) {
-    userBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      userMenu.classList.toggle('show');
-    });
-    
-    // Fermer si clic ailleurs
-    document.addEventListener('click', function(e) {
-      if (!userMenu.contains(e.target) && !userBtn.contains(e.target)) {
-        userMenu.classList.remove('show');
-      }
-    });
-  }
-  
-  // Menu mobile
-  const mobileBtn = document.getElementById('mobileMenuBtnApp');
-  const mobileMenu = document.getElementById('mobileMenuApp');
-  
-  if (mobileBtn && mobileMenu) {
-    mobileBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      mobileMenu.classList.toggle('open');
-    });
-    
-    // Fermer le menu mobile sur clic d'un lien
-    mobileMenu.querySelectorAll('.mobile-menu-link-app').forEach(link => {
-      link.addEventListener('click', function() {
-        mobileMenu.classList.remove('open');
-      });
-    });
-  }
-}
-
-// Cleanup avant cache Turbo
-document.addEventListener('turbo:before-cache', function() {
-  const userMenu = document.getElementById('userMenuApp');
-  const mobileMenu = document.getElementById('mobileMenuApp');
-  
-  if (userMenu) userMenu.classList.remove('show');
-  if (mobileMenu) mobileMenu.classList.remove('open');
-});
-</script>

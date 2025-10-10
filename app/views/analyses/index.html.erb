@@ -104,29 +104,37 @@
                   <td class="date-cell">
                     <%= analysis.created_at.in_time_zone("Europe/Paris").strftime("%d/%m/%Y à %H:%M") %>
                   </td>
-                  <td class="action-cell">
-                    <div class="dropdown-container" data-dropdown>
-                      <button class="btn-dropdown" data-dropdown-trigger>
-                        <i class="fas fa-eye"></i>
-                        <span>Voir</span>
-                        <i class="fas fa-chevron-down dropdown-chevron"></i>
-                      </button>
-                      <div class="dropdown-menu" data-dropdown-menu>
-                        <%= link_to analysis_path(analysis), class: "dropdown-item dropdown-item-primary" do %>
-                          <i class="fas fa-eye"></i>
-                          <span>Voir l'analyse</span>
-                        <% end %>
-                        <button class="dropdown-item" onclick="openShareModal(<%= analysis.id %>, '<%= analysis.title.present? ? analysis.title : "Analyse sans titre" %>', '<%= analysis_url(analysis) %>')">
-                          <i class="fas fa-share"></i>
-                          <span>Partager</span>
-                        </button>
-                        <button class="dropdown-item dropdown-item-danger" onclick="openDeleteModal(<%= analysis.id %>, '<%= analysis.title.present? ? analysis.title : "Analyse sans titre" %>')">
-                          <i class="fas fa-trash"></i>
-                          <span>Supprimer</span>
-                        </button>
-                      </div>
-                    </div>
-                  </td>
+<td class="action-cell">
+  <div data-controller="dropdown">
+    <button class="btn-dropdown" 
+            data-action="click->dropdown#toggle">
+      <i class="fas fa-eye"></i>
+      <span>Voir</span>
+      <i class="fas fa-chevron-down dropdown-chevron"></i>
+    </button>
+    <div class="dropdown-menu" data-dropdown-target="menu">
+      <%= link_to analysis_path(analysis), class: "dropdown-item dropdown-item-primary" do %>
+        <i class="fas fa-eye"></i>
+        <span>Voir l'analyse</span>
+      <% end %>
+      <button class="dropdown-item" 
+              data-action="click->modal#openShare"
+              data-analysis-id="<%= analysis.id %>"
+              data-analysis-title="<%= analysis.title.present? ? analysis.title : 'Analyse sans titre' %>"
+              data-analysis-url="<%= analysis_url(analysis) %>">
+        <i class="fas fa-share"></i>
+        <span>Partager</span>
+      </button>
+      <button class="dropdown-item dropdown-item-danger"
+              data-action="click->modal#openDelete"
+              data-analysis-id="<%= analysis.id %>"
+              data-analysis-title="<%= analysis.title.present? ? analysis.title : 'Analyse sans titre' %>">
+        <i class="fas fa-trash"></i>
+        <span>Supprimer</span>
+      </button>
+    </div>
+  </div>
+</td>
                 </tr>
               <% end %>
             </tbody>
@@ -144,50 +152,59 @@
   </div>
 
   <!-- Modal de partage -->
-  <div id="shareModal" class="share-modal-overlay">
-    <div class="share-modal">
-      <div class="share-modal-header">
-        <h3>🔗 Partager cette analyse</h3>
-        <button onclick="closeShareModal()" class="share-modal-close">&times;</button>
-      </div>
-      <div class="share-modal-body">
-        <p id="shareModalTitle" class="share-modal-title"></p>
-        <div class="share-options">
-          <button onclick="copyAnalysisUrl()" class="share-btn share-btn-primary">
-            <i class="fas fa-copy"></i>
-            <span>Copier le lien</span>
-          </button>
-          <button onclick="downloadAnalysisPDF()" class="share-btn share-btn-secondary">
-            <i class="fas fa-file-pdf"></i>
-            <span>Télécharger PDF</span>
-          </button>
-        </div>
+<div id="shareModal" 
+     class="share-modal-overlay"
+     data-action="click->modal#closeOnOverlayClick">
+<div class="share-modal">
+    <div class="share-modal-header">
+      <h3>🔗 Partager cette analyse</h3>
+      <button data-action="click->modal#closeShare" 
+              class="share-modal-close">&times;</button>
+    </div>
+    <div class="share-modal-body">
+      <p id="shareModalTitle" class="share-modal-title"></p>
+      <div class="share-options">
+        <button data-action="click->modal#copyUrl" 
+                class="share-btn share-btn-primary">
+          <i class="fas fa-copy"></i>
+          <span>Copier le lien</span>
+        </button>
+        <button data-action="click->modal#downloadPdf" 
+                class="share-btn share-btn-secondary">
+          <i class="fas fa-file-pdf"></i>
+          <span>Télécharger PDF</span>
+        </button>
       </div>
     </div>
   </div>
+</div>
 
   <!-- Modal de suppression -->
-  <div id="deleteModal" class="share-modal-overlay">
-    <div class="share-modal">
-      <div class="share-modal-header">
-        <h3>🗑️ Supprimer cette analyse</h3>
-        <button onclick="closeDeleteModal()" class="share-modal-close">&times;</button>
-      </div>
-      <div class="share-modal-body">
-        <p id="deleteModalTitle" class="share-modal-title"></p>
-        <p style="color: #dc2626; font-weight: 500; margin-bottom: 1.5rem;">
-          ⚠️ Cette action est irréversible
-        </p>
-        <div class="share-options">
-          <button onclick="confirmDelete()" class="share-btn share-btn-danger">
-            <i class="fas fa-trash"></i>
-            <span>Supprimer définitivement</span>
-          </button>
-          <button onclick="closeDeleteModal()" class="share-btn share-btn-secondary">
-            <i class="fas fa-times"></i>
-            <span>Annuler</span>
-          </button>
-        </div>
+<div id="deleteModal" 
+     class="share-modal-overlay"
+     data-action="click->modal#closeOnOverlayClick">
+<div class="share-modal">
+    <div class="share-modal-header">
+      <h3>🗑️ Supprimer cette analyse</h3>
+      <button data-action="click->modal#closeDelete" 
+              class="share-modal-close">&times;</button>
+    </div>
+    <div class="share-modal-body">
+      <p id="deleteModalTitle" class="share-modal-title"></p>
+      <p style="color: #dc2626; font-weight: 500; margin-bottom: 1.5rem;">
+        ⚠️ Cette action est irréversible
+      </p>
+      <div class="share-options">
+        <button data-action="click->modal#confirmDelete" 
+                class="share-btn share-btn-danger">
+          <i class="fas fa-trash"></i>
+          <span>Supprimer définitivement</span>
+        </button>
+        <button data-action="click->modal#closeDelete" 
+                class="share-btn share-btn-secondary">
+          <i class="fas fa-times"></i>
+          <span>Annuler</span>
+        </button>
       </div>
     </div>
   </div>
@@ -583,7 +600,7 @@ body {
 }
 
 /* Dropdown Container */
-.dropdown-container {
+[data-controller="dropdown"] {
   position: relative;
   display: inline-block;
 }
@@ -642,7 +659,7 @@ body {
   transition: transform 0.2s ease;
 }
 
-.dropdown-container.open .dropdown-chevron {
+[data-controller="dropdown"].open .dropdown-chevron {
   transform: rotate(180deg);
 }
 
@@ -659,14 +676,15 @@ body {
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
   padding: 0.375rem 0;
-  z-index: 1000;
+  z-index: 9999; /* ⬅️ CHANGE DE 1000 à 9999 */
+  pointer-events: auto;
   opacity: 0;
   visibility: hidden;
   transform: translateY(-8px) scale(0.95);
   transition: all 0.2s ease;
 }
 
-.dropdown-container.open .dropdown-menu {
+[data-controller="dropdown"].open .dropdown-menu {
   opacity: 1;
   visibility: visible;
   transform: translateY(0) scale(1);
@@ -686,6 +704,7 @@ body {
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
+  pointer-events: auto;
   transition: all 0.2s ease;
   position: relative;
 }
@@ -823,160 +842,4 @@ function updateFilters(filterType, value) {
   
   window.location.href = url.toString();
 }
-
-// Variables globales
-let currentAnalysisUrl = null;
-let currentAnalysisId = null;
-let currentDeleteId = null;
-let isModalOpen = false;
-
-// DROPDOWNS - VERSION CLICK UNIQUEMENT
-document.addEventListener('click', function(e) {
-  // Gestion des dropdowns
-  if (e.target.closest('[data-dropdown-trigger]')) {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const dropdown = e.target.closest('[data-dropdown]');
-    const isOpen = dropdown.classList.contains('open');
-    
-    // Fermer tous les autres dropdowns
-    document.querySelectorAll('[data-dropdown]').forEach(d => {
-      d.classList.remove('open');
-    });
-    
-    // Toggle le dropdown actuel seulement
-    if (!isOpen) {
-      dropdown.classList.add('open');
-    }
-    return;
-  }
-  
-  // Fermer dropdowns si clic ailleurs
-  if (!e.target.closest('[data-dropdown]')) {
-    document.querySelectorAll('[data-dropdown]').forEach(d => {
-      d.classList.remove('open');
-    });
-  }
-  
-  // Fermer modals si clic sur overlay
-  if (e.target.id === 'shareModal') {
-    closeShareModal();
-  }
-  if (e.target.id === 'deleteModal') {
-    closeDeleteModal();
-  }
-});
-
-// MODAL DE PARTAGE
-function openShareModal(analysisId, analysisTitle, analysisUrl) {
-  currentAnalysisId = analysisId;
-  currentAnalysisUrl = analysisUrl;
-  document.getElementById('shareModalTitle').textContent = `Analyse: "${analysisTitle}"`;
-  document.getElementById('shareModal').classList.add('active');
-}
-
-function closeShareModal() {
-  document.getElementById('shareModal').classList.remove('active');
-  isModalOpen = false;
-  currentAnalysisUrl = null;
-}
-
-// MODAL DE SUPPRESSION
-function openDeleteModal(analysisId, analysisTitle) {
-  currentDeleteId = analysisId;
-  document.getElementById('deleteModalTitle').textContent = `Analyse: "${analysisTitle}"`;
-  document.getElementById('deleteModal').classList.add('active');
-}
-
-function closeDeleteModal() {
-  document.getElementById('deleteModal').classList.remove('active');
-  currentDeleteId = null;
-}
-
-function confirmDelete() {
-  if (currentDeleteId) {
-    // Créer un formulaire invisible pour la suppression
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `/analyses/${currentDeleteId}`;
-    form.style.display = 'none';
-    
-    // Ajouter le token CSRF
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    const csrfInput = document.createElement('input');
-    csrfInput.type = 'hidden';
-    csrfInput.name = 'authenticity_token';
-    csrfInput.value = csrfToken;
-    form.appendChild(csrfInput);
-    
-    // Ajouter la méthode DELETE
-    const methodInput = document.createElement('input');
-    methodInput.type = 'hidden';
-    methodInput.name = '_method';
-    methodInput.value = 'delete';
-    form.appendChild(methodInput);
-    
-    // Ajouter au DOM et soumettre
-    document.body.appendChild(form);
-    form.submit();
-  }
-}
-
-// COPIE STYLÉE - FEEDBACK DANS LE BOUTON
-function copyAnalysisUrl() {
-  if (!currentAnalysisUrl) return;
-  
-  const button = document.querySelector('.share-btn-primary');
-  const originalHTML = button.innerHTML;
-  
-  navigator.clipboard.writeText(currentAnalysisUrl).then(() => {
-    // Animation de succès
-    button.innerHTML = '<i class="fas fa-check"></i><span>Lien copié !</span>';
-    button.style.background = '#059669';
-    button.style.transform = 'scale(1.05)';
-    
-    setTimeout(() => {
-      button.innerHTML = originalHTML;
-      button.style.background = '#10b981';
-      button.style.transform = 'scale(1)';
-    }, 2000);
-    
-  }).catch(() => {
-    // Fallback stylé
-    button.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Erreur copie</span>';
-    button.style.background = '#f59e0b';
-    
-    setTimeout(() => {
-      const textToCopy = prompt('Copiez ce lien :', currentAnalysisUrl);
-      button.innerHTML = originalHTML;
-      button.style.background = '#10b981';
-    }, 1000);
-  });
-}
-
-// PDF STYLÉ
-function downloadAnalysisPDF() {
-  if (currentAnalysisId) {
-    // Téléchargement du PDF
-    window.open(`/analyses/${currentAnalysisId}/download_pdf.pdf`, '_blank');
-    
-    // Feedback visuel
-    const button = document.querySelector('.share-btn-secondary');
-    const originalHTML = button.innerHTML;
-    
-    button.innerHTML = '<i class="fas fa-check"></i><span>PDF généré !</span>';
-    button.style.background = '#059669';
-    button.style.color = 'white';
-    
-    setTimeout(() => {
-      button.innerHTML = originalHTML;
-      button.style.background = '#f3f4f6';
-      button.style.color = '#374151';
-    }, 2000);
-  }
-}
-document.addEventListener('turbo:before-cache', () => { document.querySelectorAll('[data-dropdown]').forEach(d => d.classList.remove('open')); });
-document.addEventListener('turbo:load',        () => { document.querySelectorAll('[data-dropdown]').forEach(d => d.classList.remove('open')); });
-document.addEventListener('turbo:render',      () => { document.querySelectorAll('[data-dropdown]').forEach(d => d.classList.remove('open')); });
 </script>

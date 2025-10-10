@@ -542,10 +542,7 @@ pre { border-bottom: 0 !important; }
 pre.line-numbers { position: relative; }
 /* ===== Dropdowns (Analyses index) — cliquabilité fiable, scope strict ===== */
 .analyses-container .dropdown-menu { pointer-events: none; }
-.analyses-container [data-dropdown].open .dropdown-menu {
-  pointer-events: auto;
-  z-index: 1200;
-}
+.analyses-container [data-controller="dropdown"].open .dropdown-menu { pointer-events: auto; z-index: 1200; }
 
 /* ===== BOUTONS COPY PERSONNALISÉS ===== */
 
@@ -938,4 +935,38 @@ pre.line-numbers { position: relative; }
     font-size: 1rem !important;
   }
 }
+
+/* Show — menu Partager: positionné en absolu, sans impacter le flux */
+.analysis-card-premium .dropdown-container-premium {
+  position: relative; /* le conteneur sert d’ancre à l’absolu */
+}
+
+.analysis-card-premium .dropdown-menu-premium {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  left: auto;
+
+  z-index: 1200;        /* passe devant les cards à droite */
+  margin: 0;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  pointer-events: none;
+
+  transition: opacity .15s ease, transform .15s ease, visibility 0s linear .15s;
+}
+
+.analysis-card-premium .dropdown-container-premium.open .dropdown-menu-premium {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+
+  transition: opacity .15s ease, transform .15s ease, visibility 0s;
+}
+
+
+
 

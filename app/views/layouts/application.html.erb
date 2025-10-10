@@ -29,8 +29,8 @@
     <%= yield :head %>
   </head>
 
-  <body>
-    <% unless devise_controller? %>
+  <body data-controller="modal">
+        <% unless devise_controller? %>
       <% if notice %>
         <div class="alert alert-success"><%= notice %></div>
       <% end %>
