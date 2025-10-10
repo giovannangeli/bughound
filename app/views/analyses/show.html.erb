@@ -4,8 +4,8 @@
 
 <%= render 'shared/navbar_app' %>
 <div class="analysis-container-premium">
-  <div class="analysis-card-premium" data-provider="<%= @analysis.ai_provider %>">
-    
+  <div class="analysis-card-premium" data-controller="show" data-provider="<%= @analysis.ai_provider %>">
+
     <!-- Header unifié avec partage -->
     <div class="analysis-header-premium">
       <div class="analysis-meta">
@@ -27,24 +27,30 @@
       </div>
       
       <!-- Bouton partage -->
-      <div class="dropdown-container-premium" data-dropdown>
-        <button class="btn-share-premium" data-dropdown-trigger>
-          <i class="fas fa-share"></i>
-          <span>Partager</span>
-          <i class="fas fa-chevron-down dropdown-chevron"></i>
-        </button>
-        <div class="dropdown-menu-premium" data-dropdown-menu>
-          <button class="dropdown-item-premium" onclick="copyAnalysisUrl()">
-            <i class="fas fa-copy"></i>
-            <span>Copier le lien</span>
-          </button>
-          <button class="dropdown-item-premium" onclick="downloadAnalysisPDF()">
-            <i class="fas fa-file-pdf"></i>
-            <span>Télécharger PDF</span>
-          </button>
-        </div>
-      </div>
-    </div>
+<div class="dropdown-container-premium" data-controller="dropdown">
+  <button class="btn-share-premium" data-action="click->dropdown#toggle">
+    <i class="fas fa-share"></i>
+    <span>Partager</span>
+    <i class="fas fa-chevron-down dropdown-chevron"></i>
+  </button>
+
+  <div class="dropdown-menu-premium" data-dropdown-target="menu">
+    <button class="dropdown-item-premium"
+            data-action="click->show#copyUrl click->dropdown#toggle"
+            data-analysis-url="<%= analysis_url(@analysis) %>">
+      <i class="fas fa-copy"></i>
+      <span>Copier le lien</span>
+    </button>
+
+    <button class="dropdown-item-premium"
+            data-action="click->show#downloadPdf click->dropdown#toggle"
+            data-analysis-id="<%= @analysis.id %>">
+      <i class="fas fa-file-pdf"></i>
+      <span>Télécharger PDF</span>
+    </button>
+  </div>
+</div>
+</div>
 
     <!-- Score (hero + détails) -->
     <% if @analysis.ai_provider.in?(["openai","claude","smells"]) && @score.present? %>
@@ -154,7 +160,7 @@
 
     <!-- Code collapsible -->
     <div class="code-section-premium">
-      <button class="code-toggle-premium" onclick="toggleCode()">
+      <button class="code-toggle-premium" data-action="click->show#toggleCode">
         <i class="fas fa-code code-icon"></i>
         <span>Code analysé</span>
         <i class="fas fa-chevron-down code-chevron"></i>
@@ -487,257 +493,3 @@ temps_estime = temps_match ? temps_match[1].strip : nil
 
   </div>
 </div>
-
-<script>
-// Code collapsible toggle
-function toggleCode() {
-  const content = document.querySelector('.code-content-premium');
-  const chevron = document.querySelector('.code-chevron');
-  if (content.style.display === 'none') {
-    content.style.display = 'block';
-    chevron.style.transform = 'rotate(180deg)';
-  } else {
-    content.style.display = 'none';
-    chevron.style.transform = 'rotate(0deg)';
-  }
-}
-
-// Dropdown
-document.addEventListener('click', function(e) {
-  if (e.target.closest('[data-dropdown-trigger]')) {
-    e.preventDefault();
-    e.stopPropagation();
-    const dropdown = e.target.closest('[data-dropdown]');
-    const isOpen = dropdown.classList.contains('open');
-    document.querySelectorAll('[data-dropdown]').forEach(d => d.classList.remove('open'));
-    if (!isOpen) dropdown.classList.add('open');
-    return;
-  }
-  if (!e.target.closest('[data-dropdown]')) {
-    document.querySelectorAll('[data-dropdown]').forEach(d => d.classList.remove('open'));
-  }
-});
-
-// Partage
-function copyAnalysisUrl() {
-  const currentUrl = window.location.href;
-  navigator.clipboard.writeText(currentUrl).then(() => {
-    const button = document.querySelector('.dropdown-item-premium');
-    const originalText = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-check"></i><span>Lien copié !</span>';
-    setTimeout(() => { button.innerHTML = originalText; }, 2000);
-  });
-}
-
-function downloadAnalysisPDF() {
-  const analysisId = '<%= @analysis.id %>';
-  window.open(`/analyses/${analysisId}/download_pdf.pdf`, '_blank');
-}
-
-// Prism
-document.addEventListener('DOMContentLoaded', function() {
-  if (window.Prism) Prism.highlightAll();
-});
-
-// Boutons copy personnalisés pour tests et code refactorisé
-document.addEventListener('DOMContentLoaded', function() {
-  
-  function createCustomCopyButtons() {
-    // Supprimer les anciens boutons personnalisés
-    document.querySelectorAll('.custom-copy-btn').forEach(btn => btn.remove());
-    
-    // Stratégies pour trouver les blocs de code appropriés
-    const strategies = [
-      () => document.querySelectorAll('.tests-code-block .code-block, .code-card .code-block'),
-      () => document.querySelectorAll('.code-block:not(.code-content-premium .code-block)'),
-      () => {
-        const blocks = [];
-        document.querySelectorAll('.tests-code-block, .code-card').forEach(container => {
-          const codeBlock = container.querySelector('.code-block');
-          if (codeBlock) blocks.push(codeBlock);
-        });
-        return blocks;
-      }
-    ];
-    
-    // Utiliser la première stratégie qui trouve des éléments
-    for (const strategy of strategies) {
-      const blocks = strategy();
-      if (blocks.length > 0) {
-        Array.from(blocks).forEach(codeBlock => {
-          // Éviter les doublons
-          if (codeBlock.querySelector('.custom-copy-btn')) return;
-          
-          // Créer le bouton
-          const copyBtn = document.createElement('button');
-          copyBtn.className = 'custom-copy-btn';
-          copyBtn.textContent = 'Copier';
-          copyBtn.setAttribute('type', 'button');
-          copyBtn.style.cssText = `
-            position: absolute !important;
-            top: 1rem !important;
-            right: 1rem !important;
-            z-index: 20 !important;
-            background: #374151 !important;
-            color: #f8fafc !important;
-            border: 1px solid #4b5563 !important;
-            border-radius: 8px !important;
-            padding: 0.5rem 0.75rem !important;
-            font-size: 0.875rem !important;
-            cursor: pointer !important;
-          `;
-          
-          // Événement de copie
-          copyBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const codeElement = codeBlock.querySelector('code');
-            if (codeElement) {
-              const textToCopy = codeElement.textContent || codeElement.innerText;
-              
-              if (navigator.clipboard) {
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                  showCopiedState(copyBtn);
-                });
-              } else {
-                fallbackCopy(textToCopy);
-                showCopiedState(copyBtn);
-              }
-            }
-          });
-          
-          codeBlock.appendChild(copyBtn);
-        });
-        break; // Arrêter après la première stratégie réussie
-      }
-    }
-  }
-  
-  function showCopiedState(button) {
-    button.textContent = 'Copié!';
-    button.style.background = '#10b981 !important';
-    setTimeout(() => {
-      button.textContent = 'Copier';
-      button.style.background = '#374151 !important';
-    }, 2000);
-  }
-  
-  function fallbackCopy(text) {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    document.body.appendChild(textArea);
-    textArea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textArea);
-  }
-  
-  // Initialiser les boutons après chargement
-  setTimeout(createCustomCopyButtons, 100);
-  setTimeout(createCustomCopyButtons, 500);
-  setTimeout(createCustomCopyButtons, 1000);
-});
-
-function styleCodeSmells() {
-  // Ne s'exécute que pour les analyses de type "smells"
-  const container = document.querySelector('[data-provider="smells"] .feedback-content-premium');
-  if (!container) return;
-
-  // Récupère tout le contenu
-  const content = container.innerHTML;
-  
-  // Définit les patterns et leurs classes CSS correspondantes
-  const sectionPatterns = [
-    { 
-      pattern: /\*\*Synthèse\*\*/g, 
-      replacement: '<div class="smells-section-title">Synthèse</div><div class="smells-synthese">',
-      closeDiv: true
-    },
-    { 
-      pattern: /\*\*Critiques \(🔴\)\*\*/g, 
-      replacement: '</div><div class="smells-section-title">Critiques 🔴</div><div class="smells-critiques">',
-      closeDiv: false
-    },
-    { 
-      pattern: /\*\*Modérés \(🟡\)\*\*/g, 
-      replacement: '</div><div class="smells-section-title">Modérés 🟡</div><div class="smells-moderes">',
-      closeDiv: false
-    },
-    { 
-      pattern: /\*\*Détail par catégories\*\*/g, 
-      replacement: '</div><div class="smells-section-title">Détail par catégories</div><div class="smells-detail">',
-      closeDiv: false
-    },
-    { 
-      pattern: /\*\*Plan d'action\*\*/g, 
-      replacement: '</div><div class="smells-section-title">Plan d\'action</div><div class="smells-plan">',
-      closeDiv: false
-    },
-    { 
-      pattern: /\*\*Impact pédagogique\*\*/g, 
-      replacement: '</div><div class="smells-section-title">Impact pédagogique</div><div class="smells-impact">',
-      closeDiv: false
-    }
-  ];
-
-  let styledContent = content;
-
-  // Applique chaque transformation
-  sectionPatterns.forEach(({ pattern, replacement }) => {
-    styledContent = styledContent.replace(pattern, replacement);
-  });
-
-  // Ferme la dernière div ouverte
-  styledContent += '</div>';
-
-  // Nettoie les autres étoiles résiduelles autour des mots
-  styledContent = styledContent.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-
-  // Applique le contenu stylisé
-  container.innerHTML = styledContent;
-}
-
-function styleImproveContent() {
-  const container = document.querySelector('[data-provider="improve"] .feedback-content-premium');
-  if (!container) {
-    return;
-  }
-
-  let content = container.innerHTML;
-
-   // NETTOYER LES ** AVANT TRANSFORMATIONS
-  content = content.replace(/\*\*/g, '');
-  
-  // Transformations
-  if (content.includes("Améliorations apportées")) {
-    content = content.replace(/Améliorations apportées.*?:/g, '<div class="improve-section-title">🎯 Améliorations apportées</div><div class="improve-ameliorations">');
-  }
-  
-  if (content.includes("Explications détaillées")) {
-    content = content.replace(/Explications détaillées.*?:/g, '</div><div class="improve-section-title">📝 Explications détaillées</div><div class="improve-explications">');
-  }
-  
-  if (content.includes("Bénéfices obtenus")) {
-    content = content.replace(/Bénéfices obtenus.*?:/g, '</div><div class="improve-section-title">🚀 Bénéfices obtenus</div><div class="improve-benefices">');
-  }
-  
-  content += '</div>';
-  
-  container.innerHTML = content;
-}
-
-
-// Pour les mises à jour AJAX classiques
-document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(styleCodeSmells, 100);
-  setTimeout(styleImproveContent, 100);
-  
-  // Observer les changements dans le DOM
-  const observer = new MutationObserver(function() {
-    setTimeout(styleCodeSmells, 100);
-    setTimeout(styleImproveContent, 100);
-  });
-  
-  observer.observe(document.body, { childList: true, subtree: true });
-});
-</script>

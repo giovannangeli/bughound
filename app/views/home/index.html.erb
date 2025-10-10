@@ -867,7 +867,7 @@
 </head>
 <body>
 <!-- Navbar -->
-    <nav class="navbar" id="navbar">
+    <nav class="navbar" id="navbar" data-controller="navbar">
         <div class="navbar-content">
             <!-- Version Desktop -->
             <!-- Gauche : Logo -->
@@ -888,10 +888,14 @@
             <!-- Droite : Boutons d'action -->
             <div class="nav-right">
                 <% if user_signed_in? %>
-                    <div class="user-dropdown">
-                        <button
-                            id="userMenuBtn"
-                            class="nav-link user-btn"
+                    <div class="user-dropdown" 
+     data-controller="user-menu"
+     data-action="click@window->user-menu#close keydown@window->user-menu#closeOnEscape">
+  <button
+    id="userMenuBtn"
+    class="nav-link user-btn"
+    data-user-menu-target="button"
+    data-action="click->user-menu#toggle"
                             type="button"
                             aria-haspopup="menu"
                             aria-expanded="false"
@@ -906,7 +910,11 @@
                             </div>
                         </button>
 
-                        <div id="userMenu" class="dropdown-menu" role="menu" aria-labelledby="userMenuBtn">
+                        <div id="userMenu" 
+     class="dropdown-menu" 
+     role="menu"
+     aria-labelledby="userMenuBtn"
+     data-user-menu-target="menu">
                             <div class="user-info" role="presentation">
                                 <strong>
                                     <% if current_user.first_name.present? && current_user.last_name.present? %>
@@ -938,18 +946,30 @@
             </div>
 
             <!-- Version Mobile -->
-            <div class="mobile-nav-group">
-                <%= link_to "Analyser", new_analysis_path, class: "nav-link nav-cta mobile-visible", style: "display: none;" %>
-                <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
-            </div>
+<div class="mobile-nav-group"
+     data-controller="mobile-menu">
+  <%= link_to "Analyser", new_analysis_path, class: "nav-link nav-cta mobile-visible", style: "display: none;" %>
+  <button class="mobile-menu-btn" 
+          id="mobileMenuBtn"
+          data-mobile-menu-target="button"
+          data-action="click->mobile-menu#toggle">☰</button>
+</div>
         </div>
 
         <!-- Menu Mobile Dropdown -->
-        <div class="mobile-menu" id="mobileMenu">
-            <div class="mobile-menu-links">
-                <a href="#features" class="mobile-menu-link">Features</a>
-                <a href="#demo" class="mobile-menu-link">Démo</a>
-                <%= link_to "Historique", analyses_path, class: "mobile-menu-link" %>
+   <div class="mobile-menu" 
+     id="mobileMenu"
+     data-mobile-menu-target="menu">
+  <div class="mobile-menu-links">
+    <a href="#features" 
+       class="mobile-menu-link"
+       data-action="click->mobile-menu#closeOnLink">Features</a>
+    <a href="#demo" 
+       class="mobile-menu-link"
+       data-action="click->mobile-menu#closeOnLink">Démo</a>
+    <%= link_to "Historique", analyses_path, 
+                class: "mobile-menu-link",
+                data: { action: "click->mobile-menu#closeOnLink" } %>
                 <% if user_signed_in? %>
                     <%= link_to "Se déconnecter", destroy_user_session_path, 
                                 data: { "turbo-method": :delete }, 
@@ -1056,82 +1076,96 @@
             </div>
 
             <!-- Wrapper du carrousel avec flèches -->
-            <div class="modes-scroller-wrapper">
-                <button class="modes-arrow left" aria-label="Voir la carte précédente">
-                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                        <path d="M12.5 4.5L7 10l5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
+<div class="modes-scroller-wrapper" 
+     data-controller="carousel">
+  <button class="modes-arrow left" 
+          data-carousel-target="leftArrow"
+          data-action="click->carousel#scrollLeft"
+          aria-label="Voir la carte précédente">
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M12.5 4.5L7 10l5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
 
-                <!-- Piste du carrousel (défilement horizontal) -->
-<div id="modesTrack" class="ai-modes">
+  <div class="ai-modes" 
+       data-carousel-target="track"
+       data-action="scroll->carousel#updateArrows">
+    
+    <!-- Carte 1 : OpenAI -->
     <div class="mode-card openai">
-        <svg class="mode-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-            <path d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z"/>
-        </svg>
-        <h3 class="mode-title">Analyse Standard</h3>
-        <p class="mode-description">
-            Score global + détails par catégorie (Sécurité, Performance, Lisibilité, Tests).
-            Idéal pour un premier diagnostic rapide.
-        </p>
-        <p class="mode-tech">Powered by OpenAI GPT-4</p>
+      <svg class="mode-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+        <path d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z"/>
+      </svg>
+      <h3 class="mode-title">Analyse Standard</h3>
+      <p class="mode-description">
+        Score global + détails par catégorie (Sécurité, Performance, Lisibilité, Tests).
+        Idéal pour un premier diagnostic rapide.
+      </p>
+      <p class="mode-tech">Powered by OpenAI GPT-4</p>
     </div>
 
-                    <div class="mode-card claude">
-    <svg class="mode-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+    <!-- Carte 2 : Claude -->
+    <div class="mode-card claude">
+      <svg class="mode-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
         <path d="M184 120C184 89.1 209.1 64 240 64L264 64C281.7 64 296 78.3 296 96L296 544C296 561.7 281.7 576 264 576L232 576C202.2 576 177.1 555.6 170 528C169.3 528 168.7 528 168 528C123.8 528 88 492.2 88 448C88 430 94 413.4 104 400C84.6 385.4 72 362.2 72 336C72 305.1 89.6 278.2 115.2 264.9C108.1 252.9 104 238.9 104 224C104 179.8 139.8 144 184 144L184 120zM456 120L456 144C500.2 144 536 179.8 536 224C536 239 531.9 253 524.8 264.9C550.5 278.2 568 305 568 336C568 362.2 555.4 385.4 536 400C546 413.4 552 430 552 448C552 492.2 516.2 528 472 528C471.3 528 470.7 528 470 528C462.9 555.6 437.8 576 408 576L376 576C358.3 576 344 561.7 344 544L344 96C344 78.3 358.3 64 376 64L400 64C430.9 64 456 89.1 456 120z"/>
-    </svg>
-    <h3 class="mode-title">Analyse Expert</h3>
-    <p class="mode-description">
+      </svg>
+      <h3 class="mode-title">Analyse Expert</h3>
+      <p class="mode-description">
         Analyse chirurgicale avec recommandations détaillées.
         Pour les développeurs qui veulent aller plus loin.
-    </p>
-    <p class="mode-tech">Powered by Anthropic</p>
-</div>
+      </p>
+      <p class="mode-tech">Powered by Anthropic</p>
+    </div>
 
-                    <div class="mode-card tests">
-    <svg class="mode-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+    <!-- Carte 3 : Tests -->
+    <div class="mode-card tests">
+      <svg class="mode-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
         <path d="M197.8 100.3C208.7 107.9 211.3 122.9 203.7 133.7L147.7 213.7C143.6 219.5 137.2 223.2 130.1 223.8C123 224.4 116 222 111 217L71 177C61.7 167.6 61.7 152.4 71 143C80.3 133.6 95.6 133.7 105 143L124.8 162.8L164.4 106.2C172 95.3 187 92.7 197.8 100.3zM197.8 260.3C208.7 267.9 211.3 282.9 203.7 293.7L147.7 373.7C143.6 379.5 137.2 383.2 130.1 383.8C123 384.4 116 382 111 377L71 337C61.6 327.6 61.6 312.4 71 303.1C80.4 293.8 95.6 293.7 104.9 303.1L124.7 322.9L164.3 266.3C171.9 255.4 186.9 252.8 197.7 260.4zM288 160C288 142.3 302.3 128 320 128L544 128C561.7 128 576 142.3 576 160C576 177.7 561.7 192 544 192L320 192C302.3 192 288 177.7 288 160zM288 320C288 302.3 302.3 288 320 288L544 288C561.7 288 576 302.3 576 320C576 337.7 561.7 352 544 352L320 352C302.3 352 288 337.7 288 320zM224 480C224 462.3 238.3 448 256 448L544 448C561.7 448 576 462.3 576 480C576 497.7 561.7 512 544 512L256 512C238.3 512 224 497.7 224 480zM128 440C150.1 440 168 457.9 168 480C168 502.1 150.1 520 128 520C105.9 520 88 502.1 88 480C88 457.9 105.9 440 128 440z"/>
-    </svg>
-    <h3 class="mode-title">Tests Automatiques</h3>
-    <p class="mode-description">
+      </svg>
+      <h3 class="mode-title">Tests Automatiques</h3>
+      <p class="mode-description">
         Génère des tests unitaires complets (Jest, RSpec, pytest, JUnit).
         Tests prêts à copier-coller !
-    </p>
-    <p class="mode-tech">Auto-détection du framework</p>
-</div>
+      </p>
+      <p class="mode-tech">Auto-détection du framework</p>
+    </div>
 
-                    <div class="mode-card improve">
-    <svg class="mode-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+    <!-- Carte 4 : Improve -->
+    <div class="mode-card improve">
+      <svg class="mode-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
         <path d="M102.8 57.3C108.2 51.9 116.6 51.1 123 55.3L241.9 134.5C250.8 140.4 256.1 150.4 256.1 161.1L256.1 210.7L346.9 301.5C380.2 286.5 420.8 292.6 448.1 320L574.2 446.1C592.9 464.8 592.9 495.2 574.2 514L514.1 574.1C495.4 592.8 465 592.8 446.2 574.1L320.1 448C292.7 420.6 286.6 380.1 301.6 346.8L210.8 256L161.2 256C150.5 256 140.5 250.7 134.6 241.8L55.4 122.9C51.2 116.6 52 108.1 57.4 102.7L102.8 57.3zM247.8 360.8C241.5 397.7 250.1 436.7 274 468L179.1 563C151 591.1 105.4 591.1 77.3 563C49.2 534.9 49.2 489.3 77.3 461.2L212.7 325.7L247.9 360.8zM416.1 64C436.2 64 455.5 67.7 473.2 74.5C483.2 78.3 485 91 477.5 98.6L420.8 155.3C417.8 158.3 416.1 162.4 416.1 166.6L416.1 208C416.1 216.8 423.3 224 432.1 224L473.5 224C477.7 224 481.8 222.3 484.8 219.3L541.5 162.6C549.1 155.1 561.8 156.9 565.6 166.9C572.4 184.6 576.1 203.9 576.1 224C576.1 267.2 558.9 306.3 531.1 335.1L482 286C448.9 253 403.5 240.3 360.9 247.6L304.1 190.8L304.1 161.1L303.9 156.1C303.1 143.7 299.5 131.8 293.4 121.2C322.8 86.2 366.8 64 416.1 63.9z"/>
-    </svg>
-    <h3 class="mode-title">Refactoring</h3>
-    <p class="mode-description">
+      </svg>
+      <h3 class="mode-title">Refactoring</h3>
+      <p class="mode-description">
         Transforme votre code junior en code enterprise-grade.
         Refactoring complet avec best practices.
-    </p>
-    <p class="mode-tech">Code senior instantané</p>
-</div>
+      </p>
+      <p class="mode-tech">Code senior instantané</p>
+    </div>
 
-                    <div class="mode-card smells">
-    <svg class="mode-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+    <!-- Carte 5 : Smells -->
+    <div class="mode-card smells">
+      <svg class="mode-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
         <path d="M320 64C334.7 64 348.2 72.1 355.2 85L571.2 485C577.9 497.4 577.6 512.4 570.4 524.5C563.2 536.6 550.1 544 536 544L104 544C89.9 544 76.8 536.6 69.6 524.5C62.4 512.4 62.1 497.4 68.8 485L284.8 85C291.8 72.1 305.3 64 320 64zM320 416C302.3 416 288 430.3 288 448C288 465.7 302.3 480 320 480C337.7 480 352 465.7 352 448C352 430.3 337.7 416 320 416zM320 224C301.8 224 287.3 239.5 288.6 257.7L296 361.7C296.9 374.2 307.4 384 319.9 384C332.5 384 342.9 374.3 343.8 361.7L351.2 257.7C352.5 239.5 338.1 224 319.8 224z"/>
-    </svg>
-    <h3 class="mode-title">Code Smells</h3>
-    <p class="mode-description">
+      </svg>
+      <h3 class="mode-title">Code Smells</h3>
+      <p class="mode-description">
         Détection pédagogique des mauvaises pratiques.
         Parfait pour apprendre et progresser.
-    </p>
-    <p class="mode-tech">Diagnostic éducatif</p>
-</div>
-                </div>
+      </p>
+      <p class="mode-tech">Diagnostic éducatif</p>
+    </div>
+  </div>
 
-                <button class="modes-arrow right" aria-label="Voir la carte suivante">
-                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                        <path d="M7.5 4.5L13 10l-5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-            </div>
+  <button class="modes-arrow right" 
+          data-carousel-target="rightArrow"
+          data-action="click->carousel#scrollRight"
+          aria-label="Voir la carte suivante">
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M7.5 4.5L13 10l-5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+</div>
         </div>
     </section>
 
@@ -1246,262 +1280,5 @@
             </p>
         </div>
     </footer>
-
-    <script>
-        // ========================================
-        // SCRIPT CONSOLIDÉ - Version finale sécurisée
-        // ========================================
-
-        class BugHoundApp {
-            constructor() {
-                this.controllers = new Map();
-                this.init();
-            }
-
-            // Carrousel des 5 cards avec flèches
-            initModesCarousel() {
-                const track = document.getElementById('modesTrack');
-                const left  = document.querySelector('.modes-arrow.left');
-                const right = document.querySelector('.modes-arrow.right');
-                if (!track || !left || !right) return;
-
-                const controller = new AbortController();
-                this.controllers.set('modesCarousel', controller);
-                const { signal } = controller;
-
-                // Taille d'un "pas" = largeur d'une carte + gap
-                const getStep = () => {
-                    const card = track.querySelector('.mode-card');
-                    if (!card) return 0;
-                    const styles = getComputedStyle(track);
-                    const gap = parseFloat(styles.columnGap || styles.gap) || 24;
-                    return card.getBoundingClientRect().width + gap;
-                };
-
-                const updateArrows = () => {
-                    const maxScroll = track.scrollWidth - track.clientWidth - 1;
-                    left.classList.toggle('is-disabled', track.scrollLeft <= 0);
-                    right.classList.toggle('is-disabled', track.scrollLeft >= maxScroll);
-                };
-
-                const scrollByStep = (dir) => {
-                    track.scrollBy({ left: dir * getStep(), behavior: 'smooth' });
-                };
-
-                left.addEventListener('click',  () => scrollByStep(-1), { signal });
-                right.addEventListener('click', () => scrollByStep(1),  { signal });
-                track.addEventListener('scroll', updateArrows, { signal, passive: true });
-                window.addEventListener('resize', updateArrows, { signal });
-
-                // init
-                updateArrows();
-            }
-
-            // Menu mobile
-            initMobileMenu() {
-                const btn = document.getElementById('mobileMenuBtn');
-                const menu = document.getElementById('mobileMenu');
-                if (!btn || !menu) return;
-
-                const controller = new AbortController();
-                this.controllers.set('mobileMenu', controller);
-                const { signal } = controller;
-
-                // Toggle menu
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    menu.classList.toggle('mobile-menu-open');
-                }, { signal });
-
-                // Fermer sur clic d'un lien
-                menu.querySelectorAll('.mobile-menu-link').forEach(link => {
-                    link.addEventListener('click', () => {
-                        menu.classList.remove('mobile-menu-open');
-                    }, { signal });
-                });
-
-                // Fermer sur clic extérieur
-                document.addEventListener('click', (e) => {
-                    if (!menu.contains(e.target) && !btn.contains(e.target)) {
-                        menu.classList.remove('mobile-menu-open');
-                    }
-                }, { signal });
-            }
-
-            init() {
-                this.initNavbar();
-                this.initUserMenu();
-                this.initMobileMenu();
-                this.initSmoothScrolling();
-                this.initScrollAnimations();
-                this.initModesCarousel();
-            }
-
-            // Nettoyage sécurisé avant cache Turbo
-            cleanup() {
-                this.controllers.forEach(controller => {
-                    if (controller && typeof controller.abort === 'function') {
-                        controller.abort();
-                    }
-                });
-                this.controllers.clear();
-            }
-
-            // Navbar avec scroll effect
-            initNavbar() {
-                const navbar = document.getElementById('navbar');
-                if (!navbar) return;
-
-                const controller = new AbortController();
-                this.controllers.set('navbar', controller);
-
-                const scrollHandler = () => {
-                    if (window.scrollY > 50) {
-                        navbar.classList.add('scrolled');
-                    } else {
-                        navbar.classList.remove('scrolled');
-                    }
-                };
-
-                window.addEventListener('scroll', scrollHandler, { 
-                    signal: controller.signal,
-                    passive: true 
-                });
-            }
-
-            // Menu utilisateur - Version robuste
-            initUserMenu() {
-                const btn = document.getElementById("userMenuBtn");
-                const menu = document.getElementById("userMenu");
-                if (!btn || !menu) return;
-
-                const controller = new AbortController();
-                this.controllers.set('userMenu', controller);
-                const { signal } = controller;
-
-                // Toggle menu au clic
-                btn.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    const isOpen = menu.classList.toggle("show");
-                    btn.setAttribute("aria-expanded", isOpen);
-                    
-                    if (isOpen) {
-                        // Focus sur premier élément
-                        const firstItem = menu.querySelector('[role="menuitem"], a, button');
-                        if (firstItem) firstItem.focus();
-                    }
-                }, { signal });
-
-                // Fermer sur clic extérieur
-                document.addEventListener("click", (e) => {
-                    if (!menu.contains(e.target) && !btn.contains(e.target)) {
-                        menu.classList.remove("show");
-                        btn.setAttribute("aria-expanded", "false");
-                    }
-                }, { signal });
-
-                // Fermer sur Echap
-                document.addEventListener("keydown", (e) => {
-                    if (e.key === "Escape" && menu.classList.contains("show")) {
-                        menu.classList.remove("show");
-                        btn.setAttribute("aria-expanded", "false");
-                        btn.focus();
-                    }
-                }, { signal });
-            }
-
-            // Smooth scrolling pour les ancres
-            initSmoothScrolling() {
-                const controller = new AbortController();
-                this.controllers.set('smoothScroll', controller);
-
-                document.addEventListener('click', (e) => {
-                    const anchor = e.target.closest('a[href^="#"]');
-                    if (!anchor) return;
-
-                    e.preventDefault();
-                    const target = document.querySelector(anchor.getAttribute('href'));
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                }, { signal: controller.signal });
-            }
-
-            // Animations au scroll
-            initScrollAnimations() {
-                const observerOptions = {
-                    threshold: 0.1,
-                    rootMargin: '0px 0px -50px 0px'
-                };
-
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            entry.target.style.opacity = '1';
-                            entry.target.style.transform = 'translateY(0)';
-                        }
-                    });
-                }, observerOptions);
-
-                // N'animer que les éléments marqués
-                document.querySelectorAll('[data-animate]').forEach(el => {
-                    el.style.opacity = '0';
-                    el.style.transform = 'translateY(30px)';
-                    el.style.transition = 'all 0.6s ease';
-                    observer.observe(el);
-                });
-
-                // Nettoyage de l'observer
-                const controller = new AbortController();
-                this.controllers.set('animations', { abort: () => observer.disconnect() });
-            }
-        }
-
-        // Instance globale
-        let bugHoundApp;
-
-        // Initialisation sécurisée
-        function initApp() {
-            // Nettoie l'ancienne instance
-            if (bugHoundApp) {
-                bugHoundApp.cleanup();
-            }
-            
-            // Crée nouvelle instance
-            bugHoundApp = new BugHoundApp();
-        }
-
-        // Events Turbo
-        document.addEventListener('DOMContentLoaded', initApp);
-        document.addEventListener('turbo:load', initApp);
-        document.addEventListener('turbo:render', initApp);
-
-        // Nettoyage avant mise en cache
-        document.addEventListener('turbo:before-cache', () => {
-            if (bugHoundApp) {
-                bugHoundApp.cleanup();
-                
-                // Reset états visuels
-                const menu = document.getElementById("userMenu");
-                const btn = document.getElementById("userMenuBtn");
-                const mobileMenu = document.getElementById("mobileMenu");
-                
-                if (menu && btn) {
-                    menu.classList.remove("show");
-                    btn.setAttribute("aria-expanded", "false");
-                }
-                
-                if (mobileMenu) {
-                    mobileMenu.classList.remove("mobile-menu-open");
-                }
-            }
-        });
-    </script>
 </body>
 </html>
