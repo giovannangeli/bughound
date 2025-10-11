@@ -1,0 +1,42 @@
+# Nom du workflow qui apparaîtra sur GitHub
+name: Tests Ruby (RSpec)
+
+# Événement qui déclenche ce workflow. Ici, à chaque "push".
+on: [push]
+
+# Liste des "jobs" (tâches) à exécuter.
+jobs:
+  test:
+    # Nom du job qui apparaîtra sur GitHub
+    name: Lancement de la suite de tests
+    # Spécifie la machine virtuelle à utiliser. "ubuntu-latest" est le standard.
+    runs-on: ubuntu-latest
+
+    # Liste des étapes à exécuter dans l'ordre pour ce job
+    steps:
+      # Étape 1 : Récupère le code de votre dépôt sur la machine virtuelle
+      - name: 1. Récupérer le code du projet
+        uses: actions/checkout@v4 # J'ai mis à jour vers la dernière version v4
+
+      # Étape 2 : Installe Ruby et met en cache les gems
+      # "uses: ruby/setup-ruby@v1" est une action officielle pour simplifier l'installation.
+      - name: 2. Mettre en place l'environnement Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          # IMPORTANT : C'est la version de Ruby de votre projet, que j'ai vue dans votre Gemfile.
+          ruby-version: '3.3.0'
+          
+          # Cette option magique met en cache vos gems pour accélérer les lancements futurs.
+          bundler-cache: true
+
+      # Étape 3 : Crée la base de données de test
+      # Cette commande est spécifique à Rails. Elle prépare la BDD pour l'environnement de test.
+      - name: 3. Préparer la base de données
+        run: |
+          bin/rails db:create
+          bin/rails db:schema:load
+
+      # Étape 4 : Lance les tests RSpec !
+      # C'est la commande que vous lanceriez sur votre ordinateur.
+      - name: 4. Lancer les tests RSpec
+        run: bundle exec rspec
