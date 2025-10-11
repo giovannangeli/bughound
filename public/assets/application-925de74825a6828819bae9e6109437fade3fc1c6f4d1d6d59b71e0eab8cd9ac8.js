@@ -27,4 +27,4 @@ application.register("mobile-menu", MobileMenuController)
 application.register("modal", ModalController)
 application.register("navbar", NavbarController)
 application.register("show", ShowController)
-application.register("user-menu", UserMenuController)
+application.register("user-menu", UserMenuController);
