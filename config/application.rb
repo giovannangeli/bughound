@@ -20,6 +20,7 @@ Bundler.require(*Rails.groups)
 
 module Bughound
   class Application < Rails::Application
+    config.assets.compile = true
     config.load_defaults 7.1
 
     config.autoload_lib(ignore: %w(assets tasks))
