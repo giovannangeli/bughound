@@ -1,54 +1,40 @@
 name: Tests Ruby (RSpec)
-
 on: [push]
-
 jobs:
   test:
     name: Lancement de la suite de tests
     runs-on: ubuntu-latest
-    
     services:
       postgres:
         image: postgres:13-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: bughound_test
-        ports:
-          - 5432:5432
+        env: { POSTGRES_USER: postgres, POSTGRES_PASSWORD: password, POSTGRES_DB: bughound_test }
+        ports: ['5432:5432']
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
-      - name: 1. Récupérer le code du projet
-        uses: actions/checkout@v4
-
-      - name: 2. Mettre en place l'environnement Ruby
-        uses: ruby/setup-ruby@v1
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3.5'
-          bundler-cache: true # Cette option est la bonne quand le code est correct
-
-      - name: 3. Préparer la base de données
+          bundler-cache: true
+      - name: Préparer la base de données
         env:
           RAILS_ENV: test
           PGHOST: localhost
           PGUSER: postgres
           PGPASSWORD: password
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }} # J'ajoute la clé Anthropic
-        run: |
-          bin/rails db:prepare
-
-      - name: 4. Lancer les tests RSpec
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: bin/rails db:prepare
+      - name: Lancer les tests RSpec
         env:
           RAILS_ENV: test
           PGHOST: localhost
           PGUSER: postgres
           PGPASSWORD: password
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }} # J'ajoute la clé Anthropic
-        run: bundle exec rspec
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: bin/rspec
