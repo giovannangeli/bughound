@@ -44,8 +44,8 @@ jobs:
       - name: 3. Installer les dépendances
         run: |
           gem install bundler
-          bundle config set --local without 'development'
           bundle install --jobs 4 --retry 3
+
 
       # Étape 4 : Préparer la base de données
       - name: 4. Préparer la base de données
