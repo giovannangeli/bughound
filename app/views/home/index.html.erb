@@ -19,7 +19,7 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            padding: 0.75rem 0;
+            padding: 0.4rem 0;
             transition: all 0.3s ease;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -30,7 +30,7 @@
             background: #ffffff !important;
             box-shadow: 0 2px 20px rgba(0,0,0,0.1);
             border-bottom: 1px solid rgba(0,0,0,0.05);
-            padding: 0.75rem 0;
+            padding: 0.4rem 0;
         }
 
         .navbar.scrolled .logo {
@@ -46,15 +46,14 @@
             background: rgba(102, 126, 234, 0.1) !important;
         }
 
-        .navbar-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: center;
-            gap: 2rem;
-        }
+        /* NOUVEAU BLOC À AJOUTER */
+.navbar .container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 2rem;
+}
+
 
         .nav-left {
             display: flex;
@@ -868,7 +867,7 @@
 <body>
 <!-- Navbar -->
 <nav class="navbar" id="navbar" data-controller="navbar mobile-menu">
-    <div class="navbar-content">
+    <div class="container">
         <!-- Version Desktop -->
         <!-- Gauche : Logo -->
         <div class="nav-left">
