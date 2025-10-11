@@ -12,39 +12,58 @@ jobs:
     # Spécifie la machine virtuelle à utiliser. "ubuntu-latest" est le standard.
     runs-on: ubuntu-latest
 
+    # DÉMARRE LES SERVICES DONT ON A BESOIN (POSTGRES)
+    services:
+      postgres:
+        image: postgres:13-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: bughound_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     # Liste des étapes à exécuter dans l'ordre pour ce job
     steps:
       # Étape 1 : Récupère le code de votre dépôt sur la machine virtuelle
       - name: 1. Récupérer le code du projet
-        uses: actions/checkout@v4 # J'ai mis à jour vers la dernière version v4
+        uses: actions/checkout@v4
 
-      # Étape 2 : Installe Ruby et met en cache les gems
-      # "uses: ruby/setup-ruby@v1" est une action officielle pour simplifier l'installation.
+      # Étape 2 : Installe Ruby
       - name: 2. Mettre en place l'environnement Ruby
         uses: ruby/setup-ruby@v1
         with:
-          # IMPORTANT : C'est la version de Ruby de votre projet, que j'ai vue dans votre Gemfile.
           ruby-version: '3.3.5'
-          
+
+      # Étape 3 : Installer les dépendances
       - name: 3. Installer les dépendances
         run: |
           gem install bundler
           bundle install --jobs 4 --retry 3
 
+      # Étape 4 : Préparer la base de données
       - name: 4. Préparer la base de données
         env:
           RAILS_ENV: test
           PGHOST: localhost
           PGUSER: postgres
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }} # <--- LIGNE AJOUTÉE
+          PGPASSWORD: password  # On ajoute le mot de passe
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           bin/rails db:create
           bin/rails db:schema:load
 
+      # Étape 5 : Lancer les tests RSpec
       - name: 5. Lancer les tests RSpec
         env:
           RAILS_ENV: test
           PGHOST: localhost
           PGUSER: postgres
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }} # <--- LIGNE AJOUTÉE
+          PGPASSWORD: password  # On ajoute le mot de passe
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: bundle exec rspec
