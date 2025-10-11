@@ -26,17 +26,23 @@ jobs:
           # IMPORTANT : C'est la version de Ruby de votre projet, que j'ai vue dans votre Gemfile.
           ruby-version: '3.3.5'
           
-          # Cette option magique met en cache vos gems pour accélérer les lancements futurs.
-          bundler-cache: true
+      - name: 3. Installer les dépendances
+        run: |
+          gem install bundler
+          bundle install --jobs 4 --retry 3
 
-      # Étape 3 : Crée la base de données de test
-      # Cette commande est spécifique à Rails. Elle prépare la BDD pour l'environnement de test.
-      - name: 3. Préparer la base de données
+      - name: 4. Préparer la base de données
+        env:
+          RAILS_ENV: test
+          PGHOST: localhost
+          PGUSER: postgres
         run: |
           bin/rails db:create
           bin/rails db:schema:load
 
-      # Étape 4 : Lance les tests RSpec !
-      # C'est la commande que vous lanceriez sur votre ordinateur.
-      - name: 4. Lancer les tests RSpec
+      - name: 5. Lancer les tests RSpec
+        env:
+          RAILS_ENV: test
+          PGHOST: localhost
+          PGUSER: postgres
         run: bundle exec rspec
