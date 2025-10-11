@@ -1,0 +1,1029 @@
+/*
+
+
+*/
+
+/* Défilement fluide + compensation de la navbar fixe */
+html {
+  scroll-behavior: smooth;     /* <= active le smooth scroll */
+  scroll-padding-top: 80px;    /* <= garde l’offset pour ta navbar fixe */
+}
+
+/* ========== BASE (peut servir ailleurs dans l'app) ========== */
+.analysis-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+.analysis-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  border: 1px solid #e1e5e9;
+}
+
+.card-header { padding: 1.5rem; border-bottom: 1px solid #e1e5e9; background: #f8f9fa; font-weight: 600; }
+.card-content { padding: 1.5rem; line-height: 1.6; }
+
+.code-block {
+  background: #1e293b !important; /* harmonisé avec la section premium */
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  margin: 0.25rem;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50%      { transform: translate(-50%, -50%) translateY(-15px); }
+}
+
+.score-excellent { background: #d4edda; color: #155724; }
+.score-good      { background: #fff3cd; color: #856404; }
+.score-warning   { background: #f8d7da; color: #721c24; }
+
+/* ==========================================
+   ANALYSIS SHOW - INTERFACE PREMIUM 2025
+   ========================================== */
+
+/* --- Variables globales --- */
+:root{
+  --card-bg:#ffffff; --card-border:#e5e7eb; --muted:#64748b; --text:#1f2937;
+  --track:#eef2f7; --track-strong:#e9edf3;
+
+  /* Couleurs anneau */
+  --good:#10b981;
+  --ok:#f59e0b;
+  --bad:#ef4444;
+
+  /* Couleurs par catégorie (accents) */
+  --sec:#ef4444; --perf:#f59e0b; --read:#3b82f6; --test:#10b981;
+
+  /* Barres (RGBA) */
+  --good-bar: rgba(16,185,129,.85);
+  --ok-bar:   rgba(245,158,11,.85);
+  --bad-bar:  rgba(239,68,68,.85);
+}
+
+/* Container principal */
+.analysis-container-premium {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 100px 2rem 2rem; /* Compensation navbar sticky */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Card conteneur unique */
+.analysis-card-premium {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+/* ========== HEADER SECTION ========== */
+.analysis-header-premium {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem;
+  border-bottom: 1px solid #f1f5f9;
+  background: #fafbfc;
+}
+.analysis-meta { flex: 1; }
+
+.analysis-title-premium {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 1rem 0;
+  line-height: 1.2;
+}
+.analysis-badges { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+.lang-badge-premium {
+  background: #eff6ff; color: #1d4ed8;
+  padding: 0.375rem 1rem; border-radius: 20px;
+  font-size: 0.875rem; font-weight: 600;
+}
+.provider-badge-premium { padding: 0.375rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; }
+.provider-badge-premium.claude  { background: #fed7d7; color: #c53030; }
+.provider-badge-premium.tests   { background: #e9d8fd; color: #6b46c1; }
+.provider-badge-premium.improve { background: #fbb6ce; color: #be185d; }
+.provider-badge-premium.smells  { background: #fecaca; color: #dc2626; }
+.provider-badge-premium.openai  { background: #d1fae5; color: #059669; }
+
+/* Dropdown partage */
+.dropdown-container-premium { position: relative; }
+.btn-share-premium {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: #f8fafc; border: 1px solid #e2e8f0;
+  border-radius: 12px; font-weight: 500; font-size: 0.875rem;
+  cursor: pointer; transition: all 0.3s ease; color: #374151;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.btn-share-premium i.fa-share { color: #3b82f6; }
+.btn-share-premium:hover i.fa-share { color: #2563eb; }
+.btn-share-premium:hover { border-color: #c7d2fe; box-shadow: 0 6px 20px rgba(0,0,0,.10); transform: translateY(-1px); }
+
+.dropdown-menu-premium {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  min-width: 180px; opacity: 0; visibility: hidden; transform: translateY(-8px);
+  transition: all 0.2s ease; z-index: 1000;
+}
+.dropdown-container-premium.open .dropdown-menu-premium { opacity: 1; visibility: visible; transform: translateY(0); }
+.dropdown-item-premium {
+  display: flex; align-items: center; gap: 0.75rem;
+  width: 100%; padding: 0.75rem 1rem; background: none; border: none;
+  text-align: left; font-size: 0.875rem; font-weight: 500; cursor: pointer;
+  transition: all 0.2s ease; color: #374151;
+}
+.dropdown-item-premium:hover { background: #f8fafc; color: #1f2937; }
+
+/* ========== SCORE SECTION (anneau + texte + barres) ========== */
+.score-section-premium { padding: 2.25rem 2rem 2rem; border-bottom: 1px solid #f1f5f9; }
+.score-row-premium {
+  display: flex; align-items: center; gap: 1.5rem;
+  padding: .25rem .25rem 1.5rem .25rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* Anneau */
+.ring-premium { position: relative; width: 120px; height: 120px; flex: 0 0 120px; }
+.ring-svg { display: block; transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: #e5e7eb; stroke-width: 10; }
+.ring-progress { fill: none; stroke-linecap: round; stroke-width: 10; transition: stroke-dashoffset .8s ease; }
+.ring-progress.tier-good { stroke: var(--good); }
+.ring-progress.tier-ok   { stroke: var(--ok); }
+.ring-progress.tier-bad  { stroke: var(--bad); }
+
+/* Sheen animé discret */
+.ring-sheen { fill: none; stroke-linecap: round; stroke-width: 10; opacity: .22; animation: ringSheen 3.5s linear infinite; }
+@keyframes ringSheen { to { stroke-dashoffset: -360px; } }
+
+.ring-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.ring-score { font-weight: 800; font-size: 2rem; letter-spacing: -0.02em; line-height: 1; color: var(--text); }
+.ring-denom { font-size: .8rem; color: #94a3b8; }
+
+.score-meta-premium { flex: 1; min-width: 0; }
+.score-meta-title { font-weight: 700; font-size: 1rem; color: #1f2937; margin-bottom: .25rem; }
+.score-meta-text  { color: #64748b; line-height: 1.6; }
+
+/* Sous-scores (barres) */
+.scores-stack-premium { padding: 1.25rem 0 0; display: flex; flex-direction: column; gap: .875rem; }
+.stack-item{
+  display: grid; grid-template-columns: 200px 1fr 64px; align-items: center; gap: 1rem;
+  padding: .5rem 0; border-bottom: 1px dashed #f1f5f9;
+}
+.stack-item:last-child { border-bottom: none; }
+.stack-label { display: flex; align-items: center; gap: .625rem; color: #374151; font-weight: 600; }
+.stack-label i { color: #94a3b8; }
+
+.stack-bar{
+  position: relative; height: 7px; border-radius: 999px;
+  background: linear-gradient(180deg, var(--track) 0%, var(--track-strong) 100%);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.05);
+  overflow: hidden;
+}
+.stack-bar-fill{
+  position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit; background: #94a3b8;
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+.stack-bar-fill.stack-tier-good { background: var(--good-bar); opacity:.85; }
+.stack-bar-fill.stack-tier-ok   { background: var(--ok-bar);   opacity:.85; }
+.stack-bar-fill.stack-tier-bad  { background: var(--bad-bar);  opacity:.85; }
+
+.stack-value { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: #334155; }
+
+/* ========== CODE SECTION ========== */
+.code-section-premium { border-bottom: 1px solid #f1f5f9; }
+.code-toggle-premium {
+  width: 100%; display: flex; align-items: center; gap: .75rem;
+  padding: 1.5rem 2rem; background: none; border: none;
+  font-size: 1rem; font-weight: 600; color: #374151; cursor: pointer;
+  transition: all .2s ease; text-align: left;
+}
+.code-toggle-premium:hover { background: #f8fafc; color: #1f2937; }
+.code-chevron { margin-left: auto; transition: transform .3s ease; }
+.code-content-premium { padding: 0 2rem 2rem; }
+.code-content-premium .code-block {
+  background: #1e293b !important; border-radius: 12px; padding: 1.5rem; margin: 0; overflow-x: auto; border: 1px solid #334155;
+}
+
+/* ========== FEEDBACK / CORRECTION ========== */
+.feedback-section-premium { padding: 2rem 2rem 1rem; border-bottom: 1px solid #f1f5f9; }
+.correction-section-premium { padding: 1rem 2rem 2rem; border-bottom: 1px solid #f1f5f9; }
+.feedback-title-premium, .correction-title-premium { font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 1rem; }
+.correction-title-premium { margin-left: 0; padding-left: 0; }
+.feedback-content-premium {
+  background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; line-height: 1.7;
+}
+.feedback-content-premium div { margin-bottom: 1rem; }
+.feedback-content-premium div:last-child { margin-bottom: 0; }
+.feedback-content-premium strong { font-weight: 700; color: #1f2937; }
+.feedback-content-premium code {
+  background: #1e293b; color: #e2e8f0; padding: 0.25rem 0.5rem; border-radius: 4px;
+  font-family: Monaco, 'Cascadia Code', monospace;
+}
+
+/* Grille feedback */
+.feedback-grid-premium {
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 1.25rem;
+  column-gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+@media (min-width: 960px){
+  .feedback-grid-premium { grid-template-columns: 1fr 1fr; }
+}
+.feedback-span-2 { grid-column: 1 / -1; }
+
+.feedback-card-premium{
+  background:#fff; border:1px solid #e5e7eb; border-radius:12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  padding: 1.25rem 1.5rem;
+}
+.feedback-card-header{
+  display:flex; align-items:center; justify-content:space-between; gap:.75rem;
+  font-weight:700; color:#1f2937; margin-bottom:.5rem;
+}
+.feedback-title-left{ display:flex; align-items:center; gap:.5rem; }
+.feedback-icon{ width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; }
+.feedback-score-chip{
+  font-variant-numeric: tabular-nums; font-weight:700; font-size:.875rem;
+  padding:.125rem .5rem; border-radius:9999px; background:#f1f5f9; color:#334155;
+  border:1px solid #e5e7eb; margin-left:.5rem;
+}
+.feedback-body-premium{ color:#334155; line-height:1.7; }
+
+/* Teintes d'icônes */
+.feedback-icon.sec   { color:#dc2626; }
+.feedback-icon.perf  { color:#f59e0b; }
+.feedback-icon.read  { color:#3b82f6; }
+.feedback-icon.tests { color:#10b981; }
+
+/* Correction encart + CTA */
+.correction-content-premium {
+  background:#ecfdf5; border:1px solid #a7f3d0; border-radius:12px; padding:1rem 1.25rem;
+}
+.btn-apply-fix {
+  display:inline-flex; align-items:center; gap:.5rem;
+  margin-top:.75rem; padding:.625rem 1rem; border-radius:10px;
+  background:#10b981; color:#fff; font-weight:700; border:none; opacity:.6;
+}
+.btn-apply-fix[disabled]{ cursor:not-allowed; }
+
+/* ---- Card code unifiée ---- */
+.code-card{
+  background:#0b1220; /* très sombre pour contraste VS Code-like */
+  border:1px solid #0f1a2d;
+  border-radius:12px;
+  padding: 1.5rem;
+  box-shadow: 0 6px 24px rgba(2,6,23,.08);
+}
+.code-card pre{
+  background: transparent !important;
+  margin: 0;
+  padding: 0;
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+/* ===== ERROR SECTION ===== */
+.error-section-premium { padding: 2rem; border-bottom: 1px solid #f1f5f9; }
+.error-content-premium {
+  background: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; border-radius: 12px; padding: 1.5rem;
+}
+.error-title-premium { font-size: 1.25rem; font-weight: 700; color: #dc2626; margin-bottom: 1rem; }
+.error-content-premium p { margin-bottom: 1rem; color: #7f1d1d; }
+.error-content-premium ul { margin: 1rem 0; padding-left: 1.5rem; color: #7f1d1d; }
+
+/* ===== NAV ===== */
+.navigation-premium {
+  padding: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+}
+.btn-primary-premium{
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff; padding: 0.875rem 1.75rem; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.9375rem;
+  transition: all .2s ease; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+.btn-primary-premium:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3); }
+
+.btn-secondary-premium{
+  background: #f8fafc; color: #374151; padding: 0.875rem 1.75rem; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.9375rem;
+  border: 1px solid #e5e7eb; transition: all .2s ease;
+}
+.btn-secondary-premium:hover { background: #f1f5f9; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .analysis-container-premium { padding: 80px 1rem 2rem; }
+  .analysis-header-premium { flex-direction: column; gap: 1rem; align-items: stretch; }
+  .analysis-title-premium { font-size: 1.5rem; }
+  .navigation-premium { flex-direction: column; align-items: stretch; }
+  .score-row-premium { flex-direction: column; align-items: flex-start; }
+  .stack-item { grid-template-columns: 1fr; gap: .5rem; }
+  .stack-value { text-align: left; }
+}
+@media (max-width: 480px) {
+  .analysis-badges { flex-direction: column; align-items: flex-start; }
+}
+
+/* Accessibilité : mouvement réduit */
+@media (prefers-reduced-motion: reduce){
+  .ring-sheen { animation: none; }
+  .ring-progress, .stack-bar-fill { transition: none; }
+}
+
+/* ===== Tests auto: mise en forme dédiée ===== */
+.tests-wrap-premium {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.25rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Grid pour scénarios + instructions côte à côte */
+.tests-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tests-info-grid { grid-template-columns: 1fr; }
+}
+
+/* Cartes internes */
+.tests-block {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  min-height: 350px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tests-block-title {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: .75rem;
+  font-size: 1rem;
+}
+
+/* Liste des scénarios */
+.tests-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+.tests-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  color: #374151;
+  line-height: 1.6;
+}
+.tests-list li i {
+  margin-top: .15rem;
+  font-size: 1rem;
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+/* Instructions (scroll) */
+.tests-instructions-body {
+  flex: 1;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Scrollbar personnalisée */
+.tests-instructions-body::-webkit-scrollbar { width: 6px; }
+.tests-instructions-body::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
+.tests-instructions-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.tests-instructions-body::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Code des tests - PLEINE LARGEUR - FIX ALIGNEMENT */
+.tests-code-block {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  margin-top: 1.25rem;
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  position: relative;
+}
+.tests-code-block .tests-block-title { margin-bottom: 1rem; }
+.tests-code-block .code-block {
+  background: #1e293b !important;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 0;
+  overflow-x: auto;
+  border: 1px solid #334155;
+  min-height: 300px;
+  margin-bottom: 0;
+  position: relative;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Chip framework */
+.tests-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  font-size: .875rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: .35rem .65rem;
+  border: 1px solid transparent;
+  transition: background .15s ease, border-color .15s ease;
+}
+.chip-soft-violet {
+  background: #f3e8ff;
+  color: #5b21b6;
+  border-color: #d8b4fe;
+}
+.chip-soft-violet:hover {
+  background: #ede9fe;
+  border-color: #c4b5fd;
+}
+
+/* Notes importantes */
+.tests-note {
+  display: flex;
+  gap: .75rem;
+  margin-top: 1.25rem;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #64748b;
+  border-radius: 10px;
+  padding: .75rem 1rem;
+}
+.tests-note-icon { font-size: 1.25rem; flex-shrink: 0; }
+.tests-note-body { color: #374151; line-height: 1.6; }
+
+/* ===== Instructions numérotées propres (1., 2., …) ===== */
+.exec-steps ol { counter-reset: step; margin: 0; padding-left: 0; }
+.exec-steps li {
+  list-style: none;
+  margin: 12px 0 16px;
+  line-height: 1.65;
+  color: #374151; /* même teinte que Scénarios testés */
+}
+.exec-steps li::before {
+  counter-increment: step;
+  content: counter(step) ".";
+  margin-right: .5rem;
+  font-weight: 700;
+  color: #111827; /* titres numérotés en noir */
+}
+.exec-steps pre { margin-top: 10px; }
+
+/* ===== Blocs code : overflow propre + scrollbar discrète ===== */
+pre, code { border: 0; }
+pre { border-bottom: 0 !important; }
+
+.code-block {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+.code-block::-webkit-scrollbar { height: 8px; }
+.code-block::-webkit-scrollbar-track { background: transparent; }
+.code-block::-webkit-scrollbar-thumb { background: rgba(148,163,184,.35); border-radius: 8px; }
+
+/* (Optionnel) wrap des longues lignes :
+.code-block code { white-space: pre-wrap; word-break: break-word; }
+*/
+
+/* Petit ajustement line-numbers Prism */
+pre.line-numbers { position: relative; }
+/* ===== Dropdowns (Analyses index) — cliquabilité fiable, scope strict ===== */
+.analyses-container .dropdown-menu { pointer-events: none; }
+.analyses-container [data-controller="dropdown"].open .dropdown-menu { pointer-events: auto; z-index: 1200; }
+
+/* ===== BOUTONS COPY PERSONNALISÉS ===== */
+
+/* Masquer le bouton copy UNIQUEMENT dans le bloc "Code analysé" */
+.code-content-premium .copy-to-clipboard-button,
+.code-content-premium [class*="copy"],
+.code-content-premium .toolbar .toolbar-item,
+.code-content-premium .toolbar {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Masquer les boutons copy originaux de Prism dans tests et code refactorisé */
+.tests-code-block .copy-to-clipboard-button,
+.code-card .copy-to-clipboard-button {
+  display: none !important;
+}
+
+/* Assurer que les conteneurs ont position relative */
+.tests-code-block,
+.code-card {
+  position: relative !important;
+}
+
+.tests-code-block .code-block,
+.code-card .code-block {
+  position: relative !important;
+}
+
+/* Style pour nos boutons copy personnalisés */
+.custom-copy-btn {
+  position: absolute !important;
+  top: 1rem !important;
+  right: 1rem !important;
+  z-index: 20 !important;
+  
+  /* Style du bouton */
+  background: #374151 !important;
+  color: #f8fafc !important;
+  border: 1px solid #4b5563 !important;
+  border-radius: 8px !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif !important;
+  
+  /* Transitions */
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.custom-copy-btn:hover {
+  background: #4b5563 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+}
+
+/* Style pour l'état "Copié!" */
+.custom-copy-btn.copied {
+  background: #10b981 !important;
+  color: white !important;
+  border-color: #059669 !important;
+}
+
+/* ===== RESPONSIVE POUR TESTS ===== */
+@media (max-width: 768px) {
+  .tests-wrap-premium {
+    padding: 1rem;
+  }
+  
+  .tests-code-block {
+    padding: 1rem;
+  }
+}
+
+/* Ajoute ce CSS à la fin de ton fichier application.css */
+
+/* Uniformisation hauteur des cards pour les code smells */
+.analysis-card-premium[data-provider="smells"] .feedback-card-premium {
+  min-height: 140px; /* Force une hauteur uniforme */
+  display: flex;
+  flex-direction: column;
+}
+
+.analysis-card-premium[data-provider="smells"] .feedback-body-premium {
+  flex: 1; /* Prend l'espace restant */
+  display: flex;
+  align-items: flex-start; /* Contenu aligné en haut */
+}
+
+/* Titre principal Code Smells plus gros et en gras */
+.analysis-card-premium[data-provider="smells"] .feedback-content-premium > div:first-child {
+  font-weight: 700;
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Responsive : réduire la hauteur sur mobile */
+@media (max-width: 768px) {
+  .analysis-card-premium[data-provider="smells"] .feedback-card-premium {
+    min-height: auto; /* Hauteur naturelle sur mobile */
+  }
+}
+
+/* Ajoute ce CSS à la fin de ton fichier application.css */
+
+/* Ajoute ce CSS à la fin de ton fichier application.css */
+
+/* Stylisation spéciale pour les code smells */
+.analysis-card-premium[data-provider="smells"] .feedback-content-premium {
+  line-height: 1.6;
+}
+
+/* Titres des sections code smells */
+.smells-section-title {
+  font-weight: 700 !important;
+  font-size: 1.1rem !important;
+  color: #1f2937 !important;
+  margin: 1.5rem 0 0.75rem 0 !important;
+  padding: 0.5rem 0 !important;
+  border-bottom: 2px solid #e5e7eb !important;
+  display: block !important;
+}
+
+.smells-section-title:first-child {
+  margin-top: 0 !important;
+}
+
+/* Code smells - même système que improve */
+.smells-synthese,
+.smells-critiques,
+.smells-moderes,
+.smells-plan,
+.smells-impact,
+.smells-detail {
+  position: relative;
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+  background: transparent !important;
+  border: none !important;
+}
+
+.smells-synthese::before,
+.smells-critiques::before,
+.smells-moderes::before,
+.smells-plan::before,
+.smells-impact::before,
+.smells-detail::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 2px;
+}
+
+.smells-synthese::before { background: #0ea5e9; }
+.smells-critiques::before { background: #ef4444; }
+.smells-moderes::before { background: #f59e0b; }
+.smells-plan::before { background: #22c55e; }
+.smells-impact::before { background: #a855f7; }
+.smells-detail::before { background: #64748b; }
+
+/* Listes dans les code smells */
+.smells-synthese ul, .smells-critiques ul, .smells-moderes ul, .smells-detail ul, .smells-plan ul, .smells-impact ul {
+  margin: 0.5rem 0 !important;
+  padding-left: 1.25rem !important;
+}
+
+.smells-synthese li, .smells-critiques li, .smells-moderes li, .smells-detail li, .smells-plan li, .smells-impact li {
+  margin: 0.25rem 0 !important;
+  color: #374151 !important;
+}
+
+/* Numérotation des listes */
+.smells-synthese ol, .smells-critiques ol, .smells-moderes ol {
+  counter-reset: item !important;
+  padding-left: 0 !important;
+}
+
+.smells-synthese ol li, .smells-critiques ol li, .smells-moderes ol li {
+  display: block !important;
+  margin: 0.5rem 0 !important;
+  padding-left: 2rem !important;
+  position: relative !important;
+}
+
+.smells-synthese ol li:before, .smells-critiques ol li:before, .smells-moderes ol li:before {
+  content: counter(item) "." !important;
+  counter-increment: item !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  font-weight: 700 !important;
+  color: #1f2937 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .smells-synthese, .smells-critiques, .smells-moderes, .smells-detail, .smells-plan, .smells-impact {
+    padding: 0.75rem 1rem !important;
+    margin: 0.75rem 0 !important;
+  }
+  
+  .smells-section-title {
+    font-size: 1rem !important;
+  }
+}
+
+/* Styling pour les sections improve */
+.analysis-card-premium[data-provider="improve"] .feedback-content-premium {
+  line-height: 1.6;
+}
+
+/* Titres des sections improve */
+.improve-section-title {
+  font-weight: 700 !important;
+  font-size: 1.25rem !important;
+  color: #1f2937 !important;
+  margin: 1.5rem 0 0.75rem 0 !important;
+  padding: 0.5rem 0 !important;
+  border-bottom: 2px solid #e5e7eb !important;
+  display: block !important;
+}
+
+.improve-section-title:first-child {
+  margin-top: 0 !important;
+}
+
+/* Correction pour les barres colorées des sections improve */
+.improve-ameliorations,
+.improve-explications,
+.improve-benefices {
+  position: relative;
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+}
+
+.improve-ameliorations::before,
+.improve-explications::before,
+.improve-benefices::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 2px;
+}
+
+.improve-ameliorations::before {
+  background: linear-gradient(135deg, #10b981, #34d399);
+}
+
+.improve-explications::before {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+}
+
+.improve-benefices::before {
+  background: linear-gradient(135deg, #ec4899, #f472b6);
+}
+
+/* ===== PISTES D'AMÉLIORATION - Analyse rapide & expert ===== */
+.pistes-content-premium {
+  line-height: 1.6;
+}
+
+/* Titres des sections pistes */
+.pistes-section-title {
+  font-weight: 700 !important;
+  font-size: 1.1rem !important;
+  color: #1f2937 !important;
+  margin: 1.5rem 0 0.75rem 0 !important;
+  padding: 0.5rem 0 !important;
+  border-bottom: 2px solid #e5e7eb !important;
+  display: block !important;
+}
+
+.pistes-section-title:first-child {
+  margin-top: 0 !important;
+}
+
+/* Sections avec barres colorées - même système que improve/smells */
+.pistes-critiques,
+.pistes-importantes,
+.pistes-conseils,
+.pistes-temps {
+  position: relative;
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+  background: transparent !important;
+  border: none !important;
+}
+
+.pistes-critiques::before,
+.pistes-importantes::before,
+.pistes-conseils::before,
+.pistes-temps::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 2px;
+}
+
+/* Couleurs des barres */
+.pistes-critiques::before { 
+  background: #dc2626; /* Rouge - Sécurité/Critique */
+}
+
+.pistes-importantes::before { 
+  background: #f59e0b; /* Orange - Améliorations importantes */
+}
+
+.pistes-conseils::before { 
+  background: #3b82f6; /* Bleu - Bonnes pratiques */
+}
+
+.pistes-temps::before { 
+  background: #10b981; /* Vert - Temps estimé */
+}
+
+/* Styles pour les listes dans les pistes */
+.pistes-critiques ol,
+.pistes-importantes ol,
+.pistes-conseils ol {
+  counter-reset: item !important;
+  padding-left: 0 !important;
+  margin: 0.5rem 0 !important;
+}
+
+.pistes-critiques ol li,
+.pistes-importantes ol li,
+.pistes-conseils ol li {
+  display: block !important;
+  margin: 0.75rem 0 !important;
+  padding-left: 2rem !important;
+  position: relative !important;
+  color: #374151 !important;
+  line-height: 1.6 !important;
+}
+
+.pistes-critiques ol li:before,
+.pistes-importantes ol li:before,
+.pistes-conseils ol li:before {
+  content: counter(item) "." !important;
+  counter-increment: item !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  font-weight: 700 !important;
+  color: #1f2937 !important;
+}
+
+/* Style spécial pour le temps estimé */
+.pistes-temps {
+  margin-top: 1.5rem !important;
+  padding: 0.75rem 1.5rem !important;
+  background: #f0fdf4 !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  color: #166534 !important;
+}
+
+/* Code inline dans les pistes */
+.pistes-content-premium code {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pistes-critiques,
+  .pistes-importantes,
+  .pistes-conseils,
+  .pistes-temps {
+    padding: 0.75rem 1rem !important;
+    margin: 0.75rem 0 !important;
+  }
+  
+  .pistes-section-title {
+    font-size: 1rem !important;
+  }
+}
+
+/* Show — menu Partager: positionné en absolu, sans impacter le flux */
+.analysis-card-premium .dropdown-container-premium {
+  position: relative; /* le conteneur sert d’ancre à l’absolu */
+}
+
+.analysis-card-premium .dropdown-menu-premium {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  left: auto;
+
+  z-index: 1200;        /* passe devant les cards à droite */
+  margin: 0;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  pointer-events: none;
+
+  transition: opacity .15s ease, transform .15s ease, visibility 0s linear .15s;
+}
+
+.analysis-card-premium .dropdown-container-premium.open .dropdown-menu-premium {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+
+  transition: opacity .15s ease, transform .15s ease, visibility 0s;
+}
+
+/* ==========================================
+   STYLES RESPONSIVES POUR LA HOMEPAGE
+   ========================================== */
+
+/* On applique les styles responsifs uniquement sur les écrans de taille mobile/tablette */
+@media (max-width: 768px) {
+
+  /* --- Section Hero --- */
+  /* Centre le contenu de la section principale */
+  .hero-content-animated {
+    text-align: center !important;
+  }
+  #hero-cta-buttons,
+  #hero-trust-indicators {
+    justify-content: center !important; /* Centre les boutons et les indicateurs de confiance */
+  }
+
+  /* --- Section Démo --- */
+  /* Cache l'image de la démo sur mobile, comme demandé */
+  .demo-visual {
+    display: none;
+  }
+  
+  /* Centre le contenu de la démo qui est maintenant seul */
+  .demo-container {
+    text-align: center;
+  }
+  .demo-features {
+    display: inline-block; /* Permet de centrer la liste */
+    text-align: left;      /* Garde le texte des items aligné à gauche */
+    margin-bottom: 2.5rem;
+  }
+
+  /* --- Section Stats --- */
+  /* Centre le contenu de la section des statistiques */
+  .stats-grid {
+    grid-template-columns: 1fr; /* Une seule colonne */
+    gap: 1rem;
+  }
+  
+  /* Annule le forçage de la colonne qui posait problème */
+  .stats-grid .stat-item {
+    grid-column: auto !important; 
+  }
+}
+
+/* --- Correction pour l'image de la démo sur Desktop --- */
+/* On s'assure que l'image ne rétrécit pas inutilement sur grand écran */
+/* en lui donnant une largeur minimale et en la laissant déborder un peu comme dans le design original. */
+.demo-visual img {
+    min-width: 120%; /* Empêche l'image de devenir trop petite */
+    max-width: 120%; /* Garde la taille cohérente */
+    margin-left: -90px; /* Conserve le style de débordement */
+}
+
+
+
