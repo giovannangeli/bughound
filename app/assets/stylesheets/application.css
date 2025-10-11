@@ -9,7 +9,6 @@ html {
   scroll-padding-top: 80px;    /* <= garde l’offset pour ta navbar fixe */
 }
 
-
 /* ========== BASE (peut servir ailleurs dans l'app) ========== */
 .analysis-container {
   max-width: 1000px;
@@ -971,6 +970,60 @@ pre.line-numbers { position: relative; }
   transition: opacity .15s ease, transform .15s ease, visibility 0s;
 }
 
+/* ==========================================
+   STYLES RESPONSIVES POUR LA HOMEPAGE
+   ========================================== */
+
+/* On applique les styles responsifs uniquement sur les écrans de taille mobile/tablette */
+@media (max-width: 768px) {
+
+  /* --- Section Hero --- */
+  /* Centre le contenu de la section principale */
+  .hero-content-animated {
+    text-align: center !important;
+  }
+  #hero-cta-buttons,
+  #hero-trust-indicators {
+    justify-content: center !important; /* Centre les boutons et les indicateurs de confiance */
+  }
+
+  /* --- Section Démo --- */
+  /* Cache l'image de la démo sur mobile, comme demandé */
+  .demo-visual {
+    display: none;
+  }
+  
+  /* Centre le contenu de la démo qui est maintenant seul */
+  .demo-container {
+    text-align: center;
+  }
+  .demo-features {
+    display: inline-block; /* Permet de centrer la liste */
+    text-align: left;      /* Garde le texte des items aligné à gauche */
+    margin-bottom: 2.5rem;
+  }
+
+  /* --- Section Stats --- */
+  /* Centre le contenu de la section des statistiques */
+  .stats-grid {
+    grid-template-columns: 1fr; /* Une seule colonne */
+    gap: 1rem;
+  }
+  
+  /* Annule le forçage de la colonne qui posait problème */
+  .stats-grid .stat-item {
+    grid-column: auto !important; 
+  }
+}
+
+/* --- Correction pour l'image de la démo sur Desktop --- */
+/* On s'assure que l'image ne rétrécit pas inutilement sur grand écran */
+/* en lui donnant une largeur minimale et en la laissant déborder un peu comme dans le design original. */
+.demo-visual img {
+    min-width: 120%; /* Empêche l'image de devenir trop petite */
+    max-width: 120%; /* Garde la taille cohérente */
+    margin-left: -90px; /* Conserve le style de débordement */
+}
 
 
 
