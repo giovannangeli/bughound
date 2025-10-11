@@ -12,7 +12,7 @@ jobs:
     # Spécifie la machine virtuelle à utiliser. "ubuntu-latest" est le standard.
     runs-on: ubuntu-latest
 
-    # DÉMARRE LES SERVICES DONT ON A BESOIN (POSTGRES)
+    # Démarre les services dont on a besoin (Postgres)
     services:
       postgres:
         image: postgres:13-alpine
@@ -41,7 +41,7 @@ jobs:
           ruby-version: '3.3.5'
 
       # Étape 3 : Installer les dépendances
-            - name: 3. Installer les dépendances
+      - name: 3. Installer les dépendances
         run: |
           gem install bundler
           bundle config set --local without 'development'
@@ -53,7 +53,7 @@ jobs:
           RAILS_ENV: test
           PGHOST: localhost
           PGUSER: postgres
-          PGPASSWORD: password  # On ajoute le mot de passe
+          PGPASSWORD: password
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           bin/rails db:create
@@ -65,6 +65,6 @@ jobs:
           RAILS_ENV: test
           PGHOST: localhost
           PGUSER: postgres
-          PGPASSWORD: password  # On ajoute le mot de passe
+          PGPASSWORD: password
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: bundle exec rspec
