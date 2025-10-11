@@ -545,7 +545,7 @@
         /* Stats Section */
         .stats {
             background: #ffffff;
-            padding: 5rem 2rem;
+            padding: 2rem 2rem 5rem;
             text-align: center;
         }
 
@@ -867,119 +867,119 @@
 </head>
 <body>
 <!-- Navbar -->
-    <nav class="navbar" id="navbar" data-controller="navbar">
-        <div class="navbar-content">
-            <!-- Version Desktop -->
-            <!-- Gauche : Logo -->
-            <div class="nav-left">
-                <%= link_to root_path, class: "logo" do %>
-                    <%= image_tag "logo.png", alt: "BugHound Logo", class: "logo-image" %>
-                    <span>BugHound</span>
-                <% end %>
-            </div>
+<nav class="navbar" id="navbar" data-controller="navbar mobile-menu">
+    <div class="navbar-content">
+        <!-- Version Desktop -->
+        <!-- Gauche : Logo -->
+        <div class="nav-left">
+            <%= link_to root_path, class: "logo" do %>
+                <%= image_tag "logo.png", alt: "BugHound Logo", class: "logo-image" %>
+                <span>BugHound</span>
+            <% end %>
+        </div>
 
-            <!-- Centre : Navigation -->
-            <div class="nav-center">
-                <a href="#features" class="nav-link">Features</a>
-                <a href="#demo" class="nav-link">Démo</a>
-                <%= link_to "Historique", analyses_path, class: "nav-link" %>
-            </div>
+        <!-- Centre : Navigation -->
+        <div class="nav-center">
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#demo" class="nav-link">Démo</a>
+            <%= link_to "Historique", analyses_path, class: "nav-link" %>
+        </div>
 
-            <!-- Droite : Boutons d'action -->
-            <div class="nav-right">
-                <% if user_signed_in? %>
-                    <div class="user-dropdown" 
-     data-controller="user-menu"
-     data-action="click@window->user-menu#close keydown@window->user-menu#closeOnEscape">
-  <button
-    id="userMenuBtn"
-    class="nav-link user-btn"
-    data-user-menu-target="button"
-    data-action="click->user-menu#toggle"
-                            type="button"
-                            aria-haspopup="menu"
-                            aria-expanded="false"
-                            aria-controls="userMenu"
-                            aria-label="Ouvrir le menu utilisateur">
-                            <div class="user-avatar" aria-hidden="true">
-                                <% if current_user.first_name.present? && current_user.last_name.present? %>
-                                    <%= current_user.first_name.first.upcase %><%= current_user.last_name.first.upcase %>
-                                <% else %>
-                                    <%= current_user.email.split('@').first[0..1].upcase %>
-                                <% end %>
-                            </div>
-                        </button>
-
-                        <div id="userMenu" 
-     class="dropdown-menu" 
-     role="menu"
-     aria-labelledby="userMenuBtn"
-     data-user-menu-target="menu">
-                            <div class="user-info" role="presentation">
-                                <strong>
-                                    <% if current_user.first_name.present? && current_user.last_name.present? %>
-                                        <%= "#{current_user.first_name.upcase} #{current_user.last_name.upcase}" %>
-                                    <% else %>
-                                        <%= current_user.email.split('@').first.upcase %>
-                                    <% end %>
-                                </strong>
-                                <small><%= current_user.email %></small>
-                            </div>
-                            <hr style="margin: 0.5rem 0; border: none; border-top: 1px solid #e1e5e9;">
-                            <%= link_to "Se déconnecter",
-                                        destroy_user_session_path,
-                                        data: { "turbo-method": :delete },
-                                        class: "dropdown-item",
-                                        role: "menuitem" %>
+        <!-- Droite : Boutons d'action -->
+        <div class="nav-right">
+            <% if user_signed_in? %>
+                <div class="user-dropdown" 
+ data-controller="user-menu"
+ data-action="click@window->user-menu#close keydown@window->user-menu#closeOnEscape">
+<button
+id="userMenuBtn"
+class="nav-link user-btn"
+data-user-menu-target="button"
+data-action="click->user-menu#toggle"
+                        type="button"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                        aria-controls="userMenu"
+                        aria-label="Ouvrir le menu utilisateur">
+                        <div class="user-avatar" aria-hidden="true">
+                            <% if current_user.first_name.present? && current_user.last_name.present? %>
+                                <%= current_user.first_name.first.upcase %><%= current_user.last_name.first.upcase %>
+                            <% else %>
+                                <%= current_user.email.split('@').first[0..1].upcase %>
+                            <% end %>
                         </div>
+                    </button>
+
+                    <div id="userMenu" 
+ class="dropdown-menu" 
+ role="menu"
+ aria-labelledby="userMenuBtn"
+ data-user-menu-target="menu">
+                        <div class="user-info" role="presentation">
+                            <strong>
+                                <% if current_user.first_name.present? && current_user.last_name.present? %>
+                                    <%= "#{current_user.first_name.upcase} #{current_user.last_name.upcase}" %>
+                                <% else %>
+                                    <%= current_user.email.split('@').first.upcase %>
+                                <% end %>
+                            </strong>
+                            <small><%= current_user.email %></small>
+                        </div>
+                        <hr style="margin: 0.5rem 0; border: none; border-top: 1px solid #e1e5e9;">
+                        <%= link_to "Se déconnecter",
+                                    destroy_user_session_path,
+                                    data: { "turbo-method": :delete },
+                                    class: "dropdown-item",
+                                    role: "menuitem" %>
                     </div>
-                <% else %>
-                    <%= link_to "Se connecter", new_user_session_path, class: "nav-link" %>
-                <% end %>
+                </div>
+            <% else %>
+                <%= link_to "Se connecter", new_user_session_path, class: "nav-link" %>
+            <% end %>
 
-                <%= link_to new_analysis_path, class: "nav-link nav-cta" do %>
-    <svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" style="margin-right: 6px;">
-        <path d="M156.6 384.9L125.7 354c-8.5-8.5-11.5-20.8-7.7-32.2c3-8.9 7-20.5 11.8-33.8L24 288c-8.6 0-16.6-4.6-20.9-12.1s-4.2-16.7.2-24.1l52.5-88.5c13-21.9 36.5-35.3 61.9-35.3l82.3 0c2.4-4 4.8-7.7 7.2-11.3C289.1-4.1 411.1-8.1 483.9 5.3c11.6 2.1 20.6 11.2 22.8 22.8c13.4 72.9 9.3 194.8-111.4 276.7c-3.5 2.4-7.3 4.8-11.3 7.2v82.3c0 25.4-13.4 49-35.3 61.9l-88.5 52.5c-7.4 4.4-16.6 4.5-24.1.2s-12.1-12.2-12.1-20.9V380.8c-14.1 4.9-26.4 8.9-35.7 11.9c-11.2 3.6-23.4.5-31.8-7.8zM384 168a40 40 0 1 0 0-80 40 40 0 1 0 0 80z"/>
-    </svg>
-    Analyser
+            <%= link_to new_analysis_path, class: "nav-link nav-cta" do %>
+<svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" style="margin-right: 6px;">
+    <path d="M156.6 384.9L125.7 354c-8.5-8.5-11.5-20.8-7.7-32.2c3-8.9 7-20.5 11.8-33.8L24 288c-8.6 0-16.6-4.6-20.9-12.1s-4.2-16.7.2-24.1l52.5-88.5c13-21.9 36.5-35.3 61.9-35.3l82.3 0c2.4-4 4.8-7.7 7.2-11.3C289.1-4.1 411.1-8.1 483.9 5.3c11.6 2.1 20.6 11.2 22.8 22.8c13.4 72.9 9.3 194.8-111.4 276.7c-3.5 2.4-7.3 4.8-11.3 7.2v82.3c0 25.4-13.4 49-35.3 61.9l-88.5 52.5c-7.4 4.4-16.6 4.5-24.1.2s-12.1-12.2-12.1-20.9V380.8c-14.1 4.9-26.4 8.9-35.7 11.9c-11.2 3.6-23.4.5-31.8-7.8zM384 168a40 40 0 1 0 0-80 40 40 0 1 0 0 80z"/>
+</svg>
+Analyser
 <% end %>
-            </div>
-
-            <!-- Version Mobile -->
-<div class="mobile-nav-group"
-     data-controller="mobile-menu">
-  <%= link_to "Analyser", new_analysis_path, class: "nav-link nav-cta mobile-visible", style: "display: none;" %>
-  <button class="mobile-menu-btn" 
-          id="mobileMenuBtn"
-          data-mobile-menu-target="button"
-          data-action="click->mobile-menu#toggle">☰</button>
-</div>
         </div>
 
-        <!-- Menu Mobile Dropdown -->
-   <div class="mobile-menu" 
-     id="mobileMenu"
-     data-mobile-menu-target="menu">
-  <div class="mobile-menu-links">
-    <a href="#features" 
-       class="mobile-menu-link"
-       data-action="click->mobile-menu#closeOnLink">Features</a>
-    <a href="#demo" 
-       class="mobile-menu-link"
-       data-action="click->mobile-menu#closeOnLink">Démo</a>
-    <%= link_to "Historique", analyses_path, 
-                class: "mobile-menu-link",
-                data: { action: "click->mobile-menu#closeOnLink" } %>
-                <% if user_signed_in? %>
-                    <%= link_to "Se déconnecter", destroy_user_session_path, 
-                                data: { "turbo-method": :delete }, 
-                                class: "mobile-menu-link" %>
-                <% else %>
-                    <%= link_to "Se connecter", new_user_session_path, class: "mobile-menu-link" %>
-                <% end %>
-            </div>
+        <!-- Version Mobile -->
+        <div class="mobile-nav-group">
+            <%= link_to "Analyser", new_analysis_path, class: "nav-link nav-cta mobile-visible", style: "display: none;" %>
+            <button class="mobile-menu-btn" 
+                    id="mobileMenuBtn"
+                    data-mobile-menu-target="button"
+                    data-action="click->mobile-menu#toggle">☰</button>
         </div>
-    </nav>
+    </div>
+
+    <!-- Menu Mobile Dropdown -->
+    <div class="mobile-menu" 
+        id="mobileMenu"
+        data-mobile-menu-target="menu">
+        <div class="mobile-menu-links">
+            <a href="#features" 
+            class="mobile-menu-link"
+            data-action="click->mobile-menu#closeOnLink">Features</a>
+            <a href="#demo" 
+            class="mobile-menu-link"
+            data-action="click->mobile-menu#closeOnLink">Démo</a>
+            <%= link_to "Historique", analyses_path, 
+                        class: "mobile-menu-link",
+                        data: { action: "click->mobile-menu#closeOnLink" } %>
+            <% if user_signed_in? %>
+                <%= link_to "Se déconnecter", destroy_user_session_path, 
+                            data: { "turbo-method": :delete }, 
+                            class: "mobile-menu-link" %>
+            <% else %>
+                <%= link_to "Se connecter", new_user_session_path, class: "mobile-menu-link" %>
+            <% end %>
+        </div>
+    </div>
+</nav>
+
 
     <!-- Hero Section -->
 <section style="position: relative; min-height: 100vh; display: flex; align-items: center; padding-top: 120px; padding-bottom: 80px; overflow: hidden; background: #ffffff;">
