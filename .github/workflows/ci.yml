@@ -1,18 +1,12 @@
-# Nom du workflow qui apparaîtra sur GitHub
 name: Tests Ruby (RSpec)
 
-# Événement qui déclenche ce workflow. Ici, à chaque "push".
 on: [push]
 
-# Liste des "jobs" (tâches) à exécuter.
 jobs:
   test:
-    # Nom du job qui apparaîtra sur GitHub
     name: Lancement de la suite de tests
-    # Spécifie la machine virtuelle à utiliser. "ubuntu-latest" est le standard.
     runs-on: ubuntu-latest
-
-    # Démarre les services dont on a besoin (Postgres)
+    
     services:
       postgres:
         image: postgres:13-alpine
@@ -28,31 +22,17 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-    # Liste des étapes à exécuter dans l'ordre pour ce job
     steps:
-      # Étape 1 : Récupère le code de votre dépôt sur la machine virtuelle
       - name: 1. Récupérer le code du projet
         uses: actions/checkout@v4
 
-      # Étape 2 : Installe Ruby
       - name: 2. Mettre en place l'environnement Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3.5'
+          bundler-cache: true # On remet cette option magique
 
-      # Étape 3 : Installer les dépendances
-      - name: 3. Installer les dépendances
-        run: |
-          gem install bundler
-          bundle install --jobs 4 --retry 3
-
-      # NOUVELLE ÉTAPE AJOUTÉE ICI
-      # Étape 4 : Générer les binstubs pour les exécutables des gems
-      - name: 4. Générer les binstubs
-        run: bundle binstubs rspec-core
-
-      # Étape 5 : Préparer la base de données
-      - name: 5. Préparer la base de données
+      - name: 3. Préparer la base de données
         env:
           RAILS_ENV: test
           PGHOST: localhost
@@ -60,11 +40,9 @@ jobs:
           PGPASSWORD: password
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          bin/rails db:create
-          bin/rails db:schema:load
+          bin/rails db:prepare
 
-      # Étape 6 : Lancer les tests RSpec
-      - name: 6. Lancer les tests RSpec
+      - name: 4. Lancer les tests RSpec
         env:
           RAILS_ENV: test
           PGHOST: localhost
