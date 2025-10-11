@@ -30,7 +30,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3.5'
-          bundler-cache: true # On remet cette option magique
+          bundler-cache: true # Cette option est la bonne quand le code est correct
 
       - name: 3. Préparer la base de données
         env:
@@ -39,6 +39,7 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: password
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }} # J'ajoute la clé Anthropic
         run: |
           bin/rails db:prepare
 
@@ -49,4 +50,5 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: password
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }} # J'ajoute la clé Anthropic
         run: bundle exec rspec
