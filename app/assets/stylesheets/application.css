@@ -3,8 +3,12 @@
  *= require_self
 */
 
-/* FIX: Scroll offset pour navbar fixe */
-html { scroll-padding-top: 80px; }
+/* Défilement fluide + compensation de la navbar fixe */
+html {
+  scroll-behavior: smooth;     /* <= active le smooth scroll */
+  scroll-padding-top: 80px;    /* <= garde l’offset pour ta navbar fixe */
+}
+
 
 /* ========== BASE (peut servir ailleurs dans l'app) ========== */
 .analysis-container {
