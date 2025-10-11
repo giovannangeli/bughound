@@ -41,9 +41,10 @@ jobs:
           ruby-version: '3.3.5'
 
       # Étape 3 : Installer les dépendances
-      - name: 3. Installer les dépendances
+            - name: 3. Installer les dépendances
         run: |
           gem install bundler
+          bundle config set --local without 'development'
           bundle install --jobs 4 --retry 3
 
       # Étape 4 : Préparer la base de données
