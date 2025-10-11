@@ -36,6 +36,7 @@ jobs:
           RAILS_ENV: test
           PGHOST: localhost
           PGUSER: postgres
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }} # <--- LIGNE AJOUTÉE
         run: |
           bin/rails db:create
           bin/rails db:schema:load
@@ -45,4 +46,5 @@ jobs:
           RAILS_ENV: test
           PGHOST: localhost
           PGUSER: postgres
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }} # <--- LIGNE AJOUTÉE
         run: bundle exec rspec
