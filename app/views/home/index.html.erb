@@ -861,7 +861,36 @@
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
 }
 
-    </style>
+/* ================================================== */
+/* ===== CORRECTIONS RESPONSIVES CIBLÉES (FINALES) ===== */
+/* ================================================== */
+
+@media (max-width: 768px) {
+
+  /*
+   * CORRECTION N°1 : Applique un padding au conteneur de la navbar
+   * pour décoller les éléments des bords du téléphone.
+   * La règle `display: grid` existante est écrasée par `display: flex`
+   * uniquement sur mobile pour un alignement correct.
+   */
+  .navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem; /* Ajoute les marges GAUCHE et DROITE */
+  }
+
+  /*
+   * CORRECTION N°2 : Ajoute un padding au contenu de la
+   * Hero Section pour que le texte ne colle pas aux bords.
+   */
+  #hero-grid {
+    padding: 0 1rem;
+  }
+}
+  
+</style>
+
 </head>
 <body>
 <!-- Navbar -->
