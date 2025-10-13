@@ -16,6 +16,6 @@ services:
           property: connectionString
 
   # Service pour la base de données PostgreSQL
-  - type: psql
+  - type: psql_db
     name: bughound-db
     plan: free # Vous pouvez changer ce plan plus tard si besoin
