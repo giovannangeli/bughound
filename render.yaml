@@ -1,0 +1,21 @@
+# Fichier de configuration pour déployer BugHound sur Render
+
+services:
+  # Service pour l'application web Ruby on Rails
+  - type: web
+    name: bughound-web
+    env: ruby
+    buildCommand: "./bin/render-build.sh"
+    startCommand: "bundle exec puma -C config/puma.rb"
+    envVars:
+      - key: RAILS_MASTER_KEY
+        fromSecret: true # Sera récupéré depuis le gestionnaire de secrets de Render
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bughound-db
+          property: connectionString
+
+  # Service pour la base de données PostgreSQL
+  - type: psql
+    name: bughound-db
+    plan: free # Vous pouvez changer ce plan plus tard si besoin
