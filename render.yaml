@@ -1,21 +1,39 @@
-# Fichier de configuration pour déployer BugHound sur Render (version corrigée)
+# Fichier de configuration pour déployer BugHound sur Render (version finale)
 
 databases:
-  # Service pour la base de données PostgreSQL
+  # Déclare la base de données PostgreSQL.
+  # Render va la créer et la lier à notre service web.
   - name: bughound-db
-    plan: free # Vous pouvez changer ce plan plus tard si besoin
+    plan: free # Le plan gratuit est suffisant pour commencer.
 
 services:
-  # Service pour l'application web Ruby on Rails
+  # Déclare le service web qui fera tourner l'application Rails.
   - type: web
     name: bughound-web
-    env: ruby
+    env: ruby # Spécifie l'environnement Ruby.
+    
+    # Commande pour construire l'application à chaque déploiement.
     buildCommand: "./bin/render-build.sh"
+    
+    # Commande pour démarrer le serveur une fois la construction terminée.
     startCommand: "bundle exec puma -C config/puma.rb"
+    
+    # Déclaration des variables d'environnement.
     envVars:
-      - key: RAILS_MASTER_KEY
-        fromSecret: true
+      # La variable DATABASE_URL est automatiquement fournie par Render
+      # car nous la lions à la base de données 'bughound-db'.
       - key: DATABASE_URL
         fromDatabase:
           name: bughound-db
           property: connectionString
+          
+      # Pour les secrets (comme RAILS_MASTER_KEY, OPENAI_API_KEY, etc.),
+      # nous les déclarons ici avec une valeur vide.
+      # Cela dit à Render : "Prépare-toi à recevoir cette variable".
+      # Nous ajouterons les vraies valeurs dans le dashboard après le premier déploiement.
+      - key: RAILS_MASTER_KEY
+        value: "" # Valeur vide, sera remplie dans le dashboard Render.
+      - key: OPENAI_API_KEY
+        value: "" # Valeur vide, sera remplie dans le dashboard Render.
+      - key: ANTHROPIC_API_KEY
+        value: "" # Valeur vide, sera remplie dans le dashboard Render.
